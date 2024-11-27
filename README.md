@@ -50,4 +50,6 @@ githubではスクリプトやマクロを共同編集できます。1つのフ�
 # リモートリポジトリでの変更をローカルリポジトリに反映する(プル(pull))
 
 リモートリポジトリに他の人が変更を加えたら、それに同期するためにプル(pull)しましょう。(具体的な操作はまだ勉強中。mergeの仕方があんまりわかんない)
-- `Username@PC ~/github_local_rep % git pull origin main` でプルできます。s
+- `Username@PC ~/github_local_rep % git pull origin main` でプルできます。
+
+# テスト
