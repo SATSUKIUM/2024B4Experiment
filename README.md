@@ -67,9 +67,9 @@ gitという仕組みは、ユーザーからpushの命令があったときに�
 ### 競合の解消
 競合が起こったとき、pushが拒否され、エラーメッセージが返されます。競合を解消してから改めてpushしましょう。
 - まずはリモートリポジトリをpullします。 `Username@PC ~/github_local_rep % git pull origin main`
-- gitにより、競合が発生している箇所が以下のようにマークされます
-<<<<<<< HEAD (current change)
-自分の変更
-======
-競合している変更
->>>>>>> origin/main
+- gitにより、競合が発生している箇所が以下のようにマークされます<br>
+<<<<<<< HEAD (current change)<br>
+__自分の変更__<br>
+======<br>
+__競合している変更__<br>
+\>\>\>\>\>\>\> origin/main
