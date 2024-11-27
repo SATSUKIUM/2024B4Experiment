@@ -69,3 +69,4 @@ gitという仕組みは、ユーザーからpushの命令があったときに�
 - まずはリモートリポジトリをpullします。 `Username@PC ~/github_local_rep % git pull origin main`
 - gitにより、競合が発生している箇所が以下のようにマークされます(まだ試してない)
 - ここが競合するはず
+- わざと競合してみる
