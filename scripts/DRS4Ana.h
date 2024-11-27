@@ -28,7 +28,7 @@ Please read the macro for the detail.
 // Header file for the classes stored in the TTree if any.
 #include "TTimeStamp.h"
 
-#define NUM_OF_BOARDS 1
+#define NUM_OF_BOARDS 2
 
 class DRS4Ana
 {
@@ -67,9 +67,9 @@ public:
     virtual void Init(TTree *tree);
     virtual Bool_t Notify();
     virtual void Show(Long64_t entry = -1);
-    virtual void PlotADCSum(Int_t iCh = 0);
-    virtual void PlotWave(Int_t iCh = 0, Int_t EventID = 1);
-    virtual void PlotWaves(Int_t iCh = 0, Int_t EventID = 1, Int_t nEvent = 10);
+    virtual void PlotADCSum(Int_t iBoard = 0, Int_t iCh = 0);
+    virtual void PlotWave(Int_t iBoard = 0, Int_t iCh = 0, Int_t EventID = 1);
+    virtual void PlotWaves(Int_t iBoard = 0, Int_t iCh = 0, Int_t EventID = 1, Int_t nEvent = 10);
 
     virtual void SetSignalPolarity(Int_t polarity) { fSignalPolarity = polarity; };
     virtual Int_t GetSignalPolarity() { return fSignalPolarity; };
@@ -84,15 +84,15 @@ public:
     virtual Double_t GetChargeIntegralTimeMin() { return fChargeIntegralTmin; };
     virtual Double_t GetChargeIntegralTimeMax() { return fChargeIntegralTmax; };
 
-    virtual Double_t GetMinVoltage(Int_t iCh = 0);
-    virtual Double_t GetMaxVoltage(Int_t iCh = 0);
-    virtual Double_t GetPedestal(Int_t iCh = 0, Double_t Vcut = 0.0);
-    virtual Double_t GetPedestalMean(Int_t iCh = 0, Double_t Vcut = 0.0);
-    virtual Double_t PlotPedestalMean(Int_t iCh = 0, Double_t Vcut = 0.0);
-    virtual Double_t GetChargeIntegral(Int_t iCh = 0, Double_t Vcut = 0.0);
-    virtual Double_t PlotChargeIntegral(Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
-    virtual Double_t PlotMaxVoltage(Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
-    virtual Double_t GetAbsMaxVoltage(Int_t iCh = 0);
+    virtual Double_t GetMinVoltage(Int_t iBoard = 0, Int_t iCh = 0);
+    virtual Double_t GetMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0);
+    virtual Double_t GetPedestal(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
+    virtual Double_t GetPedestalMean(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
+    virtual Double_t PlotPedestalMean(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
+    virtual Double_t GetChargeIntegral(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
+    virtual Double_t PlotChargeIntegral(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
+    virtual Double_t PlotMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
+    virtual Double_t GetAbsMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0);
     virtual Double_t Output_chargeintegral(Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0);
     virtual Double_t automated_peaksearch(Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0, Int_t numPeaks = 10);
     virtual void Output_EventTime(Int_t iCh = 0);
