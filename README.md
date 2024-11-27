@@ -31,6 +31,7 @@ githubではスクリプトやマクロを共同編集できます。1つのフ�
     - 例 `Username@PC ~ % mkdir github_local_rep`
 - リモートリポジトリをローカルにクローン(clone)します
     - `Username@PC ~/github_local_rep % git clone git@github.com:SATSUKIUM/2024B4Experiment.git`
+    - 次にいちおうおまじないとして、pullしておいてください。`Username@PC ~/github_local_rep % git pull origin main`
 
 ## 変更をプッシュ(push)する
 
