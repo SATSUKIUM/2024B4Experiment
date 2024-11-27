@@ -33,11 +33,11 @@ Please read the macro for the detail.
 #include <filesystem>
 #include <TSystem.h>
 
-void DRS4Ana::PlotADCSum(Int_t iCh)
+void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
     gStyle->SetOptStat(0);
     TCanvas *c_adcsum = new TCanvas("c_adcsum",
-                                    Form("%s:ch%d ADCsum", fRootFile.Data(), iCh),
+                                    Form("board%d,ch%d ADCsum", iBoard, iCh),
                                     800, 400);
     c_adcsum->Draw();
 
@@ -46,16 +46,16 @@ void DRS4Ana::PlotADCSum(Int_t iCh)
         delete fH1AdcSum;
     }
     fH1AdcSum = new TH1F("fH1AdcSum",
-                         Form("%s:ch%d ADCsum", fRootFile.Data(), iCh),
+                         Form("board%d,ch%d ADCsum", iBoard, iCh),
                          1000, fADCsumXmin, fADCsumXmax);
     fH1AdcSum->SetXTitle("ADCsum");
     fH1AdcSum->SetYTitle("[count]");
-    fChain->Draw(Form("adcSum[0][%d]>>fH1AdcSum", iCh));
+    fChain->Draw(Form("-1.0*adcSum[%d][%d]>>fH1AdcSum", iBoard, iCh));
 
     // c_adcsum->Print(Form("%s_ch%d_adcSum.pdf", fRootFile.Data(), iCh));
 }
 
-void DRS4Ana::PlotWave(Int_t iCh, Int_t EventID)
+void DRS4Ana::PlotWave(Int_t iBoard, Int_t iCh, Int_t EventID)
 {
     gStyle->SetOptStat(0);
 
@@ -65,22 +65,22 @@ void DRS4Ana::PlotWave(Int_t iCh, Int_t EventID)
     }
 
     fH2Waveform = new TH2F("fH2Waveform",
-                           Form("%s:ch%d,Ev%d", fRootFile.Data(), iCh, EventID),
+                           Form("board%d,ch%d,Ev%d", iBoard, iCh, EventID),
                            10, fWaveformXmin, fWaveformXmax, 10, fWaveformYmin, fWaveformYmax);
     fH2Waveform->SetXTitle("Time [ns]");
     fH2Waveform->SetYTitle("Voltage [V]");
     fH2Waveform->Draw();
-    fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", iCh, fTimeBinWidthInNanoSec), "", "lsame", 1, EventID);
+    fChain->Draw(Form("waveform[%d][%d]:%f*Iteration$", iBoard, iCh, fTimeBinWidthInNanoSec), "", "lsame", 1, EventID);
 }
 
-void DRS4Ana::PlotWaves(Int_t iCh, Int_t EventID, Int_t nEvent)
+void DRS4Ana::PlotWaves(Int_t iBoard, Int_t iCh, Int_t EventID, Int_t nEvent)
 {
     TCanvas *c_wave = new TCanvas("c_canvas", fRootFile.Data(), 800, 600);
     c_wave->Draw();
 
     for (Int_t i = 0; i < nEvent; i++)
     {
-        PlotWave(iCh, EventID + i);
+        PlotWave(iBoard, iCh, EventID + i);
         c_wave->WaitPrimitive();
     }
 }
@@ -109,61 +109,61 @@ void DRS4Ana::SetChargeIntegralTimeRange(Double_t min, Double_t max)
     fChargeIntegralTmax = max;
 }
 
-Double_t DRS4Ana::GetMinVoltage(Int_t iCh)
+Double_t DRS4Ana::GetMinVoltage(Int_t iBoard, Int_t iCh)
 {
     Double_t minV = 100.0;
     for (Int_t i = 0; i < 1024; i++)
     {
-        if (fWaveform[0][iCh][i] < minV)
+        if (fWaveform[iBoard][iCh][i] < minV)
         {
             // printf("%d:%f\n",i,waveform[0][iCh][i]);
-            minV = (Double_t)fWaveform[0][iCh][i];
+            minV = (Double_t)fWaveform[iBoard][iCh][i];
         }
     }
     return minV;
 }
 
-Double_t DRS4Ana::GetAbsMaxVoltage(Int_t iCh)
+Double_t DRS4Ana::GetAbsMaxVoltage(Int_t iBoard, Int_t iCh)
 {
     Double_t maxAbsV = 0.0;
     for (Int_t i = 0; i < 1024; i++)
     {
-        if (fWaveform[0][iCh][i] < -maxAbsV)
+        if (fWaveform[iBoard][iCh][i] < -maxAbsV)
         {
             // printf("%d:%f\n",i,fWaveform[0][iCh][i]);
-            maxAbsV = -(Double_t)fWaveform[0][iCh][i];
+            maxAbsV = -(Double_t)fWaveform[iBoard][iCh][i];
         }
     }
     // cout << "Debug: GetMaxVoltage passed." << endl;
     return maxAbsV;
 }
 
-Double_t DRS4Ana::GetMaxVoltage(Int_t iCh)
+Double_t DRS4Ana::GetMaxVoltage(Int_t iBoard, Int_t iCh)
 {
     Double_t maxV = -100.0;
     for (Int_t i = 0; i < 1024; i++)
     {
-        if (fWaveform[0][iCh][i] > maxV)
+        if (fWaveform[iBoard][iCh][i] > maxV)
         {
             // printf("%d:%f\n",i,waveform[0][iCh][i]);
-            maxV = (Double_t)fWaveform[0][iCh][i];
+            maxV = (Double_t)fWaveform[iBoard][iCh][i];
         }
     }
     return maxV;
 }
 
-Double_t DRS4Ana::GetPedestal(Int_t iCh, Double_t Vcut)
+Double_t DRS4Ana::GetPedestal(Int_t iBoard, Int_t iCh, Double_t Vcut)
 {
     if (fSignalPolarity == 1)
     {
-        if (GetMaxVoltage(iCh) <= Vcut)
+        if (GetMaxVoltage(iBoard, iCh) <= Vcut)
         {
             return -9999.9;
         }
     }
     else
     {
-        if (GetMinVoltage(iCh) >= Vcut)
+        if (GetMinVoltage(iBoard, iCh) >= Vcut)
         {
             return -9999.9;
         }
@@ -173,16 +173,16 @@ Double_t DRS4Ana::GetPedestal(Int_t iCh, Double_t Vcut)
     Int_t counter = 0;
     for (Int_t i = 0; i < 1024; i++)
     {
-        if (fTime[0][iCh][i] >= fPedestalTmin && fTime[0][iCh][i] <= fPedestalTmax)
+        if (fTime[iBoard][iCh][i] >= fPedestalTmin && fTime[iBoard][iCh][i] <= fPedestalTmax)
         {
             counter++;
-            pedestalV += fWaveform[0][iCh][i];
+            pedestalV += fWaveform[iBoard][iCh][i];
         }
     }
     return pedestalV / counter;
 }
 
-Double_t DRS4Ana::GetPedestalMean(Int_t iCh, Double_t Vcut)
+Double_t DRS4Ana::GetPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
 {
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -190,7 +190,7 @@ Double_t DRS4Ana::GetPedestalMean(Int_t iCh, Double_t Vcut)
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        Double_t ped = GetPedestal(iCh, Vcut);
+        Double_t ped = GetPedestal(iBoard, iCh, Vcut);
         if (ped > -9999.9)
         {
             counter++;
@@ -200,7 +200,7 @@ Double_t DRS4Ana::GetPedestalMean(Int_t iCh, Double_t Vcut)
     return pedMean / counter;
 }
 
-Double_t DRS4Ana::PlotPedestalMean(Int_t iCh, Double_t Vcut)
+Double_t DRS4Ana::PlotPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
 {
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -218,7 +218,7 @@ Double_t DRS4Ana::PlotPedestalMean(Int_t iCh, Double_t Vcut)
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        Double_t ped = GetPedestal(iCh, Vcut);
+        Double_t ped = GetPedestal(iBoard, iCh, Vcut);
         if (ped > -9999.9)
         {
             counter++;
@@ -260,31 +260,31 @@ Double_t DRS4Ana::PlotPedestalMean(Int_t iCh, Double_t Vcut)
 //     return charge;
 // }
 
-Double_t DRS4Ana::GetChargeIntegral(Int_t iCh, Double_t Vcut)
+Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
 {
     if (fSignalPolarity == 1)
     {
-        if (GetMaxVoltage(iCh) <= Vcut)
+        if (GetMaxVoltage(iBoard, iCh) <= Vcut)
         {
             return -9999.9;
         }
     }
     else
     {
-        if (GetMinVoltage(iCh) >= Vcut)
+        if (GetMinVoltage(iBoard, iCh) >= Vcut)
         {
             return -9999.9;
         }
     }
 
-    Double_t pedestal = GetPedestal(iCh, Vcut);
+    Double_t pedestal = GetPedestal(iBoard, iCh, Vcut);
 
     Double_t charge = 0.0;
     for (Int_t i = 0; i < 1024; i++)
     {
-        if (fTime[0][iCh][i] >= fChargeIntegralTmin && fTime[0][iCh][i] <= fChargeIntegralTmax)
+        if (fTime[iBoard][iCh][i] >= fChargeIntegralTmin && fTime[iBoard][iCh][i] <= fChargeIntegralTmax)
         {
-            charge += fWaveform[0][iCh][i] - pedestal;
+            charge += fWaveform[iBoard][iCh][i] - pedestal;
             // std::cout << fTriggerCell << std::endl;
         }
     }
@@ -292,7 +292,7 @@ Double_t DRS4Ana::GetChargeIntegral(Int_t iCh, Double_t Vcut)
 }
 
 
-Double_t DRS4Ana::PlotChargeIntegral(Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax)
+Double_t DRS4Ana::PlotChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax)
 {
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -311,7 +311,7 @@ Double_t DRS4Ana::PlotChargeIntegral(Int_t iCh, Double_t Vcut, Double_t xmin, Do
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        Double_t chargeIntegral = GetChargeIntegral(iCh, Vcut);
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut);
         if (chargeIntegral > -9999.9)
         {
             counter++;
@@ -338,7 +338,7 @@ Double_t DRS4Ana::PlotChargeIntegral(Int_t iCh, Double_t Vcut, Double_t xmin, Do
 
 
 
-Double_t DRS4Ana::PlotMaxVoltage(Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax)
+Double_t DRS4Ana::PlotMaxVoltage(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax)
 {
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -354,7 +354,7 @@ Double_t DRS4Ana::PlotMaxVoltage(Int_t iCh, Double_t Vcut, Double_t xmin, Double
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        Double_t maxVoltage = GetAbsMaxVoltage(iCh);
+        Double_t maxVoltage = GetAbsMaxVoltage(iBoard, iCh);
         counter++;
         fH1MaxVoltage->Fill(maxVoltage);
     }
