@@ -85,3 +85,5 @@ ChatGPTに聞いたら割と分かりやすく教えてくれます。
 - パソコンにgithubを設定する方法について https://prog-8.com/docs/git-env
 - 競合とmergeについて https://qiita.com/Hashimoto-Noriaki/items/0bcd4c5592bc1305c145
 - Markdown記法について https://qiita.com/tbpgr/items/989c6badefff69377da7
+
+### test
