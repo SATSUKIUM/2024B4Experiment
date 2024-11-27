@@ -24,7 +24,7 @@ githubではスクリプトやマクロを共同編集できます。1つのフ�
     - `Username@PC ~ % git config --global user.email "メールアドレス"`
 - githubに登録してください https://github.com/
 - あなたのユーザー名を教えてください
-    - こちらで招待を送ります
+    - こちらで招待を送ります(もしかしたらこれは要らないかも....)
 - 以下のリンクの5番「GitHubにSSHの設定をする」に従ってSSHの設定をしてください
     - https://prog-8.com/docs/git-env
 - ローカルに作業用ディレクトリを作ります
