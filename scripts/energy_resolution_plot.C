@@ -8,6 +8,7 @@ PMTのエネルギー較正用の直線フィッティング
 #include <TStyle.h> //gStyleのところ
 #include <TString.h>
 #include <TCanvas.h>
+#include <TF1.h>
 using namespace std;
 void energy_resolution_plot(TString input_Folder = "./analysis/"){
     // ifstream ifs("../data/sato_NaI.txt");
@@ -26,11 +27,20 @@ void energy_resolution_plot(TString input_Folder = "./analysis/"){
         index_data++;
     }
     ifs.close();
-    graph->SetTitle(";voltage_sum [V];Photoelectric peak energy [keV]");
+    graph->SetTitle(";peak ch(voltage sum) [V];energy resolution (%)");
     graph->SetMarkerStyle(20);
+    
+    graph->Draw("ap");
+    // graph->Fit("pol1");
+    TF1 *fitFunc = new TF1("fitFunc", "[0]/sqrt(x)", 2, 20);
+    fitFunc->SetParameter(0,1);
+    graph->Fit(fitFunc);
+    std::cout << "Fitting parameter [0]/sqrt(x) : " << fitFunc->GetParameter(0) << std::endl;
+
+    fitFunc->Draw("same");
+    // graph->Draw("ap"); //axisとpointを描画する
     gStyle->SetOptFit();
-    graph->Fit("pol1");
-    graph->Draw("ap"); //axisとpointを描画する
+    canvas->Update();
 
     canvas->SaveAs("./figure/energy_res.pdf");
 }
