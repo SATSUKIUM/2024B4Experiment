@@ -1,18 +1,16 @@
 /*
-PMTのエネルギー較正用の直線フィッティング
+エネルギーとエネルギー分解能の関係のプロット、および、1/√Eでのフィッティングをするマクロ
 */
 #include <iostream>
 #include <fstream>
 #include <TGraph.h>
 #include <TGraphErrors.h>
-#include <TStyle.h> //gStyleのところ
+#include <TStyle.h> 
 #include <TString.h>
 #include <TCanvas.h>
 #include <TF1.h>
 using namespace std;
 void energy_resolution_plot(TString input_Folder = "./analysis/"){
-    // ifstream ifs("../data/sato_NaI.txt");
-    // ifstream ifs("../data/huruno_PMT_2.txt");
     TString input_Filepath = Form("%senergy_resolution_test.txt",input_Folder.Data());
     ifstream ifs(input_Filepath);
     double energy, ch, sigma_ch;
