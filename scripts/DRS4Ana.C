@@ -443,7 +443,8 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
         else{
             fits.push_back(gaussian);
             means.push_back(gaussian->GetParameter(1));
-            sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
+            // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
+            sigmas.push_back(gaussian->GetParameter(2));//σ
         }
     }
     c1->Update();
