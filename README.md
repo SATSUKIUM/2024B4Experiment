@@ -29,9 +29,8 @@ githubではスクリプトやマクロを共同編集できます。1つのフ�
     - https://prog-8.com/docs/git-env
 - ローカルに作業用ディレクトリを作ります
     - 例 `Username@PC ~ % mkdir github_local_rep`
-    - そのディレクトリをgitで管理できるように、作業ディレクトリにて `Username@PC ~/github_local_rep % git init`を実行
 - リモートリポジトリをローカルにクローン(clone)します
-    - `Username@PC ~/github_local_rep % git clone https://github.com/SATSUKIUM/2024B4Experiment.git`
+    - `Username@PC ~/github_local_rep % git clone git@github.com:SATSUKIUM/2024B4Experiment.git`
 
 # 変更をプッシュ(push)する
 
