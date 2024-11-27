@@ -25,8 +25,11 @@ githubではスクリプトやマクロを共同編集できます。1つのフ�
 - githubに登録してください https://github.com/
 - あなたのユーザー名を教えてください
     - こちらで招待を送ります
+- 以下のリンクの5番「GitHubにSSHの設定をする」に従ってSSHの設定をしてください
+    - https://prog-8.com/docs/git-env
 - ローカルに作業用ディレクトリを作ります
     - 例 `Username@PC ~ % mkdir github_local_rep`
+    - そのディレクトリをgitで管理できるように、作業ディレクトリにて `Username@PC ~/github_local_rep % git init`を実行
 - リモートリポジトリをローカルにクローン(clone)します
     - `Username@PC ~/github_local_rep % git clone https://github.com/SATSUKIUM/2024B4Experiment.git`
 
