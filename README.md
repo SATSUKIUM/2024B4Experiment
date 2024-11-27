@@ -69,9 +69,9 @@ gitという仕組みは、ユーザーからpushの命令があったときに�
 - まずはリモートリポジトリをpullします。 `Username@PC ~/github_local_rep % git pull origin main`
 - gitにより、競合が発生している箇所が以下のようにマークされます
 ```
-<<<<<<< HEAD (current change)<br>
-__自分の変更__<br>
-======<br>
-__競合している変更__<br>
-\>\>\>\>\>\>\> origin/main
+<<<<<<< HEAD (current change)
+自分の変更
+======
+競合している変更
+>>>>>>> origin/main
 ```
