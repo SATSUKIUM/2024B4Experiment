@@ -696,6 +696,3 @@ Double_t DRS4Ana::Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0){
     std::cout << std::endl;
     return counter;
 }
-//aaa
-//bbb
-//ddd
