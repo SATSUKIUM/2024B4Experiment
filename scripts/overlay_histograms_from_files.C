@@ -27,6 +27,22 @@ double extractDistance(const TString& filepath){
 
     return (firstNum+secondNum)/2;
 }
+double extractDistance_ver2(const TString& filepath){
+    TString filename = filepath(filepath.Last('/')+1, filepath.Length()-filepath.Last('/')); //ファイルパスからファイル名だけ抜き出した
+
+    //以下では"22Na_-2_-1cm_dot_..."のような文字列から数字だけ抜き出す
+    Int_t firstUnderscorePos = filename.Index('_');
+    Int_t secondUnderscorePos = filename.Index('_',firstUnderscorePos+1);
+    Int_t thirdUnderscorePos = filename.Index('_', secondUnderscorePos+1);
+
+    TString firstNumberStr = filename(firstUnderscorePos+1, secondUnderscorePos);
+    TString secondNumberStr = filename(secondUnderscorePos+1, thirdUnderscorePos);
+    std::cout<< firstNumberStr << " || " << secondNumberStr << std::endl;
+    int firstNum = firstNumberStr.Atoi();
+    int secondNum = secondNumberStr.Atoi();
+
+    return (firstNum+secondNum)/2;
+}
 void overlay_histograms_from_files(std::string folderpath = "./text_output/") {
     // キャンバスの作成
     TCanvas *c1 = new TCanvas("c1", "compare light yield of GSO scintillator by where gamma hit", 3200, 2400);
