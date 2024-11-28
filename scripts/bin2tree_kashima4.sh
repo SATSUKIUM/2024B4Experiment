@@ -27,7 +27,7 @@ find "$DAT_FOLDER" -type f -name "*.dat" | parallel -j 8 '
     echo "Processing $dat_file..."
     
     # ROOTコマンドを実行
-    root -b -l -q "$ROOT_SCRIPT(\"$dat_file\", 2, 0)"
+    root -b -l -q "$ROOT_SCRIPT(\"$dat_file\", 2, 0)" #("dat_file", Int1, Int2)のInt1はボード何台あるか
     
     # .rootファイルの生成を待ってから移動
     root_file="${dat_file}.root"  # .datファイルに対して .dat.root
