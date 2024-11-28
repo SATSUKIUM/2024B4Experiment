@@ -453,7 +453,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
     
     TString filename_figure;
     TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
-    rootFile.ReplaceAll(".", "_dot_s"); //.dat.rootのドットを"dot"に変えた
+    rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
 
     std::ofstream ofs(Form("./output/%s_maen_sigma.txt",rootFile.Data()));
     auto mean_temp = means.begin();
