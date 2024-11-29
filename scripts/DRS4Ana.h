@@ -28,7 +28,7 @@ Please read the macro for the detail.
 // Header file for the classes stored in the TTree if any.
 #include "TTimeStamp.h"
 
-#define NUM_OF_BOARDS 2
+#define NUM_OF_BOARDS 1
 
 class DRS4Ana
 {

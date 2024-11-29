@@ -391,6 +391,7 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
 
 Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
 {
+    Int_t timecut_Option = 1;
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -398,6 +399,12 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
     {
         delete fH1ChargeIntegral;
     }
+
+    if(timecut_Option == 1){
+        Double_t Tmax_for_fH1CI = GetTriggerTiming(0, iCh, 0.1, -0.025) + 0;
+        std::cout << Tmax_for_fH1CI << std::endl;
+    }
+
     TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
     fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax),
                                  500, xmin, xmax);
@@ -637,17 +644,21 @@ Double_t DRS4Ana::GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t thr
     }
 
     Double_t binContent;
+    Int_t flag_search_done = 0;
     for(Int_t xBin = 1; xBin <= fH2Filtered_Overlay_Waves->GetNbinsX(); ++xBin){
         for(Int_t yBin = fH2Filtered_Overlay_Waves->GetNbinsY(); yBin > 0; yBin += -1){
             if(fH2Filtered_Overlay_Waves->GetBinContent(xBin, yBin) > nentries*threshold){
                 if(fH2Filtered_Overlay_Waves->GetYaxis()->GetBinCenter(yBin) < trigger_voltage){
+                    flag_search_done = 1;
                     return(fH2Overlay_Waves->GetXaxis()->GetBinCenter(xBin));
                     break;
                 }
             }
         }
     }
-    return(1); //trigger time was not found in the loop
+    if(flag_search_done != 1){
+        return(-1); //trigger time was not found in the loop
+    }
 }
 
 Double_t DRS4Ana::Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0){
