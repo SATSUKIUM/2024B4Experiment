@@ -87,7 +87,7 @@ githubのローカルリポジトリで作業する場合、例えば環境依�
 - `.gitignore`というファイルが生成されるはずなので、それを例えばVSCodeなどで開いて、共有すべきでないフォルダやファイルを書きましょう。__.gitignore自身を記述することをお勧めします__
 #### 記述例
 ```
-./.vscode
+./.vscode/
 ./scripts/.vscode/
 ./scripts/.DS_Store
 .gitignore
@@ -95,7 +95,14 @@ githubのローカルリポジトリで作業する場合、例えば環境依�
 FETCH_HEAD
 ```
 ### 不必要なファイルを共有してしまった場合
-
+.gitignoreの設定を変更しようと考える時、それはすでに不必要なファイルをプッシュしてしまってリモートリポジトリがとっ散らかってしまっている状況であると推測します。とっ散らかったファイルの片付けについても説明します。<br>
+必要なことは
+- まずは.gitignoreに適切に追記する
+- リモートリポジトリにある要らないファイルを削除する
+    - `Username@PC ~/github_local_rep % git rm --cached .DS_Store` など
+- 要らないファイルを削除したということをリポジトリに適用する(コミット, プッシュ)
+    - `Username@PC ~/github_local_rep % git commit -m "remove trash"` など
+    - `Username@PC ~/github_local_rep % git push origin main` など
 
 ## 注意
 - Windows環境ではコロン(:)はディレクトリシステム上で特殊文字として認識されるため、ファイル名にコロンが含まれれているときにエラーを吐きます。まあ、Windowsなんて使ってる人いないだろうけど...
