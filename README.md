@@ -104,6 +104,11 @@ FETCH_HEAD
     - `Username@PC ~/github_local_rep % git commit -m "remove trash"` など
     - `Username@PC ~/github_local_rep % git push origin main` など
 
+## Tips
+- 動かないテストコードをどう管理するか悩む
+    - `/scripts/test/`などのディレクトリを作って、その中にテストコードをぶち込んでおく。
+    - もし共有したくなければ、.gitignoreに `./scripts/test/`などと書いておく。
+
 ## 注意
 - Windows環境ではコロン(:)はディレクトリシステム上で特殊文字として認識されるため、ファイル名にコロンが含まれれているときにエラーを吐きます。まあ、Windowsなんて使ってる人いないだろうけど...
 
