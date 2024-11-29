@@ -31,17 +31,17 @@ double extractDistance_ver2(const TString& filepath){
     TString filename = filepath(filepath.Last('/')+1, filepath.Length()-filepath.Last('/')); //ファイルパスからファイル名だけ抜き出した
 
     //以下では"22Na_-2_-1cm_dot_..."のような文字列から数字だけ抜き出す
-    Int_t firstUnderscorePos = filename.Index('_');
-    Int_t secondUnderscorePos = filename.Index('_',firstUnderscorePos+1);
-    Int_t thirdUnderscorePos = filename.Index('_', secondUnderscorePos+1);
+    Ssiz_t firstUnderscorePos = filename.Index('_');
+    Ssiz_t secondUnderscorePos = filename.Index('_',firstUnderscorePos+1);
+    Ssiz_t thirdUnderscorePos = filename.Index('_', secondUnderscorePos+1);
 
-    TString firstNumberStr = filename(firstUnderscorePos+1, secondUnderscorePos);
-    TString secondNumberStr = filename(secondUnderscorePos+1, thirdUnderscorePos);
-    std::cout<< firstNumberStr << " || " << secondNumberStr << std::endl;
+    TString firstNumberStr = filename(firstUnderscorePos+1, secondUnderscorePos - firstUnderscorePos -1);
+    TString secondNumberStr = filename(secondUnderscorePos+1, thirdUnderscorePos - secondUnderscorePos -1);
+    // std::cout<< firstNumberStr << " || " << secondNumberStr << std::endl;
     int firstNum = firstNumberStr.Atoi();
     int secondNum = secondNumberStr.Atoi();
 
-    return (firstNum+secondNum)/2;
+    return (firstNum+secondNum)/2.0;
 }
 void overlay_histograms_from_files(std::string folderpath = "./text_output/") {
     // キャンバスの作成
