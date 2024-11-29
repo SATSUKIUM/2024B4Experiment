@@ -401,8 +401,8 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
     }
 
     if(timecut_Option == 1){
-        Double_t Tmax_for_fH1CI = GetTriggerTiming(0, iCh, 0.1, -0.025) + 0;
-        std::cout << Tmax_for_fH1CI << std::endl;
+        // Double_t Tmax_for_fH1CI = GetTriggerTiming(0, iCh, 0.1, -0.025) + 0;
+        // std::cout << Tmax_for_fH1CI << std::endl;
     }
 
     TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
@@ -657,7 +657,10 @@ Double_t DRS4Ana::GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t thr
         }
     }
     if(flag_search_done != 1){
-        return(-1); //trigger time was not found in the loop
+        return(-1.0); //trigger time was not found in the loop
+    }
+    else{
+        return(0);
     }
 }
 
