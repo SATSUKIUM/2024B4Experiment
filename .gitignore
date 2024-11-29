@@ -1,2 +1,3 @@
 ./.vscode
-./scripts/.vscode
+./scripts/.vscode/
+./scripts/.DS_Store
