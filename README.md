@@ -84,11 +84,14 @@ githubのローカルリポジトリで作業する場合、例えば環境依�
 `.gitignore`にプッシュしたくないフォルダを記述しましょう。
 - gitのローカルリポジトリ直下(例: `~/2024B4Experiment/`)に`.gitignore`というファイルを作ります。
     - `Username@PC ~/github_local_rep % touch .gitignore`
-- `.gitignore`というファイルが生成されるはずなので、それを例えばVSCodeなどで開いて、共有すべきでないフォルダやファイルを書きましょう。
+- `.gitignore`というファイルが生成されるはずなので、それを例えばVSCodeなどで開いて、共有すべきでないフォルダやファイルを書きましょう。__.gitignore自身を記述することをお勧めします__
 ```
-./.vscode/
+./.vscode
 ./scripts/.vscode/
 ./scripts/.DS_Store
+.gitignore
+.DS_Store
+FETCH_HEAD
 ```
 
 ## 注意
