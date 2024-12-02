@@ -179,7 +179,9 @@ Double_t DRS4Ana::GetPedestal(Int_t iBoard, Int_t iCh, Double_t Vcut)
             pedestalV += fWaveform[iBoard][iCh][i];
         }
     }
-    return pedestalV / counter;
+    // std::cout << pedestalV/counter << std::endl;
+    return 0;
+    // return pedestalV / counter;
 }
 
 Double_t DRS4Ana::GetPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
@@ -286,8 +288,11 @@ Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
         {
             charge += fWaveform[iBoard][iCh][i] - pedestal;
             // std::cout << fTriggerCell << std::endl;
+            std::cout << pedestal << " || " << fWaveform[iBoard][iCh][i] << std::endl;
+            
         }
     }
+    std::cout << charge << std::endl;
     return charge;
 }
 
