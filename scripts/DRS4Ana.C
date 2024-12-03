@@ -288,11 +288,11 @@ Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
         {
             charge += fWaveform[iBoard][iCh][i] - pedestal;
             // std::cout << fTriggerCell << std::endl;
-            std::cout << pedestal << " || " << fWaveform[iBoard][iCh][i] << std::endl;
+            // std::cout << pedestal << " || " << fWaveform[iBoard][iCh][i] << std::endl;
             
         }
     }
-    std::cout << charge << std::endl;
+    // std::cout << charge << std::endl;
     return charge;
 }
 
