@@ -395,7 +395,7 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
 
 Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
 {
-    Int_t timecut_Option = 1;
+    Int_t timecut_Option = 0;
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
