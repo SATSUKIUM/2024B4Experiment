@@ -288,11 +288,10 @@ Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
         {
             charge += fWaveform[iBoard][iCh][i] - pedestal;
             // std::cout << fTriggerCell << std::endl;
-            std::cout << pedestal << " || " << fWaveform[iBoard][iCh][i] << std::endl;
+            // std::cout << pedestal << " || " << fWaveform[iBoard][iCh][i] << std::endl;
             
         }
     }
-    std::cout << charge << std::endl;
     return charge;
 }
 
@@ -420,7 +419,10 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        Double_t chargeIntegral = GetChargeIntegral(iCh, Vcut);
+
+        Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。
+
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut);
         if (chargeIntegral > -9999.9)
         {
             counter++;
