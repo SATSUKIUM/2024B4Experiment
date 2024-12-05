@@ -395,7 +395,7 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
 
 Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
 {
-    Int_t timecut_Option = 0;
+    Int_t timecut_Option = 1;
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -657,7 +657,8 @@ Double_t DRS4Ana::GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t thr
             if(fH2Filtered_Overlay_Waves->GetBinContent(xBin, yBin) > nentries*threshold){
                 if(fH2Filtered_Overlay_Waves->GetYaxis()->GetBinCenter(yBin) < trigger_voltage){
                     flag_search_done = 1;
-                    return(fH2Overlay_Waves->GetXaxis()->GetBinCenter(xBin));
+                    Double_t v_return = fH2Filtered_Overlay_Waves->GetXaxis()->GetBinCenter(xBin);
+                    return(v_return);
                     break;
                 }
             }
