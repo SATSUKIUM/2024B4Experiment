@@ -404,8 +404,9 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
         delete fH1ChargeIntegral;
     }
 
+    Double_t Tmax_for_fH1CI = 0.0;
     if(timecut_Option == 1){
-        Double_t Tmax_for_fH1CI = GetTriggerTiming(0, iCh, 0.1, -0.025) + 0;
+        Tmax_for_fH1CI = GetTriggerTiming(0, iCh, 0.1, -0.025) + 0;
         std::cout << "trigger timing || " << Tmax_for_fH1CI << std::endl;
     }
 
@@ -422,7 +423,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
 
         Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。
 
-        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut);
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300);
         if (chargeIntegral > -9999.9)
         {
             counter++;
