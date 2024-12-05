@@ -3,7 +3,7 @@
 #!/bin/bash
 
 # .datファイルが格納されているフォルダー
-DAT_FOLDER="../../data/raw_data/20241126"
+DAT_FOLDER="../data/20241129/RC7493/"
 
 # ROOTスクリプトのパス
 ROOT_SCRIPT="binary2tree_sato4.C"
@@ -13,7 +13,7 @@ ROOT_DEST_FOLDER="${DAT_FOLDER}/ROOT_FILES"
 echo "Root destination folder: $ROOT_DEST_FOLDER"
 
 # ROOT_DEST_FOLDERが存在しない場合は作成
-# mkdir -p "$ROOT_DEST_FOLDER"
+mkdir -p "$ROOT_DEST_FOLDER"
 
 # ターゲットディレクトリに書き込み権限を与える
 chmod -R u+w "$ROOT_DEST_FOLDER"
