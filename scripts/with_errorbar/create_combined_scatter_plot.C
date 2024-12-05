@@ -66,6 +66,9 @@ void create_combined_scatter_plot() {
     graph->SetTitle("compare mean where gamma hits");
     // graph->GetXaxis()->SetTitle("distance from pmt window (cm)");
     // graph->GetYaxis()->SetTitle("mean of gaussian prop charge of pulse [V]");
+    graph->SetTitle("compare mean where gamma hits (RC7493, inverted GSO#24);distance from pmt window [cm];mean of gaussian prop charge of pulse [V]");
+    // graph->SetTitle("compare mean where gamma hits (RC7493, GSO#24);distance from pmt window [cm];mean of gaussian prop charge of pulse [V]");
+
 
     // キャンバスに描画
     TCanvas* canvas = new TCanvas("canvas_combined", "Combined Scatter Plot", 800, 600);
