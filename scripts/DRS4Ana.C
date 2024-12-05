@@ -262,7 +262,7 @@ Double_t DRS4Ana::PlotPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
 //     return charge;
 // }
 
-Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
+Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t TcutMin = 0, Double_t TcutMax = 1000)
 {
     if (fSignalPolarity == 1)
     {
@@ -284,15 +284,14 @@ Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
     Double_t charge = 0.0;
     for (Int_t i = 0; i < 1024; i++)
     {
-        if (fTime[iBoard][iCh][i] >= fChargeIntegralTmin && fTime[iBoard][iCh][i] <= fChargeIntegralTmax)
+        if (fTime[iBoard][iCh][i] >= TcutMin && fTime[iBoard][iCh][i] <= TcutMax)
         {
             charge += fWaveform[iBoard][iCh][i] - pedestal;
             // std::cout << fTriggerCell << std::endl;
-            std::cout << pedestal << " || " << fWaveform[iBoard][iCh][i] << std::endl;
+            // std::cout << pedestal << " || " << fWaveform[iBoard][iCh][i] << std::endl;
             
         }
     }
-    std::cout << charge << std::endl;
     return charge;
 }
 
@@ -396,7 +395,7 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
 
 Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
 {
-    Int_t timecut_Option = 1;
+    Int_t timecut_Option = 0;
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -405,9 +404,10 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
         delete fH1ChargeIntegral;
     }
 
+    Double_t Tmax_for_fH1CI = 0.0;
     if(timecut_Option == 1){
-        // Double_t Tmax_for_fH1CI = GetTriggerTiming(0, iCh, 0.1, -0.025) + 0;
-        // std::cout << Tmax_for_fH1CI << std::endl;
+        Tmax_for_fH1CI = GetTriggerTiming(0, iCh, 0.1, -0.025) + 0;
+        std::cout << "trigger timing || " << Tmax_for_fH1CI << std::endl;
     }
 
     TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
@@ -420,7 +420,10 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        Double_t chargeIntegral = GetChargeIntegral(iCh, Vcut);
+
+        Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。
+
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300);
         if (chargeIntegral > -9999.9)
         {
             counter++;
@@ -543,7 +546,7 @@ Double_t DRS4Ana::Overlay_PlotWaves(Int_t iCh = 0){
     fH2Overlay_Waves = new TH2F();
 
     //ビンなどは適宜変える
-    fChain->Draw(Form("waveform[0][0]:%f*Iteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.5, 0.05)",fTimeBinWidthInNanoSec, fWaveformXmax), "", "colz", nentries, 0); //Draw(expression, selection, option, nentries, nfirstentry)
+    fChain->Draw(Form("waveform[0][0]:%f*Iteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.55, 0.05)",fTimeBinWidthInNanoSec, fWaveformXmax), "", "colz", nentries, 0); //Draw(expression, selection, option, nentries, nfirstentry)
 
     TH2F* hist = (TH2F*)gROOT->FindObject("fH2Overlay_Waves");
     if(hist){
@@ -655,7 +658,8 @@ Double_t DRS4Ana::GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t thr
             if(fH2Filtered_Overlay_Waves->GetBinContent(xBin, yBin) > nentries*threshold){
                 if(fH2Filtered_Overlay_Waves->GetYaxis()->GetBinCenter(yBin) < trigger_voltage){
                     flag_search_done = 1;
-                    return(fH2Overlay_Waves->GetXaxis()->GetBinCenter(xBin));
+                    Double_t v_return = fH2Filtered_Overlay_Waves->GetXaxis()->GetBinCenter(xBin);
+                    return(v_return);
                     break;
                 }
             }
