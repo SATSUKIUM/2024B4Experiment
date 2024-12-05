@@ -89,7 +89,7 @@ public:
     virtual Double_t GetPedestal(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
     virtual Double_t GetPedestalMean(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
     virtual Double_t PlotPedestalMean(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
-    virtual Double_t GetChargeIntegral(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
+    virtual Double_t GetChargeIntegral(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t TcutMin = 0, Double_t TcutMax = 1000);
     virtual Double_t PlotChargeIntegral(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
     virtual Double_t PlotMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
     virtual Double_t GetAbsMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0);
