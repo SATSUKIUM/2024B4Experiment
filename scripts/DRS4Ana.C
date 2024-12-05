@@ -262,7 +262,7 @@ Double_t DRS4Ana::PlotPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
 //     return charge;
 // }
 
-Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
+Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t TcutMin = 0, Double_t TcutMax = 1000)
 {
     if (fSignalPolarity == 1)
     {
@@ -284,7 +284,7 @@ Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut)
     Double_t charge = 0.0;
     for (Int_t i = 0; i < 1024; i++)
     {
-        if (fTime[iBoard][iCh][i] >= fChargeIntegralTmin && fTime[iBoard][iCh][i] <= fChargeIntegralTmax)
+        if (fTime[iBoard][iCh][i] >= TcutMin && fTime[iBoard][iCh][i] <= TcutMax)
         {
             charge += fWaveform[iBoard][iCh][i] - pedestal;
             // std::cout << fTriggerCell << std::endl;
