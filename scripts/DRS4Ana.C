@@ -611,14 +611,14 @@ void DRS4Ana::Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, In
     fH2Waveform_master->SetYTitle("Voltage [V]");
     c1->cd(1);
     fH2Waveform_master->Draw();
-    fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", fTime[0][iCh_master][1023]/1024.0, iCh_master), "", "lsame", 1, EventID);
+    fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", iCh_master, fTime[0][iCh_master][1023]/1024.0), "", "lsame", 1, EventID);
 
     fH2Waveform_slave = new TH2F("fH2Waveform_slave", "title", 10, fWaveformXmax, fWaveformXmax, 10 ,fWaveformYmin, fWaveformYmax);
     fH2Waveform_slave->SetXTitle("Time [ns]");
     fH2Waveform_slave->SetYTitle("Voltage [V]");
     c1->cd(2);
     fH2Waveform_slave->Draw();
-    fChain->Draw(Form("waveform[1][%d]:%f*Iteration$", fTime[1][iCh_slave][1023]/1024.0, iCh_master), "", "lsame", 1, EventID);
+    fChain->Draw(Form("waveform[1][%d]:%f*Iteration$", iCh_master, fTime[1][iCh_slave][1023]/1024.0), "", "lsame", 1, EventID);
 }
 void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0){
     Int_t nentries = fChain->GetEntriesFast();
@@ -626,7 +626,6 @@ void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_maste
         fChain->GetEntry(i);
         Plot_wave_two_boards(iCh_master, iCh_slave, event_num_initial+i);
     }
-    //aas
 }
 
 Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10){
