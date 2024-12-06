@@ -28,6 +28,8 @@ Please read the macro for the detail.
 // Header file for the classes stored in the TTree if any.
 #include "TTimeStamp.h"
 
+#include <vector>
+
 #define NUM_OF_BOARDS 2
 
 class DRS4Ana
@@ -100,7 +102,7 @@ public:
     virtual Double_t Overlay_PlotWaves(Int_t iCh = 0);
     virtual void DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0);
 
-    virtual void Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index);
+    virtual void Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index = 0);
     virtual void Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0);
     
     virtual Double_t Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10);
@@ -116,8 +118,6 @@ public:
     TH1F *fH1TriggerRate = NULL;
     TH2F *fH2Overlay_Waves = NULL;
     TH2F *fH2Filtered_Overlay_Waves = NULL;
-    TH2F *fH2Waveform_master = NULL;
-    TH2F *fH2Waveform_slave = NULL;
 
 private:
     Double_t fTimeBinWidthInNanoSec;
