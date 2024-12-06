@@ -594,37 +594,31 @@ void DRS4Ana::DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0){
         std::cout << "average_TimeBin : " << average_TimeBin << " || end_TimeBin/1024 : " << fTime[iBoard][iCh][1023]/1024.0 << std::endl <<std::endl;
     }
 }
-void DRS4Ana::Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0){
+void DRS4Ana::Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index){
     gStyle->SetOptStat(0);
-    if(fH2Waveform_master != NULL){
+    if(fH2Waveform != NULL){
         delete fH2Waveform_master;
     }
-    if(fH2Waveform_slave != NULL){
-        delete fH2Waveform_slave;
-    }
+
+    fH2Waveform = new TH2F("fH2Waveform", Form("waveform: board #%d",canvas_index), 10, fWaveformXmax, fWaveformXmax, 10 ,fWaveformYmin, fWaveformYmax);
+    fH2Waveform->SetXTitle("Time [ns]");
+    fH2Waveform->SetYTitle("Voltage [V]");
+    fH2Waveform->Draw();
+    fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", iCh_master, fTime[0][iCh_master][1023]/1024.0), "", "lsame", 1, EventID);
+}
+void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0){
+    Int_t nentries = fChain->GetEntriesFast();
 
     TCanvas *c1 = new TCanvas("c1", "Waveform : master and slave board", 700, 500);
     c1->Divide(1,2);
 
-    fH2Waveform_master = new TH2F("fH2Waveform_master", "title", 10, fWaveformXmax, fWaveformXmax, 10 ,fWaveformYmin, fWaveformYmax);
-    fH2Waveform_master->SetXTitle("Time [ns]");
-    fH2Waveform_master->SetYTitle("Voltage [V]");
-    c1->cd(1);
-    fH2Waveform_master->Draw();
-    fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", iCh_master, fTime[0][iCh_master][1023]/1024.0), "", "lsame", 1, EventID);
-
-    fH2Waveform_slave = new TH2F("fH2Waveform_slave", "title", 10, fWaveformXmax, fWaveformXmax, 10 ,fWaveformYmin, fWaveformYmax);
-    fH2Waveform_slave->SetXTitle("Time [ns]");
-    fH2Waveform_slave->SetYTitle("Voltage [V]");
-    c1->cd(2);
-    fH2Waveform_slave->Draw();
-    fChain->Draw(Form("waveform[1][%d]:%f*Iteration$", iCh_master, fTime[1][iCh_slave][1023]/1024.0), "", "lsame", 1, EventID);
-}
-void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0){
-    Int_t nentries = fChain->GetEntriesFast();
     for(Int_t i=event_num_initial; i<nentries; i++){
-        fChain->GetEntry(i);
-        Plot_wave_two_boards(iCh_master, iCh_slave, event_num_initial+i);
+        for(Int_t canvas_index=0; canvas_index<2; canvas_index++){
+            c1->cd(canvas_index+1);
+            fChain->GetEntry(i);
+            Plot_wave_two_boards(iCh_master, iCh_slave, event_num_initial+i, canvas_index);
+            c1->WaitPrimitive();
+        }   
     }
 }
 
