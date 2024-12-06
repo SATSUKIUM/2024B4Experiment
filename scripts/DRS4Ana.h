@@ -118,6 +118,8 @@ public:
     TH1F *fH1TriggerRate = NULL;
     TH2F *fH2Overlay_Waves = NULL;
     TH2F *fH2Filtered_Overlay_Waves = NULL;
+    TH2F *fH2Waveform0 = NULL;
+    TH2F *fH2Waveform1 = NULL;
 
 private:
     Double_t fTimeBinWidthInNanoSec;

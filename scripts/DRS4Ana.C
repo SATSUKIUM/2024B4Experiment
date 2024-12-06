@@ -596,31 +596,50 @@ void DRS4Ana::DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0){
 }
 void DRS4Ana::Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index){
     gStyle->SetOptStat(0);
+    gPad->SetGrid();
 
-    if(fH2Waveform != NULL){
-        delete fH2Waveform;
+    if(canvas_index == 1){
+        if(fH2Waveform0 != NULL){
+            delete fH2Waveform0;
+            fH2Waveform0 = new TH2F("fH2Waveform", Form("waveform: board #%d || EventID %d",canvas_index-1, EventID), 10, 0, 1024, 10 ,-0.55, 0.05);
+            fH2Waveform0->SetXTitle("Time [ns]");
+            fH2Waveform0->SetYTitle("Voltage [V]");
+            fH2Waveform0->Draw();
+    
+            fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", iCh_master, fTime[0][iCh_master][1023]/1024.0), "", "same", 1, EventID); 
+        }
     }
-
-    fH2Waveform = new TH2F("fH2Waveform", Form("waveform: board #%d || EventID %d",canvas_index, EventID), 10, 0, 1024, 10 ,-0.55, 0.05);
-    fH2Waveform->SetXTitle("Time [ns]");
-    fH2Waveform->SetYTitle("Voltage [V]");
-    fH2Waveform->Draw();
-    fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", iCh_master, fTime[0][iCh_master][1023]/1024.0), "", "lsame", 1, EventID);
+    if (canvas_index == 2)
+    {
+        if(fH2Waveform1 != NULL){
+            delete fH2Waveform1;
+            fH2Waveform1 = new TH2F("fH2Waveform", Form("waveform: board #%d || EventID %d",canvas_index-1, EventID), 10, 0, 1024, 10 ,-0.55, 0.05);
+            fH2Waveform1->SetXTitle("Time [ns]");
+            fH2Waveform1->SetYTitle("Voltage [V]");
+            fH2Waveform1->Draw();
+    
+            fChain->Draw(Form("waveform[0][%d]:%f*Iteration$", iCh_slave, fTime[0][iCh_master][1023]/1024.0), "", "same", 1, EventID);
+        }
+    }
 }
+
 void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0){
     Int_t nentries = fChain->GetEntriesFast();
 
     TCanvas *c1 = new TCanvas("c1", "Waveform : master and slave board", 700, 500);
     c1->Divide(2,1);
     c1->Draw();
+    fH2Waveform0 = new TH2F;
+    fH2Waveform1 = new TH2F;
 
     for(Int_t i=event_num_initial; i<nentries; i++){
         
         for(Int_t canvas_index=1; canvas_index<=2; canvas_index++){
             c1->cd(canvas_index);
             Plot_wave_two_boards(iCh_master, iCh_slave, i, canvas_index);
+            c1->Update();
         }
-        c1->Update();
+        
         c1->WaitPrimitive(); 
     }
 }
