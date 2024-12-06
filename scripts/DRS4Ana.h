@@ -99,7 +99,8 @@ public:
     virtual Double_t PlotTriggerRate(Int_t iCh = 0);
     virtual Double_t Overlay_PlotWaves(Int_t iCh = 0);
     virtual void DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0);
-    virtual Double_t Plot_compare_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0);
+    virtual Double_t Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0);
+    virtual Double_t Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0);
     virtual Double_t Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10);
     virtual Double_t GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10, Double_t trigger_voltage = -0.025);
     virtual Double_t Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0);
@@ -113,6 +114,8 @@ public:
     TH1F *fH1TriggerRate = NULL;
     TH2F *fH2Overlay_Waves = NULL;
     TH2F *fH2Filtered_Overlay_Waves = NULL;
+    TH2F *fH2Waveform_master = NULL;
+    TH2F *fH2Waveform_slave = NULL;
 
 private:
     Double_t fTimeBinWidthInNanoSec;
