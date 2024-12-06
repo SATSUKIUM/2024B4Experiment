@@ -17,7 +17,8 @@ void create_combined_scatter_plot() {
         "./output/20241128/inverted-RC7493/TEXTFILES/22Na_4-5_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", "./output/20241128/inverted-RC7493/TEXTFILES/22Na_5-6_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", 
         "./output/20241128/inverted-RC7493/TEXTFILES/22Na_6-7_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", "./output/20241128/inverted-RC7493/TEXTFILES/22Na_7-8_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", 
         "./output/20241128/inverted-RC7493/TEXTFILES/22Na_8-9_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", "./output/20241128/inverted-RC7493/TEXTFILES/22Na_9-10_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", 
-        "./output/20241128/inverted-RC7493/TEXTFILES/22Na_10-11_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", "./output/20241128/inverted-RC7493/TEXTFILES/22Na_11-12_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt"        
+        "./output/20241128/inverted-RC7493/TEXTFILES/22Na_10-11_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt", "./output/20241128/inverted-RC7493/TEXTFILES/22Na_11-12_cm_HV_1700_GSO_24_dot_dat_dot_root_mean_sigma.txt"
+        // "./output/20241128/RC7493/a_0-1_cm_test.txt"       
     };
 
     // 散布図のデータを格納するベクター
@@ -55,7 +56,7 @@ void create_combined_scatter_plot() {
 
             x_vals.push_back(x_right-0.5);
             y_vals.push_back(y_val);
-            // sigma_vals.push_back(sigma);
+            sigma_vals.push_back(sigma);
         }
         // std::cout << x_right << std::endl;
         // std::cout << sigma << std::endl;
@@ -64,6 +65,7 @@ void create_combined_scatter_plot() {
     // すべてのファイルのデータを1つのグラフにまとめる
     TGraph* graph = new TGraph(x_vals.size(), &x_vals[0], &y_vals[0]);
     // TGraphErrors* graph = new TGraphErrors(x_vals.size(), &x_vals[0], 0, &y_vals[0], &sigma_vals[0]);  //　誤差棒付けたかったけどsigmaが各ファイルの最後の値になって無理でした
+    // TGraph* graph = new TGraph(x_vals.size(), &x_vals[0], &sigma_vals[0]);
 
     graph->SetMarkerSize(5.5);  // 点のサイズを1.5に設定
     // graph->SetTitle("compare mean where gamma hits");
@@ -77,5 +79,5 @@ void create_combined_scatter_plot() {
     graph->Draw("AP");
 
     // キャンバスを保存
-    canvas->SaveAs("combined_scatter_plot_RC7493_inverted_GSO#24.png");
+    // canvas->SaveAs("combined_scatter_plot_RC7493_inverted_GSO#24.png");
 }
