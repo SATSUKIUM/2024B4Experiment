@@ -393,7 +393,7 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
+Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
 {
     Int_t timecut_Option = 0;
     Long64_t nentries = fChain->GetEntriesFast();
@@ -421,7 +421,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
     {
         fChain->GetEntry(jentry);
 
-        Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。
+        // Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。←しました。
 
         Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
         if (chargeIntegral > -9999.9)
@@ -441,15 +441,19 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
 
     TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
     spectrum->SetResolution(5); //
-    Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, 5, "", 0.1); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
+    Double_t spec_sigma = 5.0;
+    Double_t spec_thr = 0.01;
+    Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
     Double_t* peakPositions = spectrum->GetPositionX();
 
     std::vector<TF1*> fits; //"gaus"フィッティングを複数格納するベクトル
     std::vector<Double_t> means;
-    std::vector<Double_t> sigmas;
+    std::vector<Double_t> sigmas_mean;
+    std::vector<Double_t> sigmas_gaus;
     std::vector<TFitResultPtr> fitresults;
+    Double_t fitrange = 2.0;
     for(int i=0; i<foundPeaks; ++i){
-        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-1, peakPositions[i]+1); //要調整。特に範囲
+        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitrange, peakPositions[i]+fitrange); //要調整。特に範囲
         gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
         std::cout << "debug" << std::endl;
@@ -459,7 +463,8 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
             fits.push_back(gaussian);
             means.push_back(gaussian->GetParameter(1));
             // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
-            sigmas.push_back(gaussian->GetParameter(2));//σ
+            sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
+            sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
         }
     }
     c1->Update();
@@ -470,14 +475,21 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iCh, Double_t Vcut, Double_t xmin, 
     TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
     rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
 
-    std::ofstream ofs(Form("./output/%s_mean_sigma.txt",rootFile.Data()));
+    std::ofstream ofs(Form("./output/%s_data.txt",rootFile.Data()));
     auto mean_temp = means.begin();
-    auto sigma_temp = sigmas.begin();
-    while(mean_temp != means.end() && sigma_temp != sigmas.end()){
-        ofs << *mean_temp << " " << *sigma_temp << std::endl;
+    auto sigma_mean_temp = sigmas_mean.begin();
+    auto sigma_gaus_temp = sigmas_gaus.begin();
+    ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
+    while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end()){
+        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
         ++mean_temp;
-        ++sigma_temp;
+        ++sigma_mean_temp;
+        ++sigma_gaus_temp;
     }
+    ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
+    ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
+    ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
+    ofs << "fitrange : " << fitrange << std::endl; // ピーク中心からの範囲
     ofs.close();
 
     filename_figure = Form("./figure/%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
