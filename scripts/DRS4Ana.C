@@ -594,7 +594,7 @@ void DRS4Ana::DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0){
         std::cout << "average_TimeBin : " << average_TimeBin << " || end_TimeBin/1024 : " << fTime[iBoard][iCh][1023]/1024.0 << std::endl <<std::endl;
     }
 }
-Double_t DRS4Ana::Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0){
+void DRS4Ana::Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0){
     gStyle->SetOptStat(0);
     if(fH2Waveform_master != NULL){
         delete fH2Waveform_master;
@@ -620,13 +620,12 @@ Double_t DRS4Ana::Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0
     fH2Waveform_slave->Draw();
     fChain->Draw(Form("waveform[1][%d]:%f*Iteration$", fTime[1][iCh_slave][1023]/1024.0, iCh_master), "", "lsame", 1, EventID);
 }
-Double_t DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0){
+void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0){
     Int_t nentries = fChain->GetEntriesFast();
     for(Int_t i=event_num_initial; i<nentries; i++){
         fChain->GetEntry(i);
         Plot_wave_two_boards(iCh_master, iCh_slave, event_num_initial+i);
     }
-    return 0;
 }
 
 Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10){
