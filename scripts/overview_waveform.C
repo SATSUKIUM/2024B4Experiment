@@ -30,6 +30,7 @@ void overview_waveform(const char* filename){
     Int_t nentries = tree->GetEntriesFast();
     
     // std::cout << "DEBUG || DEBUG || DEBUG" << std::endl;
+    std::cout << "========================================" << std::endl <<"If you want to quit, press Ctrl+C and then type .q and then enter" << std::endl << "========================================" << std::endl;
 
     for(Int_t eventID=0; eventID<nentries; eventID++){
         tree->GetEntry(eventID);
