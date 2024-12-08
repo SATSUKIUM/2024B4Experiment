@@ -9,14 +9,44 @@
 #include <TString.h>
 #include <TStyle.h>
 
-void triggered_waveform(const char* filename, Int_t initial_event = 0){
+void triggered_waveform(const char* filename, Int_t initial_event = 0, Int_t flag_rich_mode = 0){
     TFile *rootFile = TFile::Open(filename);
 
     TTree *tree = (TTree*)rootFile->Get("treeDRS4BoardEvent");
+    
+    TTree *tree_info =(TTree*)rootFile->Get("treeDRS4BoardInfo");
     if(!tree){
         std::cerr << "Error in obtain TTree : treeDRSBoardEvent not found" << std::endl;
         return;
     }
+    if(!tree_info){
+        if(flag_rich_mode ==1){
+            std::cerr << "Error in obtain TTree : treeDRSBoardInfo not found" << std::endl;
+            return;
+        }
+
+    }
+
+    Int_t numOfBoards = 1;
+    tree_info->SetBranchAddress("numOfBoards", &numOfBoards);
+    tree_info->GetEntry(0);
+    if(flag_rich_mode == 1){
+        std::cout << "numOfBoards || " << numOfBoards << std::endl;
+    }
+    Int_t *serialNumber = new Int_t[numOfBoards];
+    tree_info->GetEntry(0);
+    tree_info->SetBranchAddress("serialNumber", serialNumber);
+    if(flag_rich_mode == 1){
+        std::cout << "serialNumber || ";
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        std::cout << serialNumber[iBoard] << " ";
+        }
+        std::cout << std::endl;
+    }
+    
+    
+
+
     // std::cout << "DEBUG || DEBUG || DEBUG" << std::endl;
 
     Double_t waveform[2][4][1024];
@@ -34,6 +64,7 @@ void triggered_waveform(const char* filename, Int_t initial_event = 0){
 
     for(Int_t eventID=initial_event; eventID<nentries; eventID++){
         tree->GetEntry(eventID);
+
         // std::cout << "DEBUG || DEBUG || DEBUG" << std::endl;
 
         Int_t trigger_flag = 0;
