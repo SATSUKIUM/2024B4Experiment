@@ -6,7 +6,9 @@
 
  Purpose:        Example macro to convert a binary data file saved by DRSOsc to a root tree file.
 
- Notion:         When with DRS4 V4 board, time bin data acquired when timing calibration excuted are common among each channels. So the timing calibration section has the same data repeated the times of the number of connected channels.*/
+ Notion:         When with DRS4 V4 board, time bin data acquired when timing calibration excuted are common among each channels. So the timing calibration section has the same data repeated the times of the number of connected channels.
+                 DEBUG: treeDRS4BoardInfo has two duplicate serialNumber[numOfBoards] and timeBinWidth[numOfBoards][4][1024]. I removed extra loop.
+ */
 /*======================================================================================================
  Name:           binary2tree_sato3.C
  Created by:     Akira Sato<sato@phys.sci.osaka-u.ac.jp>
@@ -190,11 +192,8 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
     auto treeDRS4BoardInfo = new TTree("treeDRS4BoardInfo", "a tree for information of each DRS4 boards");
     treeDRS4BoardInfo->Branch("numOfBoards", &numOfBoards, "numOfBoards/I");
     //
-    for (Int_t i = 0; i < numOfBoards; i++)
-    {
-        treeDRS4BoardInfo->Branch("serialNumber", serialNumber, "serialNumber[numOfBoards]/I");
-        treeDRS4BoardInfo->Branch("timeBinWidth", timeBinWidth, "timeBinWidth[numOfBoards][4][1024]/D");
-    }
+    treeDRS4BoardInfo->Branch("serialNumber", serialNumber, "serialNumber[numOfBoards]/I");
+    treeDRS4BoardInfo->Branch("timeBinWidth", timeBinWidth, "timeBinWidth[numOfBoards][4][1024]/D");
     //--------------------------------------------------
     // Define a tree for board events
     //--------------------------------------------------
