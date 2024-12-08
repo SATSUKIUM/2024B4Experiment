@@ -53,6 +53,7 @@ void overview_waveform(const char* filename){
                 H2Waveform[iBoard][iCh]->SetYTitle("Waveform");
                 H2Waveform[iBoard][iCh]->Draw();
                 gStyle->SetOptStat(0);
+                gPad->SetGrid();
 
                 tree->Draw(Form("waveform[%d][%d]:Iteration$", iBoard, iCh), "", "lsame", 1 , eventID);
             }
