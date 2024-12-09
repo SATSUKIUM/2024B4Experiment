@@ -3,6 +3,9 @@
 #include <TF1.h>
 #include <cmath>
 #include <TCanvas.h>
+#include <TStyle.h>
+#include <TROOT.h>
+#include <TLegend.h>
 
 double f(double x, double mu){
     double r = 0.5 * sqrt(511 / (2 - cos(mu))) / (2 * sqrt(2 * log(2))); //count rate
@@ -62,6 +65,7 @@ void test8(){
 }
 
 Double_t gauss_func(Double_t x_difference, Double_t volume, Double_t x_mean, Double_t sigma_x){
+    // std::cout << x_difference << std::endl;
     return(volume*(1/sqrt(2*M_PI*pow(sigma_x, 2)))*exp(-(pow(x_difference,2)/(2*pow(sigma_x,2)))));
 }
 void test8_1(){
@@ -69,30 +73,65 @@ void test8_1(){
     Int_t xmin = 0;
     Int_t xmax = 10;
     Int_t nBins = (xmax-xmin)*100;
+    std::cout << "xmin : " << xmin << " || xmax : " << xmax << " || nBins : " << nBins << std::endl;
 
     // TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 600);
     // canvas->Divide(2,1);
-    TH1F* h1 = new TH1F("h1", "ideal distribution", nBins, xmin-xmax, xmax+xmax);
+    TH1F* h1 = new TH1F("h1", "ideal distribution(, and real distribution)", nBins, xmin-xmax, xmax+xmax);
+    gStyle->SetOptStat(0);
     
-
+    Int_t numFilledBins = 0;
     for(Int_t bin_Index=1; bin_Index<=nBins; bin_Index++){
         if(h1->GetBinCenter(bin_Index) > xmin && h1->GetBinCenter(bin_Index) < xmax)
-        h1->SetBinContent(bin_Index, 10);
+        // h1->SetBinContent(bin_Index, 1000+100*(xmax-xmin)*bin_Index/nBins);
+        // h1->SetBinContent(bin_Index, 1e6*(bin_Index/static_cast<Double_t>(nBins)));
+        // h1->SetBinContent(bin_Index, 1e6*(cos(bin_Index/360.0*2*M_PI)));
+        h1->SetBinContent(bin_Index, 1e6*(sin(bin_Index/500.0)));
+
+        numFilledBins++;
     }
     // canvas->cd(1);
+    h1->SetLineColor(kRed);
     h1->Draw();
 
     TH1F* h2 = new TH1F("h2", "real distibution", nBins, xmin-xmax, xmax+xmax);
 
-    Int_t div = (xmax-xmin)*1e5;
+    Int_t div = (xmax-xmin)*1e2;
+    std::cout << "div : " << div << std::endl;
     for(Int_t bin_Index=1; bin_Index<=nBins; bin_Index++){
         if(h1->GetBinContent(bin_Index) != 0){
-            Double_t delta_x = (xmax-xmin)/div;
+            Double_t delta_x = (xmax-xmin)/static_cast<double_t>(div); //used for obtain where to fill
+            Double_t x_mean = h1->GetBinCenter(bin_Index);
+            std::cout << "x_mean : " << x_mean << std::endl;
+            Double_t numContents = h1->GetBinContent(bin_Index); //the volume of gaus distribution
+            std::cout << "numContents : " << numContents << std::endl;
             for(Int_t x_difference_Index=0; x_difference_Index < div; x_difference_Index++){
-                
+                Double_t nToFill = gauss_func(x_difference_Index*delta_x, numContents/numFilledBins*(xmax-xmin), 0, 1);
+
+                Int_t nToFill_Int = static_cast<Int_t>(nToFill);
+                // std::cout << "nToFill : " << nToFill <<std::endl;
+                // std::cout << "nToFill_Int : " << nToFill_Int <<std::endl;
+                if(x_difference_Index == 0){
+                    for(Int_t i=0; i<nToFill_Int; i++){
+                        h2->Fill(x_mean);
+                    }
+                }
+                else{
+                    for(Int_t i=0; i<nToFill_Int; i++){
+                        h2->Fill(x_mean + delta_x*x_difference_Index);
+                        h2->Fill(x_mean - delta_x*x_difference_Index);
+                    }
+                }
             }
         }
     }
+    h2->SetLineColor(kBlue);
+    h2->Draw("same");
+
+    auto legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+    legend->AddEntry(h1, "ideal distribution", "l");
+    legend->AddEntry(h2, "real dist", "l");
+    legend->Draw();
 
 }
     
