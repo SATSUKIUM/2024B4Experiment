@@ -491,6 +491,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
     ofs << "fitrange : " << fitrange << std::endl; // ピーク中心からの範囲
     ofs.close();
+    
 
     filename_figure = Form("./figure/%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
     c1->SaveAs(filename_figure);
