@@ -61,18 +61,38 @@ void test8(){
     }
 }
 
+Double_t gauss_func(Double_t x_difference, Double_t volume, Double_t x_mean, Double_t sigma_x){
+    return(volume*(1/sqrt(2*M_PI*pow(sigma_x, 2)))*exp(-(pow(x_difference,2)/(2*pow(sigma_x,2)))));
+}
 void test8_1(){
     //ここでは、ある範囲のxに対して分布が存在し、その分布の各ビンがあるxの標準偏差を持ってバラけた場合にどうなるか考察してみる。
     Int_t xmin = 0;
     Int_t xmax = 10;
     Int_t nBins = (xmax-xmin)*100;
+
+    // TCanvas* canvas = new TCanvas("canvas", "canvas", 800, 600);
+    // canvas->Divide(2,1);
     TH1F* h1 = new TH1F("h1", "ideal distribution", nBins, xmin-xmax, xmax+xmax);
     
 
     for(Int_t bin_Index=1; bin_Index<=nBins; bin_Index++){
+        if(h1->GetBinCenter(bin_Index) > xmin && h1->GetBinCenter(bin_Index) < xmax)
         h1->SetBinContent(bin_Index, 10);
     }
+    // canvas->cd(1);
     h1->Draw();
+
+    TH1F* h2 = new TH1F("h2", "real distibution", nBins, xmin-xmax, xmax+xmax);
+
+    Int_t div = (xmax-xmin)*1e5;
+    for(Int_t bin_Index=1; bin_Index<=nBins; bin_Index++){
+        if(h1->GetBinContent(bin_Index) != 0){
+            Double_t delta_x = (xmax-xmin)/div;
+            for(Int_t x_difference_Index=0; x_difference_Index < div; x_difference_Index++){
+                
+            }
+        }
+    }
 
 }
     
