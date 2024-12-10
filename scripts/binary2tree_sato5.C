@@ -52,6 +52,7 @@ ex) root[] binary2tree_sato3("../data/test001.dat")
 #include <math.h>
 
 #define DEBUG 0
+#define TIME_FLAG 1
 
 #ifdef DEBUG
 #define DEBUG_PRINT(level, fmt, ...) \
@@ -267,6 +268,8 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
             }
         }
 
+    //efficiently calculate time[numOfBoard][4][1024] 
+
 
     Int_t numOfBoards = how_many_boards;
 
@@ -308,9 +311,11 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
 
     //iBoardについてforループがあったけど、いらないと判断したので削除
     treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));
-    // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
+    // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i"); //よくわからないブランチ。値を見てもゼロだった。
     treeDRS4BoardEvent->Branch("waveform", waveform, Form("waveform[%d][4][1024]/D", numOfBoards));
-    // treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
+    if(TIME_FLAG){
+        treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
+    }
     treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
@@ -415,13 +420,16 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                     waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
 
-                    // // calculate time for this cell
-                    // time_buf[iboard][chID][icell] = 0;
-                    // for (int j = 1; j < icell; j++)
-                    // {
-                    //     time_buf[iboard][chID][icell] += bin_width[iboard][chID][(j + triggerCellHeader.trigger_cell) % 1024];
-                    // }
-                    // time[iboard][chID][icell] = time_buf[iboard][chID][icell]; // Set Tree data
+                    if(TIME_FLAG && flag_b4exp_trig != 0){
+                        // calculate time for this cell
+                        time[iBoard][chID][icell] = 0;
+                        for (int j = 0; j < icell; j++)
+                        {
+                            time[iBoard][chID][icell] += bin_width[iBoard][chID][(j + triggerCellHeader.trigger_cell) % 1024];
+                        }
+                        // time[iboard][chID][icell] = time_buf[iboard][chID][icell]; // Set Tree data
+                    }
+                    
                     adcSum[iBoard][chID] += waveform[iBoard][chID][icell];     // Set Tree data
                     DEBUG_PRINT(3, "bd%d ch%d cell%d:, v=%f, sum=%f\n", iBoard, chID, icell, waveform[iBoard][chID][icell], adcSum[iBoard][chID]);
                 }
