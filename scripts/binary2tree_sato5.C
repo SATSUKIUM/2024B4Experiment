@@ -267,10 +267,6 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                     printf("\n");
             }
         }
-
-    //efficiently calculate time[numOfBoard][4][1024] 
-
-
     Int_t numOfBoards = how_many_boards;
 
     Int_t serialNumber[numOfBoards]; //"numOfBoards" is not zero-index.
