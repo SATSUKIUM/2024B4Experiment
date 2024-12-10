@@ -241,6 +241,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                 break;
             }
             chID = channelHeader.chName[2] - '0' - 1; // = 0,1,2,3
+            printf("\nTime Bin Width found\n");
             printf("\t\tBoard ID : %d (zero index) || ", how_many_boards);
             printf("Channel %d (ch1-4):\n", chID + 1);
             fread(&bin_width[how_many_boards][chID][0], sizeof(float), 1024, f);
@@ -252,6 +253,21 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
             }
         }
     }
+
+        if(0){
+            for(int icell=0; icell<1024; icell++){
+                printf("iCell : %d || ",icell);
+                    for(int ib=0; ib<how_many_boards; ib++){
+                        for(int ich=0; ich<4; ich++){
+                            printf("%f ",bin_width[ib][ich][icell]);
+                        }
+                        printf(" || ");
+                    }
+                    printf("\n");
+            }
+        }
+
+
     Int_t numOfBoards = how_many_boards;
 
     Int_t serialNumber[numOfBoards]; //"numOfBoards" is not zero-index.
@@ -306,9 +322,6 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
         }
     }
 
-    
-    
-    
 
     //--------------------------------------------------
     // Initialize statistics
@@ -327,7 +340,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
         {
             break;
         }
-        if(eventHeader.event_serial_number%1000 == 0){
+        if(eventHeader.event_serial_number%10000 == 0){
             printf("Found event #%d %d %d\n", eventHeader.event_serial_number, eventHeader.second, eventHeader.millisecond);
         }
         
