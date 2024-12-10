@@ -394,7 +394,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
                     if(iBoard*4+chID +1 >= 4){
-                        if(voltage_buf < thr_V){
+                        if(voltage_buf < thr_V*0.001){
                             flag_b4exp_trig = 1;
                         }
                     }
