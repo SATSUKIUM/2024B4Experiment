@@ -202,14 +202,13 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
     TTimeStamp *eventTime = new TTimeStamp;
     treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
     //
-    for (Int_t i = 0; i < numOfBoards; i++)
-    {
-        treeDRS4BoardEvent->Branch("triggerCell", triggerCell, "triggerCell[numOfBoards]/I");
-        treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
-        treeDRS4BoardEvent->Branch("waveform", waveform, "waveform[numOfBoards][4][1024]/D");
-        treeDRS4BoardEvent->Branch("time", time, "time[numOfBoards][4][1024]/D");
-        treeDRS4BoardEvent->Branch("adcSum", adcSum, "adcSum[numOfBoards][4]/D");
-    }
+
+    //iBoardについてforループがあったけど、いらないと判断したので削除
+    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, "triggerCell[numOfBoards]/I");
+    treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
+    treeDRS4BoardEvent->Branch("waveform", waveform, "waveform[numOfBoards][4][1024]/D");
+    treeDRS4BoardEvent->Branch("time", time, "time[numOfBoards][4][1024]/D");
+    treeDRS4BoardEvent->Branch("adcSum", adcSum, "adcSum[numOfBoards][4]/D");
 
     //--------------------------------------------------
     // Read first headers
