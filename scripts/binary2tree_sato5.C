@@ -252,7 +252,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
             }
         }
     }
-    Int_t numOfBoards = how_many_boards+1;
+    Int_t numOfBoards = how_many_boards;
 
     Int_t serialNumber[numOfBoards]; //"numOfBoards" is not zero-index.
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
@@ -280,6 +280,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
     treeDRS4BoardInfo->Fill();
     treeDRS4BoardInfo->Print();
     treeDRS4BoardInfo->Write();
+
     //--------------------------------------------------
     // Define a tree for board events
     //--------------------------------------------------
@@ -290,13 +291,13 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
     //
 
     //iBoardについてforループがあったけど、いらないと判断したので削除
-    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, "triggerCell[numOfBoards]/I");
+    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));
     // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
-    treeDRS4BoardEvent->Branch("waveform", waveform, "waveform[numOfBoards][4][1024]/D");
-    treeDRS4BoardEvent->Branch("time", time, "time[numOfBoards][4][1024]/D");
-    treeDRS4BoardEvent->Branch("adcSum", adcSum, "adcSum[numOfBoards][4]/D");
+    treeDRS4BoardEvent->Branch("waveform", waveform, Form("waveform[%d][4][1024]/D", numOfBoards));
+    // treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
+    treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
 
-    for(Int_t iBoard=0; iBoard<how_many_boards; iBoard++){
+    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
         // set tree data
         for(Int_t iCh=0; iCh<4; iCh++){
             for(Int_t iCell=0; iCell<1024; iCell++){
@@ -305,6 +306,8 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
         }
     }
 
+    
+    
     
 
     //--------------------------------------------------
@@ -381,6 +384,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                     break;
                 }
                 chID = channelHeader.chName[2] - '0' - 1; // = 0,1,2,3
+
                 fread(&scaler_buf, sizeof(int), 1, f); //scaler means ??
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
