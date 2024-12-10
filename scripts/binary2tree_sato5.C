@@ -146,7 +146,7 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
+int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
 {
     Int_t flag_b4exp_event_selection = 0;
     int flag_b4exp_trig = 0;
