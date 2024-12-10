@@ -1,4 +1,14 @@
 /*======================================================================================================
+ Name:           binary2tree_kashima.C
+ Created by:     Akira Sato<sato@phys.sci.osaka-u.ac.jp>
+ Modified by:    Shunichi Kashima <>
+ Date:           Dec 10, 2024
+
+ Purpose:        Example macro to convert a binary data file saved by DRSOsc to a root tree file.
+
+ Notion:         mainly optimmized the calculation in time[numOfBoards][4][1024]. Extremely faster.
+ */
+/*======================================================================================================
  Name:           binary2tree_sato4.C
  Created by:     Akira Sato<sato@phys.sci.osaka-u.ac.jp>
  Modified by:    Shunichi Kashima <>
@@ -399,7 +409,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                 }
                 chID = channelHeader.chName[2] - '0' - 1; // = 0,1,2,3
 
-                fread(&scaler_buf, sizeof(int), 1, f); //scaler means ??
+                // fread(&scaler_buf, sizeof(int), 1, f); //scaler means ??
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
                 adcSum[iBoard][chID] = 0;
