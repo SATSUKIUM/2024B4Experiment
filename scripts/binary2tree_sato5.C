@@ -146,8 +146,10 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", const Int_t how_many_boards = 1, const Int_t debug_frag = 0)
+int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", Int_t how_many_boards = 1, const Int_t debug_frag = 0)
 {
+    Int_t numOfBoards = how_many_boards; //default argument
+
     FileHeader fileHeader;
     TimeHeader timeHeader;
     BoardHeader boardHeader;
@@ -176,9 +178,8 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
     }
 
     TFile f_root(Form("%s.root", binaryDataFile), "recreate");
-    Int_t numOfBoards = how_many_boards;
-    Int_t serialNumber[numOfBoards]; //see this. "numOfBoards" is not zero-index.
-    Double_t timeBinWidth[numOfBoards][4][1024];
+    
+    int serialNumber_buf[16]; //daisy-chain is allowed with up to 16 boards.
 
     Int_t triggerCell[numOfBoards];
     UInt_t scaler[numOfBoards][4];
@@ -186,29 +187,7 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
     Double_t time[numOfBoards][4][1024];
     Double_t adcSum[numOfBoards][4];
 
-    //--------------------------------------------------
-    // Define a tree for board infomation
-    //--------------------------------------------------
-    auto treeDRS4BoardInfo = new TTree("treeDRS4BoardInfo", "a tree for information of each DRS4 boards");
-    treeDRS4BoardInfo->Branch("numOfBoards", &numOfBoards, "numOfBoards/I");
-    //
-    treeDRS4BoardInfo->Branch("serialNumber", serialNumber, "serialNumber[numOfBoards]/I");
-    treeDRS4BoardInfo->Branch("timeBinWidth", timeBinWidth, "timeBinWidth[numOfBoards][4][1024]/D");
-    //--------------------------------------------------
-    // Define a tree for board events
-    //--------------------------------------------------
-    auto treeDRS4BoardEvent = new TTree("treeDRS4BoardEvent", "a tree for events of each DRS4 boards");
-    treeDRS4BoardEvent->Branch("numOfBoards", &numOfBoards, "numOfBoards/I");
-    TTimeStamp *eventTime = new TTimeStamp;
-    treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
-    //
-
-    //iBoardについてforループがあったけど、いらないと判断したので削除
-    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, "triggerCell[numOfBoards]/I");
-    treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
-    treeDRS4BoardEvent->Branch("waveform", waveform, "waveform[numOfBoards][4][1024]/D");
-    treeDRS4BoardEvent->Branch("time", time, "time[numOfBoards][4][1024]/D");
-    treeDRS4BoardEvent->Branch("adcSum", adcSum, "adcSum[numOfBoards][4]/D");
+    
 
     //--------------------------------------------------
     // Read first headers
@@ -238,8 +217,8 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
     // Get time calibration for each channels of each boards
     //--------------------------------------------------
     DEBUG_PRINT(1, "Getting time caliblation data %d ...\n", 1);
-    int iboard;
-    for (iboard = 0;; iboard++)
+    int how_many_boards;
+    for (how_many_boards = 0;; how_many_boards++)
     { // === Loop for boards
         // read board header
         fread(&boardHeader, sizeof(boardHeader), 1, f);
@@ -250,10 +229,10 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
             break;
         }
         printf("\tBoard serial number: %d\n", boardHeader.board_serial_number);
-        serialNumber[iboard] = boardHeader.board_serial_number; // Set Tree data
+        serialNumber_buf[how_many_boards] = boardHeader.board_serial_number; // Set Tree data
         // read time bin widths
         // memset(bin_width[iboard], sizeof(bin_width[0]), 0); // original
-        memset(bin_width[iboard], 0, sizeof(bin_width[0])); // Modified by A.Sato <- original was wrong?
+        memset(bin_width[how_many_boards], 0, sizeof(bin_width[0])); // Modified by A.Sato //bin_width[iBoard]の中身を全部ゼロで初期化
         for (int ich = 0; ich < 5; ich++)
         { // === Loop for channels
             fread(&channelHeader, sizeof(channelHeader), 1, f);
@@ -265,21 +244,59 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
             }
             chID = channelHeader.chName[2] - '0' - 1; // = 0,1,2,3
             printf("\t\tChannel %d (ch1-4):\n", chID + 1);
-            fread(&bin_width[iboard][chID][0], sizeof(float), 1024, f);
+            fread(&bin_width[how_many_boards][chID][0], sizeof(float), 1024, f);
             // fix for 2048 bin mode: double channel
-            if (bin_width[iboard][chID][1023] > 10 || bin_width[iboard][chID][1023] < 0.01)
+            if (bin_width[how_many_boards][chID][1023] > 10 || bin_width[how_many_boards][chID][1023] < 0.01)
             {
                 for (int icell = 0; icell < 512; icell++)
-                    bin_width[iboard][chID][icell + 512] = bin_width[iboard][chID][icell];
-            }
-            for (int icell = 0; icell < 1024; icell++)
-            { // Set Tree data
-                timeBinWidth[iboard][chID][icell] = bin_width[iboard][chID][icell];
+                    bin_width[how_many_boards][chID][icell + 512] = bin_width[how_many_boards][chID][icell];
             }
         }
     }
 
-    numOfBoards = iboard;
+    Int_t serialNumber[how_many_boards]; //"numOfBoards" is not zero-index.
+    Double_t timeBinWidth[how_many_boards][4][1024];
+
+    //--------------------------------------------------
+    // Define a tree for board infomation
+    //--------------------------------------------------
+    auto treeDRS4BoardInfo = new TTree("treeDRS4BoardInfo", "a tree for information of each DRS4 boards");
+    treeDRS4BoardInfo->Branch("numOfBoards", &numOfBoards, "numOfBoards/I");
+    //
+    treeDRS4BoardInfo->Branch("serialNumber", serialNumber, "serialNumber[numOfBoards]/I");
+    treeDRS4BoardInfo->Branch("timeBinWidth", timeBinWidth, "timeBinWidth[numOfBoards][4][1024]/D");
+    //--------------------------------------------------
+    // Define a tree for board events
+    //--------------------------------------------------
+    auto treeDRS4BoardEvent = new TTree("treeDRS4BoardEvent", "a tree for events of each DRS4 boards");
+    treeDRS4BoardEvent->Branch("numOfBoards", &numOfBoards, "numOfBoards/I");
+    TTimeStamp *eventTime = new TTimeStamp;
+    treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
+    //
+
+    //iBoardについてforループがあったけど、いらないと判断したので削除
+    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, "triggerCell[numOfBoards]/I");
+    treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
+    treeDRS4BoardEvent->Branch("waveform", waveform, "waveform[numOfBoards][4][1024]/D");
+    treeDRS4BoardEvent->Branch("time", time, "time[numOfBoards][4][1024]/D");
+    treeDRS4BoardEvent->Branch("adcSum", adcSum, "adcSum[numOfBoards][4]/D");
+
+    for(Int_t iBoard=0; iBoard<how_many_boards; iBoard++){
+        // set tree data
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iCell=0; iCell<1024; iCell++){
+                timeBinWidth[iBoard][iCh][iCell] = bin_width[iBoard][iCh][iCell];
+            }
+        }
+    }
+
+
+
+
+
+
+
+    numOfBoards = how_many_boards;
     treeDRS4BoardInfo->Fill();
     treeDRS4BoardInfo->Print();
     treeDRS4BoardInfo->Write();
