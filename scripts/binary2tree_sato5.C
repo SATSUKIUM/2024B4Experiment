@@ -146,8 +146,13 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", const Int_t debug_frag = 0)
+int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
 {
+    Int_t flag_b4exp_event_selection = 0;
+    int flag_b4exp_trig = 0;
+    if(thr_V != 0.0){
+        flag_b4exp_event_selection = 1;
+    }
     FileHeader fileHeader;
     TimeHeader timeHeader;
     BoardHeader boardHeader;
@@ -166,6 +171,7 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
 
     int ndt;
     double threshold, sumdt, sumdt2;
+    double voltage_buf;
 
     // open the binary waveform file
     FILE *f = fopen(binaryDataFile, "rb");
@@ -334,6 +340,8 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
         //--------------------------------------------------
         for (Int_t iBoard = 0; iBoard < numOfBoards; iBoard++)
         {
+            flag_b4exp_trig = 0;
+
             // read board header
             fread(&boardHeader, sizeof(boardHeader), 1, f);
             if (memcmp(boardHeader.bn, "B#", 2) != 0)
@@ -380,7 +388,14 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
                 for (int icell = 0; icell < 1024; icell++)
                 {
                     // convert data to volts
-                    waveform[iBoard][chID][icell] = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5); //set tree data
+                    voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
+                    if(iBoard*4+chID +1 >= 4){
+                        if(voltage_buf < thr_V){
+                            flag_b4exp_trig = 1;
+                        }
+                    }
+                    
+                    waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
 
                     // // calculate time for this cell
@@ -396,7 +411,9 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
                 DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
             }
         }
-        treeDRS4BoardEvent->Fill();
+        if(flag_b4exp_trig != 0){
+            treeDRS4BoardEvent->Fill();
+        }
     } // end of event loop;
 
     treeDRS4BoardEvent->Print();
