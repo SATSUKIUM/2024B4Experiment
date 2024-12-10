@@ -254,7 +254,7 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
         // read time bin widths
         // memset(bin_width[iboard], sizeof(bin_width[0]), 0); // original
         memset(bin_width[iboard], 0, sizeof(bin_width[0])); // Modified by A.Sato <- original was wrong?
-        for (int ich = 0; ich < 5; ich++)
+        for (int ich = 0; ich < 4; ich++)
         { // === Loop for channels
             fread(&channelHeader, sizeof(channelHeader), 1, f);
             if (channelHeader.c[0] != 'C')
