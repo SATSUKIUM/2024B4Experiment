@@ -219,7 +219,8 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
             fseek(f, -4, SEEK_CUR);
             break;
         }
-        printf("\tBoard serial number: %d\n", boardHeader.board_serial_number);
+        printf("\tBoard found : %d board(s)\n", how_many_boards);
+        printf("\t\tBoard serial number: %d\n", boardHeader.board_serial_number);
         serialNumber_buf[how_many_boards] = boardHeader.board_serial_number; // Set Tree data
         // read time bin widths
         // memset(bin_width[iboard], sizeof(bin_width[0]), 0); // original
@@ -234,7 +235,8 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
                 break;
             }
             chID = channelHeader.chName[2] - '0' - 1; // = 0,1,2,3
-            printf("\t\tChannel %d (ch1-4):\n", chID + 1);
+            printf("\t\tBoard ID : %d (zero index) || ", how_many_boards);
+            printf("Channel %d (ch1-4):\n", chID + 1);
             fread(&bin_width[how_many_boards][chID][0], sizeof(float), 1024, f);
             // fix for 2048 bin mode: double channel
             if (bin_width[how_many_boards][chID][1023] > 10 || bin_width[how_many_boards][chID][1023] < 0.01)
@@ -244,10 +246,15 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
             }
         }
     }
-    Int_t numOfBoards = how_many_boards;
+    Int_t numOfBoards = how_many_boards+1;
 
-    Int_t serialNumber[how_many_boards]; //"numOfBoards" is not zero-index.
-    Double_t timeBinWidth[how_many_boards][4][1024];
+    Int_t serialNumber[numOfBoards]; //"numOfBoards" is not zero-index.
+    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        // set tree data
+        serialNumber[iBoard] = serialNumber_buf[iBoard];
+    }
+
+    Double_t timeBinWidth[numOfBoards][4][1024];
 
     Int_t triggerCell[numOfBoards];
     UInt_t scaler[numOfBoards][4];
@@ -261,20 +268,24 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
     auto treeDRS4BoardInfo = new TTree("treeDRS4BoardInfo", "a tree for information of each DRS4 boards");
     treeDRS4BoardInfo->Branch("numOfBoards", &numOfBoards, "numOfBoards/I");
     //
-    treeDRS4BoardInfo->Branch("serialNumber", serialNumber, "serialNumber[numOfBoards]/I");
-    treeDRS4BoardInfo->Branch("timeBinWidth", timeBinWidth, "timeBinWidth[numOfBoards][4][1024]/D");
+    treeDRS4BoardInfo->Branch("serialNumber", serialNumber, Form("serialNumber[%d]/I", numOfBoards));
+    treeDRS4BoardInfo->Branch("timeBinWidth", timeBinWidth, Form("timeBinWidth[%d][4][1024]/D", numOfBoards));
+
+    treeDRS4BoardInfo->Fill();
+    treeDRS4BoardInfo->Print();
+    treeDRS4BoardInfo->Write();
     //--------------------------------------------------
     // Define a tree for board events
     //--------------------------------------------------
     auto treeDRS4BoardEvent = new TTree("treeDRS4BoardEvent", "a tree for events of each DRS4 boards");
-    treeDRS4BoardEvent->Branch("numOfBoards", &numOfBoards, "numOfBoards/I");
+    // treeDRS4BoardEvent->Branch("numOfBoards", &numOfBoards, "numOfBoards/I"); //Infoにあるからいらないよね。
     TTimeStamp *eventTime = new TTimeStamp;
     treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
     //
 
     //iBoardについてforループがあったけど、いらないと判断したので削除
     treeDRS4BoardEvent->Branch("triggerCell", triggerCell, "triggerCell[numOfBoards]/I");
-    treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
+    // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i");
     treeDRS4BoardEvent->Branch("waveform", waveform, "waveform[numOfBoards][4][1024]/D");
     treeDRS4BoardEvent->Branch("time", time, "time[numOfBoards][4][1024]/D");
     treeDRS4BoardEvent->Branch("adcSum", adcSum, "adcSum[numOfBoards][4]/D");
@@ -288,9 +299,7 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
         }
     }
 
-    treeDRS4BoardInfo->Fill();
-    treeDRS4BoardInfo->Print();
-    treeDRS4BoardInfo->Write();
+    
 
     //--------------------------------------------------
     // Initialize statistics
@@ -323,7 +332,7 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
         //--------------------------------------------------
         // Loop over all boards in data file for event data
         //--------------------------------------------------
-        for (iboard = 0; iboard < numOfBoards; iboard++)
+        for (Int_t iBoard = 0; iBoard < numOfBoards; iBoard++)
         {
             // read board header
             fread(&boardHeader, sizeof(boardHeader), 1, f);
@@ -344,7 +353,7 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
             else
             {
                 DEBUG_PRINT(1, "   Trigger cell: %d\n", triggerCellHeader.trigger_cell);
-                triggerCell[iboard] = triggerCellHeader.trigger_cell; // Set Tree data
+                triggerCell[iBoard] = triggerCellHeader.trigger_cell; // Set Tree data
             }
             if (numOfBoards > 1)
             {
@@ -367,24 +376,24 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", cons
                 fread(&scaler_buf, sizeof(int), 1, f); //scaler means ??
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
-                adcSum[iboard][chID] = 0;
+                adcSum[iBoard][chID] = 0;
                 for (int icell = 0; icell < 1024; icell++)
                 {
                     // convert data to volts
-                    waveform_buf[iboard][chID][icell] = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
-                    waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
+                    waveform[iBoard][chID][icell] = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5); //set tree data
+                    // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
 
-                    // calculate time for this cell
-                    time_buf[iboard][chID][icell] = 0;
-                    for (int j = 1; j < icell; j++)
-                    {
-                        time_buf[iboard][chID][icell] += bin_width[iboard][chID][(j + triggerCellHeader.trigger_cell) % 1024];
-                    }
-                    time[iboard][chID][icell] = time_buf[iboard][chID][icell]; // Set Tree data
-                    adcSum[iboard][chID] += waveform[iboard][chID][icell];     // Set Tree data
-                    DEBUG_PRINT(3, "bd%d ch%d cell%d:, v=%f, sum=%f\n", iboard, chID, icell, waveform[iboard][chID][icell], adcSum[iboard][chID]);
+                    // // calculate time for this cell
+                    // time_buf[iboard][chID][icell] = 0;
+                    // for (int j = 1; j < icell; j++)
+                    // {
+                    //     time_buf[iboard][chID][icell] += bin_width[iboard][chID][(j + triggerCellHeader.trigger_cell) % 1024];
+                    // }
+                    // time[iboard][chID][icell] = time_buf[iboard][chID][icell]; // Set Tree data
+                    adcSum[iBoard][chID] += waveform[iBoard][chID][icell];     // Set Tree data
+                    DEBUG_PRINT(3, "bd%d ch%d cell%d:, v=%f, sum=%f\n", iBoard, chID, icell, waveform[iBoard][chID][icell], adcSum[iBoard][chID]);
                 }
-                DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iboard, chID, adcSum[iboard][chID]);
+                DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
             }
         }
         treeDRS4BoardEvent->Fill();
