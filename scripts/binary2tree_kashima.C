@@ -1,4 +1,14 @@
 /*======================================================================================================
+ Name:           binary2tree_kashima.C
+ Created by:     Akira Sato<sato@phys.sci.osaka-u.ac.jp>
+ Modified by:    Shunichi Kashima <>
+ Date:           Dec 10, 2024
+
+ Purpose:        Example macro to convert a binary data file saved by DRSOsc to a root tree file.
+
+ Notion:         mainly optimmized the calculation in time[numOfBoards][4][1024]. Extremely faster.
+ */
+/*======================================================================================================
  Name:           binary2tree_sato4.C
  Created by:     Akira Sato<sato@phys.sci.osaka-u.ac.jp>
  Modified by:    Shunichi Kashima <>
