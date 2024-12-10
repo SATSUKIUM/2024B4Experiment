@@ -146,10 +146,8 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", Int_t how_many_boards = 1, const Int_t debug_frag = 0)
+int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", const Int_t debug_frag = 0)
 {
-    Int_t numOfBoards = how_many_boards; //default argument
-
     FileHeader fileHeader;
     TimeHeader timeHeader;
     BoardHeader boardHeader;
@@ -181,13 +179,6 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", Int_
     
     int serialNumber_buf[16]; //daisy-chain is allowed with up to 16 boards.
 
-    Int_t triggerCell[numOfBoards];
-    UInt_t scaler[numOfBoards][4];
-    Double_t waveform[numOfBoards][4][1024];
-    Double_t time[numOfBoards][4][1024];
-    Double_t adcSum[numOfBoards][4];
-
-    
 
     //--------------------------------------------------
     // Read first headers
@@ -253,9 +244,16 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", Int_
             }
         }
     }
+    Int_t numOfBoards = how_many_boards;
 
     Int_t serialNumber[how_many_boards]; //"numOfBoards" is not zero-index.
     Double_t timeBinWidth[how_many_boards][4][1024];
+
+    Int_t triggerCell[numOfBoards];
+    UInt_t scaler[numOfBoards][4];
+    Double_t waveform[numOfBoards][4][1024];
+    Double_t time[numOfBoards][4][1024];
+    Double_t adcSum[numOfBoards][4];
 
     //--------------------------------------------------
     // Define a tree for board infomation
@@ -290,13 +288,6 @@ int binary2tree_sato4(const Char_t *binaryDataFile = "../data/test001.dat", Int_
         }
     }
 
-
-
-
-
-
-
-    numOfBoards = how_many_boards;
     treeDRS4BoardInfo->Fill();
     treeDRS4BoardInfo->Print();
     treeDRS4BoardInfo->Write();
