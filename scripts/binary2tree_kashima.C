@@ -451,12 +451,13 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
 
                     if(TIME_FLAG && flag_b4exp_trig != 0){
-                        cumulative_time_buf = cumulative_time_bin[iBoard][chID][icell] - cumulative_time_bin[iBoard][chID][triggerCell[iBoard]];
+                        cumulative_time_buf = cumulative_time_bin[iBoard][chID][(icell+triggerCell[iBoard])%1024] - cumulative_time_bin[iBoard][chID][triggerCell[iBoard]];
                         if(cumulative_time_buf >= 0){
                             time[iBoard][chID][icell] = cumulative_time_buf;
                         }
                         else{
-                            time[iBoard][chID][icell] = cumulative_time_bin[iBoard][chID][icell] + cumulative_time_buf;
+                            // time[iBoard][chID][icell] = cumulative_time_bin[iBoard][chID][1023] + cumulative_time_buf;
+                            time[iBoard][chID][icell] = 1024 + cumulative_time_buf;
                         }
 
                         // // calculate time for this cell
