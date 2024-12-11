@@ -28,6 +28,7 @@ Please read the macro for the detail.
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TTree.h>
+#include <TGraphErrors.h>
 
 #include <fstream>
 #include <filesystem>
@@ -777,5 +778,40 @@ Double_t DRS4Ana::Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0){
 
 
 Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    TGraphErrors *graph = new TGraphErrors(nentries);
+    graph->SetTitle(Form("scatter plot : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
+    graph->SetMarkerStyle(21);
+    graph->SetMarkerSize(1);
     
+    TCanvas *canvas = new TCanvas("canvas", "title", 800, 600);
+
+    Double_t x_p0, x_p1, y_p0, y_p1; //fitting parameter
+    Double_t x_p0_e, x_p1_e, y_p0_e ,y_p1_e; //error of the fitting parameter
+    x_p0 = 0.0;
+    x_p1 = 1.0;
+    y_p0 = 0.0;
+    y_p1 = 1.0;
+    // x_p0_e = 1.0; //no need to use
+    x_p1_e = 1.0;
+    // y_p0_e = 1.0; //no need to use
+    y_p1_e = 1.0;
+    
+    
+    Double_t x_energy, y_energy, x_error, y_error;
+    for(Int_t pt_index=0; pt_index<nentries; pt_index++){
+        fChain->GetEntry(pt_index);
+
+        x_energy = x_p0 + x_p1*GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
+        y_energy = y_p0 + y_p1*GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);
+        x_error = x_p1_e*GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
+        y_error = y_p1_e*GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);
+
+        graph->SetPoint(pt_index, x_energy, y_energy);
+        graph->SetPointError(pt_index, x_error, y_error);
+        graph->Draw("AP");
+        canvas->Update();
+    }
 }
