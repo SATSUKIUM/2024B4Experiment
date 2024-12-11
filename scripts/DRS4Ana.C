@@ -868,7 +868,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
-    fH2Energy_PMTs = new TH2F("name", "title", 200, 0, 1500, 200, 0, 1500);
+    fH2Energy_PMTs = new TH2F("name", "title", 200, 0, 600, 200, 0, 600);
     fH2Energy_PMTs->SetTitle(Form("2D hist : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
     fH2Energy_PMTs->Draw();
 
