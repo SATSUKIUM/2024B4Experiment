@@ -206,11 +206,11 @@ void DRS4Ana::Init(TTree *tree)
     fCurrent = -1;
     fChain->SetMakeClass(1);
 
-    fChain->SetBranchAddress("numOfBoards", &fNumOfBoards, &b_numOfBoards);
+    // fChain->SetBranchAddress("numOfBoards", &fNumOfBoards, &b_numOfBoards);
     fChain->SetBranchAddress("fSec", &fEventTimeInSec, &b_eventTimeInSec);
     fChain->SetBranchAddress("fNanoSec", &fEventTimeInNanoSec, &b_eventTimeInNanoSec);
     fChain->SetBranchAddress("triggerCell", fTriggerCell, &b_triggerCell);
-    fChain->SetBranchAddress("scaler", fScaler, &b_scaler);
+    // fChain->SetBranchAddress("scaler", fScaler, &b_scaler);
     fChain->SetBranchAddress("waveform", fWaveform, &b_waveform);
     fChain->SetBranchAddress("time", fTime, &b_time);
     fChain->SetBranchAddress("adcSum", fAdcSum, &b_adcSum);

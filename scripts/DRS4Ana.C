@@ -781,12 +781,16 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
+    TCanvas *canvas = new TCanvas("canvas", "title", 800, 800);
     TGraphErrors *graph = new TGraphErrors(nentries);
+    graph->Draw();
     graph->SetTitle(Form("scatter plot : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
     graph->SetMarkerStyle(21);
-    graph->SetMarkerSize(1);
+    graph->SetMarkerSize(0.3);
+    // graph->GetXaxis()->SetLimits(0, 1500); // X軸の範囲を設定
+    // graph->GetYaxis()->SetRangeUser(0, 1500); // Y軸の範囲を設定
     
-    TCanvas *canvas = new TCanvas("canvas", "title", 800, 600);
+    gPad->SetGrid();
 
     Double_t x_p0, x_p1, y_p0, y_p1; //fitting parameter
     Double_t x_p0_e, x_p1_e, y_p0_e ,y_p1_e; //error of the fitting parameter
@@ -798,20 +802,51 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
     x_p1_e = 1.0;
     // y_p0_e = 1.0; //no need to use
     y_p1_e = 1.0;
-    
+
+    if(x_iBoard == 0 && x_iCh == 0){
+        printf("\n\t[Message]: template used\n");
+        //for huruno_1 for HV 1350 V
+        x_p0 = 7.161;
+        x_p1 = -52.05;
+        // x_p0_e;
+        x_p1_e = 0.04491;
+    }
+    if(y_iBoard == 0 && y_iCh == 2){
+        printf("\n\t[Message]: template used\n");
+        //for sato_NaI for HV 1300 V
+        y_p0 = 17.62;
+        y_p1 = -39.94;
+        // x_p0_e;
+        y_p1_e = 0.02087;
+    }
     
     Double_t x_energy, y_energy, x_error, y_error;
+    Double_t x_charge_buf, y_charge_buf;
     for(Int_t pt_index=0; pt_index<nentries; pt_index++){
         fChain->GetEntry(pt_index);
 
-        x_energy = x_p0 + x_p1*GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
-        y_energy = y_p0 + y_p1*GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);
-        x_error = x_p1_e*GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
-        y_error = y_p1_e*GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);
+        x_charge_buf = GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
+        y_charge_buf =GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);//下で何回か使うので、そのたびにchargeIntの計算をしたくない。
+
+        x_energy = x_p0 + x_p1*x_charge_buf;
+        y_energy = y_p0 + y_p1*y_charge_buf;
+        x_error = x_p1_e*x_charge_buf;
+        y_error = y_p1_e*y_charge_buf;
 
         graph->SetPoint(pt_index, x_energy, y_energy);
         graph->SetPointError(pt_index, x_error, y_error);
         graph->Draw("AP");
-        canvas->Update();
+        // canvas->Update();
+
+        if(pt_index % 500 == 0){
+            printf("\tPoint plot : %d\n", pt_index);
+        }
+        counter++;
+        
     }
+    // graph->GetXaxis()->SetLimits(0, 1500); // X軸の範囲を設定
+    // graph->GetYaxis()->SetRangeUser(0, 1500); // Y軸の範囲を設定
+    canvas->Update();
+
+    return counter;
 }
