@@ -109,6 +109,7 @@ public:
     virtual Double_t GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10, Double_t trigger_voltage = -0.025);
     virtual Double_t Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0);
     virtual Double_t Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
+    virtual Double_t Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
 
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;
@@ -121,6 +122,7 @@ public:
     TH2F *fH2Filtered_Overlay_Waves = NULL;
     TH2F *fH2Waveform0 = NULL;
     TH2F *fH2Waveform1 = NULL;
+    TH2F *fH2Energy_PMTs = NULL;
 
 private:
     Double_t fTimeBinWidthInNanoSec;

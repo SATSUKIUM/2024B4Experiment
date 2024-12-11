@@ -29,6 +29,7 @@ Please read the macro for the detail.
 #include <TFitResultPtr.h>
 #include <TTree.h>
 #include <TGraphErrors.h>
+#include <TLine.h>
 
 #include <fstream>
 #include <filesystem>
@@ -781,7 +782,7 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 800, 800);
+    TCanvas *canvas = new TCanvas("canvas", "title", 800, 600);
     TGraphErrors *graph = new TGraphErrors(nentries);
     graph->Draw();
     graph->SetTitle(Form("scatter plot : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
@@ -806,18 +807,18 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
     if(x_iBoard == 0 && x_iCh == 0){
         printf("\n\t[Message]: template used\n");
         //for huruno_1 for HV 1350 V
-        x_p0 = 7.161;
-        x_p1 = -52.05;
+        x_p0 = -52.05;
+        x_p1 = 7.161;
         // x_p0_e;
-        x_p1_e = 0.04491;
+        x_p1_e = 0.0006377;
     }
     if(y_iBoard == 0 && y_iCh == 2){
         printf("\n\t[Message]: template used\n");
         //for sato_NaI for HV 1300 V
-        y_p0 = 17.62;
-        y_p1 = -39.94;
+        y_p0 = -39.94;
+        y_p1 = 17.62;
         // x_p0_e;
-        y_p1_e = 0.02087;
+        y_p1_e = 0.0009443;
     }
     
     Double_t x_energy, y_energy, x_error, y_error;
@@ -825,8 +826,8 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
     for(Int_t pt_index=0; pt_index<nentries; pt_index++){
         fChain->GetEntry(pt_index);
 
-        x_charge_buf = GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
-        y_charge_buf =GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);//下で何回か使うので、そのたびにchargeIntの計算をしたくない。
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);//下で何回か使うので、そのたびにchargeIntの計算をしたくない。
 
         x_energy = x_p0 + x_p1*x_charge_buf;
         y_energy = y_p0 + y_p1*y_charge_buf;
@@ -835,7 +836,7 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
 
         graph->SetPoint(pt_index, x_energy, y_energy);
         graph->SetPointError(pt_index, x_error, y_error);
-        graph->Draw("AP");
+        
         // canvas->Update();
 
         if(pt_index % 500 == 0){
@@ -844,9 +845,104 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
         counter++;
         
     }
-    // graph->GetXaxis()->SetLimits(0, 1500); // X軸の範囲を設定
-    // graph->GetYaxis()->SetRangeUser(0, 1500); // Y軸の範囲を設定
+    graph->GetXaxis()->SetLimits(0, 1500); // X軸の範囲を設定
+    graph->GetYaxis()->SetRangeUser(0, 1500); // Y軸の範囲を設定
+    graph->Draw("AP");
     canvas->Update();
 
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
+    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/%s.pdf", filename_figure.Data()));
+    
+    return counter;
+}
+
+Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 800, 600);
+    if(fH2Energy_PMTs != NULL){
+        delete fH2Energy_PMTs;
+    }
+    fH2Energy_PMTs = new TH2F("name", "title", 200, 0, 1500, 200, 0, 1500);
+    fH2Energy_PMTs->SetTitle(Form("2D hist : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
+    fH2Energy_PMTs->Draw();
+
+    
+    
+    gPad->SetGrid();
+    gPad->SetLogz();
+    // gStyle->SetPalette(kInvertedDarkBodyRadiator);
+
+    Double_t x_p0, x_p1, y_p0, y_p1; //fitting parameter
+    Double_t x_p0_e, x_p1_e, y_p0_e ,y_p1_e; //error of the fitting parameter
+    x_p0 = 0.0;
+    x_p1 = 1.0;
+    y_p0 = 0.0;
+    y_p1 = 1.0;
+    // x_p0_e = 1.0; //no need to use
+    x_p1_e = 1.0;
+    // y_p0_e = 1.0; //no need to use
+    y_p1_e = 1.0;
+
+    if(x_iBoard == 0 && x_iCh == 0){
+        printf("\n\t[Message]: template used\n");
+        //for huruno_1 for HV 1350 V
+        x_p0 = -52.05;
+        x_p1 = 7.161;
+        // x_p0_e;
+        x_p1_e = 0.0006377;
+    }
+    if(y_iBoard == 0 && y_iCh == 2){
+        printf("\n\t[Message]: template used\n");
+        //for sato_NaI for HV 1300 V
+        y_p0 = -39.94;
+        y_p1 = 17.62;
+        // x_p0_e;
+        y_p1_e = 0.0009443;
+    }
+    
+    Double_t x_energy, y_energy, x_error, y_error;
+    Double_t x_charge_buf, y_charge_buf;
+    for(Int_t Entry=0; Entry<nentries; Entry++){
+        fChain->GetEntry(Entry);
+
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);
+
+        x_energy = x_p0 + x_p1*x_charge_buf;
+        y_energy = y_p0 + y_p1*y_charge_buf;
+
+        fH2Energy_PMTs->Fill(x_energy, y_energy);
+
+
+        if(Entry % 500 == 0){
+            printf("\tPoint plot : %d\n", Entry);
+        }
+        counter++;
+        
+    }
+    fH2Energy_PMTs->Draw();
+
+
+    TLine *line = new TLine(0, 511, 511,0);
+    line->SetLineColor(kGray);
+    line->SetLineWidth(2);
+    line->Draw("SAME");
+
+
+    canvas->Update();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
+    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/fH2Energy_PMTs_%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/fH2Energy_PMTs_%s.pdf", filename_figure.Data()));
+    
     return counter;
 }
