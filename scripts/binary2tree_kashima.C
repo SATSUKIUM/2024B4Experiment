@@ -183,6 +183,7 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
     int ndt;
     double threshold, sumdt, sumdt2;
     double voltage_buf;
+    double cumulative_time_buf;
 
     // open the binary waveform file
     FILE *f = fopen(binaryDataFile, "rb");
@@ -437,6 +438,9 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                 {
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
+                    if(flag_b4exp_event_selection == 0){
+                        flag_b4exp_trig =1;
+                    }
                     if(iBoard*4+chID +1 >= 4){
                         if(voltage_buf < thr_V*0.001){
                             flag_b4exp_trig = 1;
@@ -447,10 +451,13 @@ int binary2tree_sato5(const Char_t *binaryDataFile = "../data/test001.dat", cons
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
 
                     if(TIME_FLAG && flag_b4exp_trig != 0){
-
-                        time[iBoard][chID][icell] = cumulative_time_bin[iBoard][chID][icell] - cumulative_time_bin[iBoard][chID][triggerCell[iBoard]];
-
-
+                        cumulative_time_buf = cumulative_time_bin[iBoard][chID][icell] - cumulative_time_bin[iBoard][chID][triggerCell[iBoard]];
+                        if(cumulative_time_buf >= 0){
+                            time[iBoard][chID][icell] = cumulative_time_buf;
+                        }
+                        else{
+                            time[iBoard][chID][icell] = cumulative_time_bin[iBoard][chID][icell] + cumulative_time_buf;
+                        }
 
                         // // calculate time for this cell
                         // time[iBoard][chID][icell] = 0;
