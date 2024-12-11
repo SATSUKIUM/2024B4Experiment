@@ -930,7 +930,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
 
 
     TLine *line = new TLine(0, 511, 511,0);
-    line->SetLineColor(kGray);
+    line->SetLineColor(kBlack);
     line->SetLineWidth(2);
     line->Draw("SAME");
 
