@@ -329,15 +329,10 @@ Double_t DRS4Ana::PlotChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut, Dou
             // fH1ChargeIntegral->Fill(17.41*(-chargeIntegral)-26.05); //for PMT for sato_NaI for -1300 V
             // fH1ChargeIntegral->Fill(10.76*(-chargeIntegral)-198.1); //for PMT for huruno_PMT_1 HV -1150 V
         }
-        if(jentry % 1000 == 0){
-            // std::cout << fTriggerCell[0] << std::endl;
-        }
     }
-    // fH1ChargeIntegral->SetMinimum(0);
-    // fH1ChargeIntegral->SetMaximum(600);
     fH1ChargeIntegral->Draw();
-    TString filename_figure;
-    filename_figure = Form("%s:ch%d_Charge_Integral_[%.1f,%.1f].pdf", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax);
+    TString filename = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'+1));
+    TString filename_figure = Form("%s:ch%d_Charge_Integral_[%.1f,%.1f].pdf", filename, iCh, fChargeIntegralTmin, fChargeIntegralTmax);
     c1->SaveAs(filename_figure);
     return (Double_t)counter;
 }
