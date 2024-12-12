@@ -946,3 +946,232 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     
     return counter;
 }
+
+//PlotEnergy: ukai is in charge.
+Double_t DRS4Ana::PlotEnergy(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax)
+{
+    Long64_t nentries = fChain->GetEntriesFast();
+
+    //Long64_t skipEntries = 16300; // スキップしたいエントリの数
+    //Long64_t start = nentries - skipEntries; // 除外する開始点
+
+    Long64_t counter = 0;
+
+    gStyle->SetOptStat(1);
+
+    TCanvas *c1 = new TCanvas("c1",
+                                    Form("%d:ch%d Plot Energy", iBoard, iCh), //absで絶対値
+                                    800, 600);
+    c1->Draw();
+
+    if (fH1ChargeIntegral != NULL)
+    {
+        delete fH1ChargeIntegral;
+    }
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s,Board%d,%dch", fRootFile.Data(), iBoard+1, iCh+1),
+                                 1000, xmin, xmax);
+    fH1ChargeIntegral->SetXTitle("Energy [keV]");
+    fH1ChargeIntegral->SetYTitle("[counts]");
+
+    Double_t a = 0.0, b = 0.0;
+
+    // iBoard と iCh に対応する a, b を設定
+    if (iBoard == 0) {
+        switch (iCh) {
+            case 0: a = 7.161; b = -52.05; break;  // huruno1
+            case 1: a = 4.005; b = -8.499; break;  // huruno2
+            case 2: a = 17.62; b = -39.94; break;  // sato
+            case 3: a = 39.36; b = 10.52; break;   // PMT4
+        }
+    } else if (iBoard == 1) {
+        switch (iCh) {
+            case 0: a = 39.36; b = 10.52; break;    // PMT2
+            case 1: a = 24.38; b = 8.1; break;      // PMTA
+            case 2: a = 0.0; b = 0.0; break;      // good (未設定)
+            case 3: a = 31.54; b = 15.59; break;  // PMT3
+        }
+    } else {
+        return -1;
+    }
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    //for (Long64_t jentry = 0; jentry < start; jentry++)
+    {
+        fChain->GetEntry(jentry);
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut);
+   
+
+        if (chargeIntegral > -9999.9)
+        {
+            counter++;
+            fH1ChargeIntegral->Fill(- a * chargeIntegral + b);
+        }
+
+    
+
+    }
+    // // 第2のピークに対するフィッティング
+     //TF1 *fitFunc1 = new TF1("fitFunc1", "gaus", 450, 550); // 第2ピークに対する範囲
+     //fH1ChargeIntegral->Fit(fitFunc1, "R");
+ // 第2のピークに対するフィッティング
+     //TF1 *fitFunc2 = new TF1("fitFunc2", "gaus", 1100, 1300); // 第2ピークに対する範囲
+    // fitFunc2->SetParameters(500, 10, 3); // 初期パラメータ
+    //fH1ChargeIntegral->Fit(fitFunc2, "R");
+    
+    fH1ChargeIntegral->Draw();
+    // fitFunc1->Draw("same");
+    // fitFunc2->Draw("same");
+
+    TString name;
+    name = Form("Board%dch%d.pdf",iBoard+1, iCh+1);
+    c1->SaveAs(name);
+
+    return (Double_t)counter;
+}
+
+//SumChargeIntegral: ukai is in charge.
+Double_t DRS4Ana::SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax)
+{
+    gStyle->SetOptStat(1); // 統計ボックス表示の有無 1が表示 0が非表示
+
+    // 前のキャンバスが存在する場合、削除する
+    TCanvas* existingCanvas = (TCanvas*)gROOT->FindObject("c1");
+    if (existingCanvas)
+    {
+        existingCanvas->Close(); // キャンバスを閉じる
+        delete existingCanvas;  // メモリ解放
+        existingCanvas = nullptr;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", 
+                               Form("%s:Board%dCh%d+Board%dCh%d SumChargeIntegral", fRootFile.Data(), iBoard1, iCh1+1, iBoard2, iCh2+1),
+                               800, 600);
+
+    if (fH1SumChargeIntegral != NULL)
+    {
+        delete fH1SumChargeIntegral;
+    }
+
+    fH1SumChargeIntegral = new TH1F("fH1SumChargeIntegral", 
+                                    Form("%s:Board%dCh%d+Board%dCh%d SumCharge Integral", fRootFile.Data(), iBoard1+1, iCh1+1, iBoard2+1, iCh2+1),
+                                    500, fChargeIntegralTmin, fChargeIntegralTmax);
+    fH1SumChargeIntegral->SetXTitle("Sum of Energy [keV]");
+    fH1SumChargeIntegral->SetYTitle("[count]");
+
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+    Double_t totalChargeIntegral = 0.0; // 合計値を保持する変数
+
+    Double_t a = 0.0, b = 0.0, c = 0.0, d = 0.0;
+
+    // iBoard1 と iCh1 に対応する a, b を設定
+    if (iBoard1 == 0) {
+        switch (iCh1) {
+            case 0: a = 7.161; b = -52.05; break;  // huruno1
+            case 1: a = 4.005; b = -8.499; break;  // huruno2
+        }
+    } else {
+        return -1;
+    }
+
+    // iBoard2 と iCh2 に対応する c, d を設定
+    if (iBoard2 == 0) {
+        switch (iCh2) {
+            case 2: c = 17.62; d = -39.94; break;  // sato
+            case 3: c = 39.36; d = 10.52; break;   // PMT4
+        }
+    } else if (iBoard2 == 1) {
+        switch (iCh2) {
+            case 0: c = 39.36; d = 10.52; break;    // PMT2
+            case 1: c = 24.38; d = 8.1; break;      // PMTA (未設定)
+            case 2: c = 0.0; d = 0.0; break;      // good (未設定)
+            case 3: c = 31.54; d = 15.59; break;  // PMT3
+        }
+    } else {
+        return -1;
+    }
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    {
+        fChain->GetEntry(jentry);
+
+        // 各チャンネルの Charge Integral を取得
+        Double_t chargeIntegral1 = GetChargeIntegral(iBoard1 , iCh1, Vcut);
+        Double_t chargeIntegral2 = GetChargeIntegral(iBoard2 , iCh2, Vcut);
+
+        // チャンネルに応じた変換
+        chargeIntegral1 = -a * chargeIntegral1 + b;
+        chargeIntegral2 = -c * chargeIntegral2 + d;
+
+        // Charge Integralが有効な場合のみ足し合わせる
+        if (chargeIntegral1 > -9999.9 && chargeIntegral2 > -9999.9)
+        {
+            counter++;
+            Double_t sumChargeIntegral = chargeIntegral1 + chargeIntegral2;
+            fH1SumChargeIntegral->Fill(sumChargeIntegral);
+            totalChargeIntegral += sumChargeIntegral; // 合計値に加算
+        }
+    }
+
+    
+
+     // ピークに対するフィッティング
+     TF1 *fitFunc1 = new TF1("fitFunc1", "gaus", 500, 520); // 第2ピークに対する範囲
+     fH1SumChargeIntegral->Fit(fitFunc1, "R");
+ 
+
+    fH1SumChargeIntegral->Draw();
+    fitFunc1->Draw("same");
+
+    TString name;
+    name = Form("Board%dch%d+Board%dch%d.pdf",iBoard1+1, iCh1+1, iBoard2+1, iCh2+1);
+    c1->SaveAs(name);
+    // 合計のCharge Integralを返す
+
+
+    return totalChargeIntegral;
+}
+
+
+//PlotWavesWithThreshold: ukai is in charge.
+Double_t DRS4Ana::PlotWavesWithThreshold(Int_t iBoard, Int_t iCh)
+{
+    TCanvas *c_wave = new TCanvas("c_canvas", fRootFile.Data(), 800, 600);
+    c_wave->Draw();
+
+    Long64_t nentries = fChain->GetEntriesFast();  // イベントの総数を取得
+
+    // 全てのイベントで最大電圧を確認
+    for (Long64_t i = 0; i < nentries; i++)
+    {
+        // 最大電圧を取得
+        Double_t maxVoltage = GetMaxVoltage(iBoard, iCh);
+        std::cout << "maxVoltage: " << maxVoltage << std::endl;
+
+        // 最大電圧が-10mVより大きい場合にのみ波形を描く
+         if (maxVoltage < -0.010)  // -0.01V (即ち-10mV) より大きい場合
+    {
+
+       //イベントIDに基づいて波形を描画
+            
+        PlotWave(iBoard, iCh, i);  // イベントIDはiを使用
+        
+        TObject* obj = gPad->GetListOfPrimitives()->Last();
+            if (obj) {
+                // TGraphやTH1Fの場合のみ色を設定
+                if (TGraph* graph = dynamic_cast<TGraph*>(obj)) {
+                    graph->SetLineColor(kBlack + i);  // イベントごとに色を変更
+                } else if (TH1F* hist = dynamic_cast<TH1F*>(obj)) {
+                    hist->SetLineColor(kBlack + i);  // イベントごとに色を変更
+                }
+            }
+        //c_wave->WaitPrimitive();
+    }
+    }
+
+    // 最後に描画を更新
+    c_wave->Update();
+    Long64_t counter = 0;
+    return counter;
+    
+}

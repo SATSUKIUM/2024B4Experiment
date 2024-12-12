@@ -110,6 +110,9 @@ public:
     virtual Double_t Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0);
     virtual Double_t Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual Double_t Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
+    virtual Double_t PlotEnergy(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax);
+    virtual Double_t SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax);
+    virtual Double_t PlotWavesWithThreshold(Int_t iBoard, Int_t iCh);
 
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;
@@ -123,6 +126,7 @@ public:
     TH2F *fH2Waveform0 = NULL;
     TH2F *fH2Waveform1 = NULL;
     TH2F *fH2Energy_PMTs = NULL;
+    TH1F *fH1SumChargeIntegral = NULL;
 
 private:
     Double_t fTimeBinWidthInNanoSec;
