@@ -332,7 +332,7 @@ Double_t DRS4Ana::PlotChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut, Dou
     }
     fH1ChargeIntegral->Draw();
     TString filename = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'+1));
-    TString filename_figure = Form("%s:ch%d_Charge_Integral_[%.1f,%.1f].pdf", filename.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax);
+    TString filename_figure = Form("./figure/%s:ch%d_Charge_Integral_[%.1f,%.1f].pdf", filename.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax);
     c1->SaveAs(filename_figure);
     return (Double_t)counter;
 }
