@@ -35,6 +35,10 @@ Please read the macro for the detail.
 #include <filesystem>
 #include <TSystem.h>
 
+#include <iomanip>
+#include <chrono>
+#include <ctime> //時刻情報
+
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
     gStyle->SetOptStat(0);
@@ -396,6 +400,7 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
 
 Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
 {
+    Int_t append_option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 0;
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -459,7 +464,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     std::vector<Double_t> sigmas_mean;
     std::vector<Double_t> sigmas_gaus;
     std::vector<TFitResultPtr> fitresults;
-    Double_t fitrange = 2.0;
+    Double_t fitrange = 5.0;
     for(int i=0; i<foundPeaks; ++i){
         TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitrange, peakPositions[i]+fitrange); //要調整。特に範囲
         gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
@@ -483,10 +488,27 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
     rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
 
-    std::ofstream ofs(Form("./output/%s_data.txt",rootFile.Data()));
+    std::ofstream ofs;
+    if(append_option == 1){
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()), std::ios::app);
+    }
+    else{
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
+    }
+    
     auto mean_temp = means.begin();
     auto sigma_mean_temp = sigmas_mean.begin();
     auto sigma_gaus_temp = sigmas_gaus.begin();
+
+    if(append_option == 1){
+        ofs << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+        std::tm local_tm = *std::localtime(&now_c);
+
+        ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    }
     ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
     while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end()){
         ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
