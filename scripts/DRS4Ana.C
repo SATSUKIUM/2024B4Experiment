@@ -490,7 +490,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
 
     std::ofstream ofs;
     if(append_option == 1){
-        ofs.open(Form("./output/%s_data.txt",rootFile.Data()), std::ios::app);
+        ofs.open("./output/automated_peaksearch_data.txt", std::ios::app);
     }
     else{
         ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
@@ -501,7 +501,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     auto sigma_gaus_temp = sigmas_gaus.begin();
 
     if(append_option == 1){
-        ofs << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        ofs << std::endl << "=========================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
         auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
         std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
         std::tm local_tm = *std::localtime(&now_c);
