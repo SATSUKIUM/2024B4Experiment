@@ -449,6 +449,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
             // fH1ChargeIntegral->Fill(10.76*(-chargeIntegral)-198.1); //for PMT for huruno_PMT_1 HV -1150 V
         }
     }
+    gPad->SetGrid();
     fH1ChargeIntegral->Draw();
 
 
