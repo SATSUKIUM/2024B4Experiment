@@ -424,7 +424,14 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
 
         // Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。←しました。
 
-        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+        Double_t chargeIntegral;
+        if(timecut_Option == 1){
+            chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+        }
+        else{
+            chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, fWaveform[iBoard][iCh][0], fWaveform[iBoard][iCh][1023]); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+        }
+        
         if (chargeIntegral > -9999.9)
         {
             counter++;
