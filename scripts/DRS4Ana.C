@@ -464,7 +464,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     std::vector<Double_t> sigmas_mean;
     std::vector<Double_t> sigmas_gaus;
     std::vector<TFitResultPtr> fitresults;
-    Double_t fitrange = 5.0;
+    Double_t fitrange = 2.0;
     for(int i=0; i<foundPeaks; ++i){
         TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitrange, peakPositions[i]+fitrange); //要調整。特に範囲
         gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
