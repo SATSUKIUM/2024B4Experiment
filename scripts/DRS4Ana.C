@@ -1008,7 +1008,7 @@ Double_t DRS4Ana::PlotEnergy(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xm
     if (iBoard == 0) {
         switch (iCh) {
             case 0: a = 7.161; b = -52.05; break;  // huruno1
-            case 1: a = 4.005; b = -8.499; break;  // huruno2
+            case 1: a = (1.05586/0.919279)*4.005; b = -8.499; break;  // huruno2
             case 2: a = 17.62; b = -39.94; break;  // sato
             case 3: a = 39.36; b = 10.52; break;   // PMT4
         }
