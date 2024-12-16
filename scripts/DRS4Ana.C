@@ -540,8 +540,18 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
         }
     }
 
-    filename_figure = folderPath + Form("/%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
-    c1->SaveAs(filename_figure);
+    filename_figure = Form("%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
+
+    // 既にファイルが存在するか確認
+    Int_t index = 1;
+    while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
+        // ファイルが存在する場合、ファイル名にインデックスを追加
+        filename_figure = Form("%s:ch%d_automated_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        index++;
+    }
+
+    
+    c1->SaveAs(folderPath + '/' + filename_figure);
 
     return (Double_t)counter;
 }
