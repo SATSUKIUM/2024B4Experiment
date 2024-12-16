@@ -29,6 +29,7 @@ void energy_calb(TString input_Folder = "./output/"){
         index_data++;
     }
     ifs.close();
+    gPad->SetGrid();
     graph->SetTitle(";voltage_sum [V];Photoelectric peak energy [keV]");
     graph->SetMarkerStyle(20);
     graph->SetMarkerSize(0.5);
