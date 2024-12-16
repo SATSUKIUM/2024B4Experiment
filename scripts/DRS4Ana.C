@@ -1008,16 +1008,17 @@ Double_t DRS4Ana::PlotEnergy(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xm
     if (iBoard == 0) {
         switch (iCh) {
             case 0: a = 7.161; b = -52.05; break;  // huruno1
-            case 1: a = (1.05586/0.919279)*4.005; b = -8.499; break;  // huruno2
-            case 2: a = 17.62; b = -39.94; break;  // sato
+            // case 1: a = (1.05586/0.919279)*(0.6924)*4.005; b = -8.499; break;  // huruno2
+            case 1: a = (0.919279/1.05586)*(1/0.6924)*4.005; b = -8.499; break;  // huruno2
+            case 2: a = (31.0/29)*17.62; b = -39.94; break;  // sato
             case 3: a = 39.36; b = 10.52; break;   // PMT4
         }
     } else if (iBoard == 1) {
         switch (iCh) {
-            case 0: a = 39.36; b = 10.52; break;    // PMT2
-            case 1: a = 24.38; b = 8.1; break;      // PMTA
-            case 2: a = 0.0; b = 0.0; break;      // good (未設定)
-            case 3: a = 31.54; b = 15.59; break;  // PMT3
+            case 0: a = (12.5/8)*39.36; b = 10.52; break;    // PMT2
+            case 1: a = (34/20.5)*(0.7714/1.0687)*24.38; b = 8.1; break;      // PMTA
+            case 2: a = (0.7714/1.0687)*0.0; b = 0.0; break;      // good (未設定)
+            case 3: a = (25/16.0)*(0.7714/1.0687)*31.54; b = 15.59; break;  // PMT3
         }
     } else {
         return -1;
