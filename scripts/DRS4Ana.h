@@ -96,7 +96,7 @@ public:
     virtual Double_t PlotMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
     virtual Double_t GetAbsMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0);
     virtual Double_t Output_chargeintegral(Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0);
-    virtual Double_t automated_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0, Int_t numPeaks = 10);
+    virtual Double_t automated_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0, Int_t numPeaks = 10, Double_t fitRange = 2.0);
     virtual void Output_EventTime(Int_t iCh = 0);
     virtual Double_t PlotTriggerRate(Int_t iCh = 0);
     virtual Double_t Overlay_PlotWaves(Int_t iCh = 0);

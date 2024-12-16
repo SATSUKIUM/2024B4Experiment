@@ -398,7 +398,7 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
+Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks, Double_t fitRange = 2.0)
 {
     Int_t append_option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 0;
@@ -465,9 +465,8 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     std::vector<Double_t> sigmas_mean;
     std::vector<Double_t> sigmas_gaus;
     std::vector<TFitResultPtr> fitresults;
-    Double_t fitrange = 2.0;
     for(int i=0; i<foundPeaks; ++i){
-        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitrange, peakPositions[i]+fitrange); //要調整。特に範囲
+        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
         gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
         std::cout << "debug" << std::endl;
@@ -520,11 +519,28 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
     ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
     ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
-    ofs << "fitrange : " << fitrange << std::endl; // ピーク中心からの範囲
+    ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
     ofs.close();
     
 
-    filename_figure = Form("./figure/%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
+    // 1. 日付を取得
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm); // "YYYYMMDD"形式で日付を取得
+
+    // 2. フォルダパスを作成
+    TString folderPath = TString::Format("./figure/%s", date);
+
+    // 3. フォルダが存在しない場合は作成
+    if (gSystem->AccessPathName(folderPath)) {
+        if (gSystem->mkdir(folderPath, true) != 0) {
+            std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+            return -1;
+        }
+    }
+
+    filename_figure = folderPath + Form("/%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
     c1->SaveAs(filename_figure);
 
     return (Double_t)counter;
