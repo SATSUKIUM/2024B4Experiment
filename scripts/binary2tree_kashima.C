@@ -193,7 +193,14 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         return 0;
     }
 
-    TFile f_root(Form("%s.root", binaryDataFile), "recreate");
+    TString outputFilename;
+    if(flag_b4exp_event_selection == 1){
+        outputFilename = Form("%s_EventSelection.root", binaryDataFile);
+    }
+    else{
+        outputFilename = Form("%s.root", binaryDataFile);
+    }
+    TFile f_root(outputFilename, "recreate");
     
     int serialNumber_buf[16]; //daisy-chain is allowed with up to 16 boards.
 
