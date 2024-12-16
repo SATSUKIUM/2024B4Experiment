@@ -151,16 +151,40 @@ Double_t compare_DRS_CH(TString DIR_PATH = "../data/20241215/master/CH1_2", Int_
     // y軸の範囲を設定 (ゼロスタート)
     graph1->GetYaxis()->SetRangeUser(0, graph1->GetYaxis()->GetXmax());
 
+    // グラフ1の色を設定
+    Int_t graphColor = kRed;  // 例として赤に設定
+    graph1->SetLineColor(graphColor);  // グラフ1の線の色
+    graph1->SetMarkerColor(graphColor);  // グラフ1のマーカーの色
+    Int_t graphColor2 = kBlue;  // 例として青に設定
+    graph2->SetLineColor(graphColor2);
+    graph2->SetMarkerColor(graphColor2);
+
     // グラフ1に直線フィッティング
     TF1 *fit1 = new TF1("fit1", "pol1", 0, graph1->GetXaxis()->GetXmax());
+
+    // 直線の色をグラフの色に合わせる
+    fit1->SetLineColor(graphColor);
+
     fit1->SetNpx(1000);
     graph1->Fit(fit1, "R");  // "R"は範囲を指定してフィッティング
     
 
     // グラフ2に直線フィッティング
     TF1 *fit2 = new TF1("fit2", "pol1", 0, graph2->GetXaxis()->GetXmax());
+
+    fit2->SetLineColor(graphColor2);
+    
     fit2->SetNpx(1000);
     graph2->Fit(fit2, "R");  // "R"は範囲を指定してフィッティング
+    
+
+
+    
+    
+
+    
+
+    
     
 
     
