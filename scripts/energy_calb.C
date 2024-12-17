@@ -39,7 +39,7 @@ void energy_calb(TString input_Folder = "./output/"){
     }
     ifs.close();
     gPad->SetGrid();
-    graph->SetTitle(";voltage_sum [V];Photoelectric peak energy [keV]");
+    graph->SetTitle(Form("energy calibration form %s;voltage_sum [V];Photoelectric peak energy [keV]", input_Filepath.Data()));
     graph->SetMarkerStyle(20);
     graph->SetMarkerSize(0.5);
     gStyle->SetOptFit();
