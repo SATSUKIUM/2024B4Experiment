@@ -578,26 +578,30 @@ Double_t DRS4Ana::PlotTriggerRate(Int_t iCh = 0){
         delete fH1TriggerRate;
     }
 
+    //DAQの開始時刻と終了時刻の差をとる。
     fChain->GetEntry(0);
     Double32_t eventTime_begin = fEventTimeInSec + fEventTimeInNanoSec*10e-9; //time when started log
     Int_t eventTime_begin_InSec = fEventTimeInSec;
     fChain->GetEntry(nentries-1);
     Double32_t eventTime_end = fEventTimeInSec + fEventTimeInNanoSec*10e-9; //time when ended log
     Int_t eventTime_end_InSec = fEventTimeInSec;
+
     Int_t howLong_DAQ_spent = eventTime_end_InSec - eventTime_begin_InSec;
     std::cout << "how long DAQ spent: " << howLong_DAQ_spent << std::endl;
     // Double_t timeBin = howLong_DAQ_spent/10.0;
 
 
     // fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), static_cast<Int_t>(timeBin), eventTime_begin, eventTime_end);
-    fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), howLong_DAQ_spent, eventTime_begin, eventTime_end);
+
+    //秒数を60で割って、60sあたりのトリガー数を入れたい
+    fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), howLong_DAQ_spent/60.0, 0, howLong_DAQ_spent);
     fH1TriggerRate->SetXTitle("time [s]");
-    fH1TriggerRate->SetYTitle("[counts]");
+    fH1TriggerRate->SetYTitle("[counts]/1min");
 
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        fH1TriggerRate->Fill(fEventTimeInSec+fEventTimeInNanoSec*10e-9);
+        fH1TriggerRate->Fill(-eventTime_begin_InSec+fEventTimeInSec+fEventTimeInNanoSec*10e-9);
         counter++;
     }
     fH1TriggerRate->Draw();
