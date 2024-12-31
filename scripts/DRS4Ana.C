@@ -1235,3 +1235,140 @@ Double_t DRS4Ana::PlotWavesWithThreshold(Int_t iBoard, Int_t iCh)
     return counter;
     
 }
+
+Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks, Double_t fitRange = 2.0)
+{
+    Int_t append_option = 1; //1 for not to overwrite the output.
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    if (fH1MaxVoltage != NULL)
+    {
+        delete fH1MaxVoltage;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
+    fH1MaxVoltage = new TH1F("fH1MaxVoltage", Form("%s:ch%d SCA spectrum [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax),500, xmin, xmax);
+
+    gPad->SetGrid();
+    fH1MaxVoltage->SetXTitle("Max voltage [V]");//for voltage sum
+    fH1MaxVoltage->SetYTitle("[counts]/bin");
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    {
+        fChain->GetEntry(jentry);
+
+        // Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。←しました。
+        Double_t pulseHight = 0.0;
+        pulseHight = GetAbsMaxVoltage(0,0);
+        if( pulseHight > 0){
+            counter++;
+            fH1MaxVoltage->Fill(pulseHight);
+        }
+    }
+    
+    fH1MaxVoltage->Draw();
+
+
+    TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
+    spectrum->SetResolution(5); //
+    Double_t spec_sigma = 5.0;
+    Double_t spec_thr = 0.01;
+    Int_t foundPeaks = spectrum->Search(fH1MaxVoltage, spec_sigma, "", spec_thr); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
+    Double_t* peakPositions = spectrum->GetPositionX();
+
+    std::vector<TF1*> fits; //"gaus"フィッティングを複数格納するベクトル
+    std::vector<Double_t> means;
+    std::vector<Double_t> sigmas_mean;
+    std::vector<Double_t> sigmas_gaus;
+    std::vector<TFitResultPtr> fitresults;
+    for(int i=0; i<foundPeaks; ++i){
+        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
+        gaussian->SetParameters(fH1MaxVoltage->GetBinContent(fH1MaxVoltage->FindBin(peakPositions[i]), peakPositions[i], 1.0));
+        TFitResultPtr fit_result = fH1MaxVoltage->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
+        std::cout << "debug" << std::endl;
+        Int_t checking = fit_result->Status();
+        if(checking != 0){}
+        else{
+            fits.push_back(gaussian);
+            means.push_back(gaussian->GetParameter(1));
+            // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
+            sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
+            sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
+        }
+    }
+    c1->Update();
+
+    
+    
+    TString filename_figure;
+    TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
+    rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
+
+    std::ofstream ofs;
+    if(append_option == 1){
+        ofs.open("./output/SCA_peaksearch_data.txt", std::ios::app);
+    }
+    else{
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
+    }
+    
+    auto mean_temp = means.begin();
+    auto sigma_mean_temp = sigmas_mean.begin();
+    auto sigma_gaus_temp = sigmas_gaus.begin();
+
+    if(append_option == 1){
+        ofs << std::endl << "=========================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+        std::tm local_tm = *std::localtime(&now_c);
+
+        ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    }
+    ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
+    while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end()){
+        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
+        ++mean_temp;
+        ++sigma_mean_temp;
+        ++sigma_gaus_temp;
+    }
+    ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
+    ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
+    ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
+    ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
+    ofs.close();
+    
+
+    // 1. 日付を取得
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm); // "YYYYMMDD"形式で日付を取得
+
+    // 2. フォルダパスを作成
+    TString folderPath = TString::Format("./figure/%s", date);
+
+    // 3. フォルダが存在しない場合は作成
+    if (gSystem->AccessPathName(folderPath)) {
+        if (gSystem->mkdir(folderPath, true) != 0) {
+            std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+            return -1;
+        }
+    }
+
+    filename_figure = Form("%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
+
+    // 既にファイルが存在するか確認
+    Int_t index = 1;
+    while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
+        // ファイルが存在する場合、ファイル名にインデックスを追加
+        filename_figure = Form("%s:ch%d_automated_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        index++;
+    }
+
+    
+    c1->SaveAs(folderPath + '/' + filename_figure);
+
+    return (Double_t)counter;
+}
