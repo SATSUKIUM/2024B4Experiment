@@ -1260,7 +1260,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
 
         // Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。←しました。
         Double_t pulseHight = 0.0;
-        pulseHight = GetAbsMaxVoltage(0,0);
+        pulseHight = GetAbsMaxVoltage(iBoard, iCh);
         if( pulseHight > 0){
             counter++;
             fH1MaxVoltage->Fill(pulseHight);
@@ -1272,7 +1272,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
 
     TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
     spectrum->SetResolution(5); //
-    Double_t spec_sigma = 5.0;
+    Double_t spec_sigma = 0.05;
     Double_t spec_thr = 0.01;
     Int_t foundPeaks = spectrum->Search(fH1MaxVoltage, spec_sigma, "", spec_thr); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
     Double_t* peakPositions = spectrum->GetPositionX();
@@ -1357,13 +1357,13 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
         }
     }
 
-    filename_figure = Form("%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
+    filename_figure = Form("%s:ch%d_SCA_peaksearch.pdf", rootFile.Data(), iCh);
 
     // 既にファイルが存在するか確認
     Int_t index = 1;
     while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
-        filename_figure = Form("%s:ch%d_automated_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        filename_figure = Form("%s:ch%d_SCA_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
         index++;
     }
 
