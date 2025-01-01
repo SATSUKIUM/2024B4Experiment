@@ -924,9 +924,15 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     Long64_t counter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 800, 600);
+    canvas->Divide(3,1);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
+    TH1D *fH1EnergySpectra[2];
+    for(Int_t i=0; i<2; i++){
+        fH1EnergySpectra[i] = new TH1D("fH1EnergySpectra", Form("hist%d", i), 500, 0, 600);
+    }
+
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("2D hist : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
     fH2Energy_PMTs->Draw();
@@ -995,6 +1001,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
         y_energy = p0[1] + p1[1]*y_charge_buf;
 
         fH2Energy_PMTs->Fill(x_energy, y_energy);
+        fH1EnergySpectra[0]->Fill(x_energy);
+        fH1EnergySpectra[1]->Fill(y_energy);
 
 
         if(Entry % 500 == 0){
@@ -1003,7 +1011,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
         counter++;
         
     }
+    canvas->cd(1);
     fH2Energy_PMTs->Draw();
+    canvas->cd(2);
+    fH1EnergySpectra[0]->Draw();
+    canvas->cd(3);
+    fH1EnergySpectra[1]->Draw();
 
 
     TLine *line = new TLine(0, 511, 511,0);
