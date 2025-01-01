@@ -927,42 +927,60 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
-    fH2Energy_PMTs = new TH2F("name", "title", 200, 0, 600, 200, 0, 600);
+    fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("2D hist : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
     fH2Energy_PMTs->Draw();
 
-    
-    
     gPad->SetGrid();
     gPad->SetLogz();
-    // gStyle->SetPalette(kInvertedDarkBodyRadiator);
+    gStyle->SetOptStat(0);
 
-    Double_t x_p0, x_p1, y_p0, y_p1; //fitting parameter
-    Double_t x_p0_e, x_p1_e, y_p0_e ,y_p1_e; //error of the fitting parameter
-    x_p0 = 0.0;
-    x_p1 = 1.0;
-    y_p0 = 0.0;
-    y_p1 = 1.0;
-    // x_p0_e = 1.0; //no need to use
-    x_p1_e = 1.0;
-    // y_p0_e = 1.0; //no need to use
-    y_p1_e = 1.0;
+    //フィッティングパラメータを記録するベクトルの取り決め -> 要素はそれぞれ2つ。一つ目の要素はx軸のスケール、二つ目の要素はy軸のスケール
+    std::vector<Double_t> p0, p1;
+    std::vector<Double_t> p0_error, p1_error;
 
-    if(x_iBoard == 0 && x_iCh == 0){
-        printf("\n\t[Message]: template used\n");
-        //for huruno_1 for HV 1350 V
-        x_p0 = -52.05;
-        x_p1 = 7.161;
-        // x_p0_e;
-        x_p1_e = 0.0006377;
-    }
-    if(y_iBoard == 0 && y_iCh == 2){
-        printf("\n\t[Message]: template used\n");
-        //for sato_NaI for HV 1300 V
-        y_p0 = -39.94;
-        y_p1 = 17.62;
-        // x_p0_e;
-        y_p1_e = 0.0009443;
+    std::vector<Int_t> iBoards, iChs;
+    iBoards.push_back(x_iBoard);
+    iBoards.push_back(y_iBoard);
+    iChs.push_back(x_iCh);
+    iChs.push_back(y_iCh);
+
+    for(Int_t i=0; i<2; i++){
+        if(iBoards[i] == 0){
+            switch(iChs[i]){
+                case 0:
+                    p1.push_back(5.487);
+                    p0.push_back(-19.46);
+                    p1_error.push_back(0.002241);
+                    p0_error.push_back(0.08402);
+                    std::cout << "\t\tiB=0, iC=0" << std::endl;
+                break;
+                case 1:
+                    p1.push_back(6.078);
+                    p0.push_back(-42.98);
+                    p1_error.push_back(0.001818);
+                    p0_error.push_back(0.08929);
+                    std::cout << "\t\tiB=0, iC=1" << std::endl;
+                break;
+                case 2:
+                    p1.push_back(6.737);
+                    p0.push_back(-24.38);
+                    p1_error.push_back(0.004241);
+                    p0_error.push_back(0.1042);
+                    std::cout << "\t\tiB=0, iC=2" << std::endl;
+                break;
+                case 3:
+                    p1.push_back(12.05);
+                    p0.push_back(-10.61);
+                    p1_error.push_back(0.001818);
+                    p0_error.push_back(0.413);
+                    std::cout << "\t\tiB=0, iC=3" << std::endl;
+                break;
+            }
+        }
+        else{
+            std::cout <<"\tiBoard==1は工事中" << std::endl;
+        }
     }
     
     Double_t x_energy, y_energy, x_error, y_error;
@@ -970,11 +988,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
-        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
-        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1024);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1024);
 
-        x_energy = x_p0 + x_p1*x_charge_buf;
-        y_energy = y_p0 + y_p1*y_charge_buf;
+        x_energy = p0[0] + p1[0]*x_charge_buf;
+        y_energy = p0[1] + p1[1]*y_charge_buf;
 
         fH2Energy_PMTs->Fill(x_energy, y_energy);
 
