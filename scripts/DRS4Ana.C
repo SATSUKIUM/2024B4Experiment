@@ -1009,6 +1009,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
         
     }
     canvas->cd(1);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
     canvas->cd(2);
     fH1EnergySpectra[0]->Draw();
