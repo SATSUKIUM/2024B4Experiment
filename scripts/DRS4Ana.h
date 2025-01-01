@@ -115,6 +115,7 @@ public:
     virtual Double_t PlotWavesWithThreshold(Int_t iBoard, Int_t iCh);
     virtual Double_t automated_peaksearch_SCA_mode(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0, Int_t numPeaks = 10, Double_t fitRange = 2.0);
     virtual Double_t GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t timeCut_begin = 0, Double_t timeCut_end = 1024.0);
+    virtual Double_t time_divided_spectrum(Int_t divOfTime = 10);
 
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;

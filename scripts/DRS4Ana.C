@@ -39,6 +39,8 @@ Please read the macro for the detail.
 #include <chrono>
 #include <ctime> //時刻情報
 
+#include <TLegend.h>
+
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
     gStyle->SetOptStat(0);
@@ -427,27 +429,20 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     {
         fChain->GetEntry(jentry);
 
-        // Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。←しました。
-
         Double_t chargeIntegral;
         if(timecut_Option == 1){
             chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
             std::cout << "\tchargeIntegralTmin : " << Tmax_for_fH1CI-10 << std::endl << "\tchargeIntegralTmax : " << Tmax_for_fH1CI+300 << std::endl;
         }
         else{
-            chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, fTime[iBoard][iCh][0], fTime[iBoard][iCh][1023]); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+            chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, 0, 1024); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+            //std::cout << "\tchargeIntegralTmin : " << fTime[iBoard][iCh][0] << std::endl << "\tchargeIntegralTmax : " << fTime[iBoard][iCh][1023] << std::endl;
         }
         
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            // fH1ChargeIntegral->Fill(chargeIntegral);//元のコード
-            //PMTのパルスは負極性だからマイナスを付けた
             fH1ChargeIntegral->Fill(1.0*(-chargeIntegral)+0); //sum voltage
-            // fH1ChargeIntegral->Fill(52.926*(-chargeIntegral)+1.1751); //for PMT good for HV -1700 V
-            //fH1ChargeIntegral->Fill(52.926*(-chargeIntegral)+1.1751); //for PMT alpha for HV -1500 V
-            // fH1ChargeIntegral->Fill(17.41*(-chargeIntegral)-26.05); //for PMT for sato_NaI for -1300 V
-            // fH1ChargeIntegral->Fill(10.76*(-chargeIntegral)-198.1); //for PMT for huruno_PMT_1 HV -1150 V
         }
     }
     gPad->SetGrid();
@@ -1549,4 +1544,119 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     c1->SaveAs(folderPath + '/' + filename_figure);
 
     return (Double_t)counter;
+}
+
+Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
+    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = 10000;
+    Long64_t counter = 0;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
+    canvas->Divide(2,2);
+    gStyle->SetPalette(kCool);
+    TH1D* fH1EnergySpectra[2][4][divOfTime];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                fH1EnergySpectra[iBoard][iCh][iDiv] = new TH1D(Form("fH1EnergySpectra || iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), Form("iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), 500, 0, 1600);
+            }
+            canvas->cd(iBoard*4+iCh+1);
+            gPad->SetGrid();
+        }
+    }
+    gPad->SetGrid();
+    gStyle->SetOptStat(0);
+
+
+    Double_t p0[2][4], p1[2][4];
+    p0[0][0] = -19.46;
+    p1[0][0] = 5.487;
+    p0[0][1] = -42.98;
+    p1[0][1] = 6.078;
+    p0[0][2] = -24.38;
+    p1[0][2] = 6.737;
+    p0[0][3] = -10.61;
+    p1[0][3] = 12.05;//ため息が出る汚さ
+
+    Double_t p0_buf, p1_buf;
+    Double_t chargeInt_buf;
+    Int_t colorIndex_key, colorIndex;
+    TLegend* legend[2][4];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            legend[iBoard][iCh] = new TLegend(0.7, 0.5, 0.9, 0.9);
+        }
+    }
+
+    for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+        for(Int_t Entry = iDiv*(nentries/divOfTime); Entry<(iDiv+1)*(nentries/divOfTime); Entry++){
+            fChain->GetEntry(Entry);
+            counter++;
+            if(counter % 1000 == 0){
+                std::cout << "\tcounter : " << counter << std::endl;
+            }
+
+            for(Int_t iBoard=0; iBoard<2; iBoard++){
+                for(Int_t iCh=0; iCh<4; iCh++){
+                    p0_buf = p0[iBoard][iCh];
+                    p1_buf = p1[iBoard][iCh];
+
+                    canvas->cd(iBoard*4+iCh+1);
+
+                    if(iBoard == 0 && iCh == 3){
+                        chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 300, 800);
+                    }
+                    else{
+                        chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 0, 1023);
+                    }
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Fill(p0_buf+(-chargeInt_buf)*p1_buf);
+
+                }
+            }
+        }
+        for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                colorIndex = 255*iDiv/divOfTime;
+                colorIndex_key = TColor::GetColorPalette(colorIndex);
+                fH1EnergySpectra[iBoard][iCh][iDiv]->SetLineColor(colorIndex_key);
+            }
+        }
+    }
+
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                canvas->cd(iBoard*4+iCh+1);
+
+                if(iDiv == 0){
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw();
+                }
+                else{
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw("SAME");
+                }
+                legend[iBoard][iCh]->SetTextSize(0.03);
+                legend[iBoard][iCh]->SetBorderSize(1);
+                // 凡例にエントリを追加
+                TString legendLabel = Form("Time Div %d", iDiv + 1);
+                legend[iBoard][iCh]->AddEntry(fH1EnergySpectra[iBoard][iCh][iDiv], legendLabel, "l");
+                std::cout << Form("\tDraw : iBoard %d, iCh %d, iDiv %d", iBoard, iCh, iDiv) << std::endl;        
+            }
+        }
+    }
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            canvas->cd(iBoard*4+iCh + 1);
+            legend[iBoard][iCh]->Draw();
+        }
+    }
+    canvas->Update();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
+    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.pdf", filename_figure.Data()));
+    
+    return counter;
 }
