@@ -923,7 +923,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 800, 600);
+    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 600);
     canvas->Divide(3,1);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -935,6 +935,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
 
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("2D hist : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
+    canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
     gPad->SetGrid();
@@ -991,7 +992,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
-    for(Int_t Entry=0; Entry<nentries; Entry++){
+    for(Int_t Entry=0; Entry<10000; Entry++){
         fChain->GetEntry(Entry);
 
         x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1024);
@@ -1018,7 +1019,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     canvas->cd(3);
     fH1EnergySpectra[1]->Draw();
 
-
+    canvas->cd(1);
     TLine *line = new TLine(0, 511, 511,0);
     line->SetLineColor(kBlack);
     line->SetLineWidth(2);
