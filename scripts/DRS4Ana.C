@@ -432,6 +432,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
         Double_t chargeIntegral;
         if(timecut_Option == 1){
             chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+            std::cout << "\tchargeIntegralTmin : " << Tmax_for_fH1CI-10 << std::endl << "\tchargeIntegralTmax : " << Tmax_for_fH1CI+300 << std::endl;
         }
         else{
             chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, fTime[iBoard][iCh][0], fTime[iBoard][iCh][1023]); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
@@ -992,7 +993,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
-    for(Int_t Entry=0; Entry<10000; Entry++){
+    for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
         x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1024);
