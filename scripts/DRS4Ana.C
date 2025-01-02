@@ -62,7 +62,7 @@ void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 
     // c_adcsum->Print(Form("%s_ch%d_adcSum.pdf", fRootFile.Data(), iCh));
 }
-Int_t DRS4Ana::Makedir_Date(){
+TString DRS4Ana::Makedir_Date(){
     //YYYYMMDDのフォルダを作る関数。呼び出せば勝手にYYYYMMDDのフォルダができる。
     time_t now = time(0);
     tm *ltm = localtime(&now);
@@ -76,7 +76,7 @@ Int_t DRS4Ana::Makedir_Date(){
                 return -1;
         }
     }
-    return 0;
+    return (folderPath);
 }
 Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
     //例えば、"./figure/YYYYMMDD"というパスと、hoge.pdfを渡せば、そのディレクトリにhoge.pdfとhoge2.pdfが存在する場合に、渡した"hoge.pdf"を"hoge3.pdf"に変えてくれる関数
@@ -1055,16 +1055,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     canvas->Update();
 
     //保存用のディレクトリを作る
-    Makedir_Date();
+    TString folderPath = Makedir_Date();
 
-
-
-    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')) + "_fH2Energy_PMTs.pdf";
     filename_figure.ReplaceAll(".", "_");
-    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
-    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
-    canvas->SaveAs(Form("./figure/fH2Energy_PMTs_%s.png", filename_figure.Data()));
-    canvas->SaveAs(Form("./figure/fH2Energy_PMTs_%s.pdf", filename_figure.Data()));
+    printf("\n\tfigure saved as: %s/%s\n", folderPath, filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    canvas->SaveAs(folderPath + '/' + filename_figure);
     
     return counter;
 }
