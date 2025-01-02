@@ -63,7 +63,7 @@ void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
     // c_adcsum->Print(Form("%s_ch%d_adcSum.pdf", fRootFile.Data(), iCh));
 }
 Int_t DRS4Ana::Makedir_Date(){
-    //YYYYMMDDのフォルダを作る関数
+    //YYYYMMDDのフォルダを作る関数。呼び出せば勝手にYYYYMMDDのフォルダができる。
     time_t now = time(0);
     tm *ltm = localtime(&now);
     char date[9];
@@ -77,6 +77,18 @@ Int_t DRS4Ana::Makedir_Date(){
         }
     }
     return 0;
+}
+Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
+    //例えば、"./figure/YYYYMMDD"というパスと、hoge.pdfを渡せば、そのディレクトリにhoge.pdfとhoge2.pdfが存在する場合に、渡した"hoge.pdf"を"hoge3.pdf"に変えてくれる関数
+    Int_t index =1;
+    while(gSystem->AccessPathName(folderPath + '/' + fileName) == 0){
+        Int_t lastDotPos = fileName.Last('/');
+        TString beforeDot = fileName(0,lastDotPos-1);
+        TString afterDot = fileName(lastDotPos+1, fileName.Length()+1);
+        fileName = beforeDot + TString::Format("%d", index) + afterDot;
+        index++;
+    }
+    return index;
 }
 
 void DRS4Ana::PlotWave(Int_t iBoard, Int_t iCh, Int_t EventID)
