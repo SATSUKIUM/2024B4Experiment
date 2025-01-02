@@ -82,11 +82,12 @@ Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
     //例えば、"./figure/YYYYMMDD"というパスと、hoge.pdfを渡せば、そのディレクトリにhoge.pdfとhoge2.pdfが存在する場合に、渡した"hoge.pdf"を"hoge3.pdf"に変えてくれる関数
     Int_t index =1;
     while(gSystem->AccessPathName(folderPath + '/' + fileName) == 0){
-        Int_t lastDotPos = fileName.Last('/');
-        TString beforeDot = fileName(0,lastDotPos-1);
-        TString afterDot = fileName(lastDotPos+1, fileName.Length()+1);
+        Int_t lastDotPos = fileName.Last('.');
+        TString beforeDot = fileName(0, lastDotPos);
+        TString afterDot = fileName(lastDotPos, fileName.Length());
         fileName = beforeDot + TString::Format("%d", index) + afterDot;
         index++;
+        std::cout << Form("\tfilename : %s exists, rename...", fileName.Data()) << std::endl;
     }
     return index;
 }
@@ -1052,6 +1053,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
 
 
     canvas->Update();
+
+    //保存用のディレクトリを作る
+    Makedir_Date();
+
+
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
