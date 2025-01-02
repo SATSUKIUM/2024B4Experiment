@@ -1150,7 +1150,6 @@ Double_t DRS4Ana::PlotEnergy(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xm
     return (Double_t)counter;
 }
 
-//SumChargeIntegral: ukai is in charge.
 Double_t DRS4Ana::SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax)
 {
     gStyle->SetOptStat(1); // 統計ボックス表示の有無 1が表示 0が非表示
@@ -1253,8 +1252,6 @@ Double_t DRS4Ana::SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, In
     return totalChargeIntegral;
 }
 
-
-//PlotWavesWithThreshold: ukai is in charge.
 Double_t DRS4Ana::PlotWavesWithThreshold(Int_t iBoard, Int_t iCh)
 {
     TCanvas *c_wave = new TCanvas("c_canvas", fRootFile.Data(), 800, 600);
