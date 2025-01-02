@@ -62,6 +62,22 @@ void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 
     // c_adcsum->Print(Form("%s_ch%d_adcSum.pdf", fRootFile.Data(), iCh));
 }
+Int_t DRS4Ana::Makedir_Date(){
+    //YYYYMMDDのフォルダを作る関数
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm);
+    TString folderPath = TString::Format("./figure/%s", date);
+
+    if(gSystem->AccessPathName(folderPath)){
+        if(gSystem->mkdir(folderPath, true) != 0){
+                std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+                return -1;
+        }
+    }
+    return 0;
+}
 
 void DRS4Ana::PlotWave(Int_t iBoard, Int_t iCh, Int_t EventID)
 {
@@ -546,7 +562,6 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
         index++;
     }
 
-    
     c1->SaveAs(folderPath + '/' + filename_figure);
 
     return (Double_t)counter;
