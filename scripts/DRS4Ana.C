@@ -1315,8 +1315,6 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-
-        // Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。←しました。
         Double_t pulseHight = 0.0;
         pulseHight = GetAbsMaxVoltage(iBoard, iCh);
         if( pulseHight > 0){
