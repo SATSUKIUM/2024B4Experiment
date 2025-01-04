@@ -1071,6 +1071,22 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
 }
 
 Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 1500){
+    /*
+        エネルギー較正の式はかならずファイルから読み込むようにします。
+        ファイルの形式は上の行から
+        iBoard 0 iCh 0
+        iB 0 iC 1
+        iB 0 iC 2
+        iB 0 iC 3
+        iB 1 iC 0
+        iB 1 iC 1
+        iB 1 iC 2
+        iB 1 iC 3
+        とします。それぞれの行には4つ要素をスペース区切りで書きます。
+        エネルギー較正の式をp0+p1*xとすると、行の要素は
+        p0 Δp0 p1 Δp1 とします。
+        9行目より後は読み込まれないようにしてあるので、メモ用紙にでも使ってください。
+    */
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
