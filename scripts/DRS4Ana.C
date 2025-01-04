@@ -1109,6 +1109,9 @@ Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoar
             std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
         line_index++;
+        if(line_index == 8){
+            break;
+        }
     }
     ifs.close();
 
