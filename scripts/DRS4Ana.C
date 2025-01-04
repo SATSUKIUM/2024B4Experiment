@@ -41,6 +41,8 @@ Please read the macro for the detail.
 
 #include <TLegend.h>
 
+#include <fstream>
+
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
     gStyle->SetOptStat(0);
@@ -1067,85 +1069,67 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     return counter;
 }
 
-//PlotEnergy: ukai is in charge.
-Double_t DRS4Ana::PlotEnergy(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax)
-{
+Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax){
     Long64_t nentries = fChain->GetEntriesFast();
-
-    //Long64_t skipEntries = 16300; // スキップしたいエントリの数
-    //Long64_t start = nentries - skipEntries; // 除外する開始点
-
     Long64_t counter = 0;
+    gStyle->SetOptStat(0);
 
-    gStyle->SetOptStat(1);
-
-    TCanvas *c1 = new TCanvas("c1",
-                                    Form("%d:ch%d Plot Energy", iBoard, iCh), //absで絶対値
-                                    800, 600);
+    TCanvas *c1 = new TCanvas("c1", Form("%d:ch%d Plot Energy", iBoard, iCh), 800, 600);
     c1->Draw();
 
     if (fH1ChargeIntegral != NULL)
     {
         delete fH1ChargeIntegral;
     }
-    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s,Board%d,%dch", fRootFile.Data(), iBoard+1, iCh+1),
-                                 1000, xmin, xmax);
+
+    Int_t histDiv = 500;
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s,Board%d,%dch", fRootFile.Data(), iBoard, iCh), histDiv, xmin, xmax);
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
-    fH1ChargeIntegral->SetYTitle("[counts]");
+    fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
-    Double_t a = 0.0, b = 0.0;
-
-    // iBoard と iCh に対応する a, b を設定
-    if (iBoard == 0) {
-        switch (iCh) {
-            case 0: a = 7.161; b = -52.05; break;  // huruno1
-            // case 1: a = (1.05586/0.919279)*(0.6924)*4.005; b = -8.499; break;  // huruno2
-            case 1: a = (0.919279/1.05586)*(1/0.6924)*4.005; b = -8.499; break;  // huruno2
-            case 2: a = (31.0/29)*17.62; b = -39.94; break;  // sato
-            case 3: a = 39.36; b = 10.52; break;   // PMT4
+    Double_t p0_buf, p1_buf, p0e_buf,p1e_buf;
+    std::ifstream ifs(calbData);
+    Int_t line_index = 0;
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
+    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
+        if(line_index % 4 == line_index){
+            p0[0][line_index] = p0_buf;
+            p0e[0][line_index] = p0e_buf;
+            p1[0][line_index] = p1_buf;
+            p1e[0][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
-    } else if (iBoard == 1) {
-        switch (iCh) {
-            case 0: a = (12.5/8)*39.36; b = 10.52; break;    // PMT2
-            case 1: a = (34/20.5)*(0.7714/1.0687)*24.38; b = 8.1; break;      // PMTA
-            case 2: a = (0.7714/1.0687)*0.0; b = 0.0; break;      // good (未設定)
-            case 3: a = (25/16.0)*(0.7714/1.0687)*31.54; b = 15.59; break;  // PMT3
+        else if((line_index-4) % 4 == line_index){
+            p0[1][line_index] = p0_buf;
+            p0e[1][line_index] = p0e_buf;
+            p1[1][line_index] = p1_buf;
+            p1e[1][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 2, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
-    } else {
-        return -1;
     }
+    ifs.close();
 
-    for (Long64_t jentry = 0; jentry < nentries; jentry++)
-    //for (Long64_t jentry = 0; jentry < start; jentry++)
-    {
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
         fChain->GetEntry(jentry);
-        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut);
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, 0, 1023);
    
-
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            fH1ChargeIntegral->Fill(- a * chargeIntegral + b);
+            fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
         }
-
-    
-
     }
-    // // 第2のピークに対するフィッティング
-     //TF1 *fitFunc1 = new TF1("fitFunc1", "gaus", 450, 550); // 第2ピークに対する範囲
-     //fH1ChargeIntegral->Fit(fitFunc1, "R");
- // 第2のピークに対するフィッティング
-     //TF1 *fitFunc2 = new TF1("fitFunc2", "gaus", 1100, 1300); // 第2ピークに対する範囲
-    // fitFunc2->SetParameters(500, 10, 3); // 初期パラメータ
-    //fH1ChargeIntegral->Fit(fitFunc2, "R");
-    
     fH1ChargeIntegral->Draw();
-    // fitFunc1->Draw("same");
-    // fitFunc2->Draw("same");
 
-    TString name;
-    name = Form("Board%dch%d.pdf",iBoard+1, iCh+1);
-    c1->SaveAs(name);
+    //保存用のディレクトリを作る
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')) + "_energy_spectrum.pdf";
+    filename_figure.ReplaceAll(".", "_");
+    printf("\n\tfigure saved as: %s/%s\n", folderPath, filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    c1->SaveAs(folderPath + '/' + filename_figure);
 
     return (Double_t)counter;
 }
