@@ -30,6 +30,7 @@ Please read the macro for the detail.
 #include <TTree.h>
 #include <TGraphErrors.h>
 #include <TLine.h>
+#include <TPad.h>
 
 #include <fstream>
 #include <filesystem>
@@ -577,7 +578,7 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
         index++;
     }
 
-    c1->SaveAs(folderPath + '/' + filename_figure);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
 
     return (Double_t)counter;
 }
@@ -1061,21 +1062,22 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')) + "_fH2Energy_PMTs.pdf";
     filename_figure.ReplaceAll(".", "_");
-    printf("\n\tfigure saved as: %s/%s\n", folderPath, filename_figure.Data());
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
 
     IfFile_duplication(folderPath, filename_figure);
-    canvas->SaveAs(folderPath + '/' + filename_figure);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
     
     return counter;
 }
 
-Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax){
+Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 1500){
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
-    gStyle->SetOptStat(0);
 
     TCanvas *c1 = new TCanvas("c1", Form("%d:ch%d Plot Energy", iBoard, iCh), 800, 600);
     c1->Draw();
+    gStyle->SetOptStat(0);
+    gPad->SetGrid();
 
     if (fH1ChargeIntegral != NULL)
     {
@@ -1083,7 +1085,7 @@ Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoar
     }
 
     Int_t histDiv = 500;
-    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s,Board%d,%dch", fRootFile.Data(), iBoard, iCh), histDiv, xmin, xmax);
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s || Board %d, CH %d", fRootFile.Data(), iBoard, iCh), histDiv, xmin, xmax);
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
     fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
@@ -1097,15 +1099,16 @@ Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoar
             p0e[0][line_index] = p0e_buf;
             p1[0][line_index] = p1_buf;
             p1e[0][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
+            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
         else if((line_index-4) % 4 == line_index){
             p0[1][line_index] = p0_buf;
             p0e[1][line_index] = p0e_buf;
             p1[1][line_index] = p1_buf;
             p1e[1][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 2, iCh : %d || energy calibration data loaded.\n", line_index % 4);
+            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
+        line_index++;
     }
     ifs.close();
 
@@ -1124,12 +1127,13 @@ Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoar
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
 
-    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')) + "_energy_spectrum.pdf";
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-    printf("\n\tfigure saved as: %s/%s\n", folderPath, filename_figure.Data());
+    filename_figure += "_energy_spectrum.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
 
     IfFile_duplication(folderPath, filename_figure);
-    c1->SaveAs(folderPath + '/' + filename_figure);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
 
     return (Double_t)counter;
 }
