@@ -1594,7 +1594,7 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
             for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
-                fH1EnergySpectra[iBoard][iCh][iDiv] = new TH1D(Form("fH1EnergySpectra || iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), Form("iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), 500, 0, 600);
+                fH1EnergySpectra[iBoard][iCh][iDiv] = new TH1D(Form("fH1EnergySpectra || iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), Form("iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), 100, 0, 600);
             }
             canvas->cd(iBoard*4+iCh+1);
             gPad->SetGrid();
