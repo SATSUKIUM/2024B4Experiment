@@ -1682,10 +1682,12 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
             }
         }
     }
-    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+    if(divOfTime > 1){
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
             canvas->cd(iBoard*4+iCh + 1);
             legend[iBoard][iCh]->Draw();
+        }
         }
     }
     canvas->Update();
