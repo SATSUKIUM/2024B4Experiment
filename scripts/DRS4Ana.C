@@ -1640,7 +1640,8 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
                     canvas->cd(iBoard*4+iCh+1);
 
                     if(iBoard == 0 && iCh == 3){
-                        chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 300, 800);
+                        // chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 300, 800);
+                        chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 200, 450);
                     }
                     else{
                         chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 0, 1023);
