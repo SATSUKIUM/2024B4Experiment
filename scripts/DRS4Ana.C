@@ -1585,6 +1585,7 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
     // Long64_t nentries = fChain->GetEntriesFast();
     Long64_t nentries = 10000;
     Long64_t counter = 0;
+    Int_t numOfBoards = 1;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
     canvas->Divide(2,4);
@@ -1631,7 +1632,7 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
                 std::cout << "\tcounter : " << counter << std::endl;
             }
 
-            for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
                 for(Int_t iCh=0; iCh<4; iCh++){
                     p0_buf = p0[iBoard][iCh];
                     p1_buf = p1[iBoard][iCh];
@@ -1649,7 +1650,7 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
                 }
             }
         }
-        for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
             for(Int_t iCh=0; iCh<4; iCh++){
                 colorIndex = 255*iDiv/divOfTime;
                 colorIndex_key = TColor::GetColorPalette(colorIndex);
@@ -1658,7 +1659,7 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
         }
     }
 
-    for(Int_t iBoard=0; iBoard<2; iBoard++){
+    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
             for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
                 canvas->cd(iBoard*4+iCh+1);
@@ -1678,7 +1679,7 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
             }
         }
     }
-    for(Int_t iBoard=0; iBoard<2; iBoard++){
+    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
             canvas->cd(iBoard*4+iCh + 1);
             legend[iBoard][iCh]->Draw();
