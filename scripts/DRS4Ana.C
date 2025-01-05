@@ -1582,13 +1582,13 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
 }
 
 Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
-    // Long64_t nentries = fChain->GetEntriesFast();
-    Long64_t nentries = 10000;
+    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = 10000;
     Long64_t counter = 0;
     Int_t numOfBoards = 1;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
-    canvas->Divide(2,4);
+    canvas->Divide(2,numOfBoards);
     gStyle->SetPalette(kCool);
     TH1D* fH1EnergySpectra[2][4][divOfTime];
     for(Int_t iBoard=0; iBoard<2; iBoard++){
