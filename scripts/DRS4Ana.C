@@ -1589,7 +1589,9 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
 
     TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
     canvas->Divide(2,numOfBoards*2);
-    gStyle->SetPalette(kCool);
+    if(divOfTime>1){
+        gStyle->SetPalette(kCool);
+    }
     TH1D* fH1EnergySpectra[2][4][divOfTime];
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
