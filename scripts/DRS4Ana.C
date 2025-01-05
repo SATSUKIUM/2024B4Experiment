@@ -1070,7 +1070,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     return counter;
 }
 
-Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 1500){
+Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
     /*
         エネルギー較正の式はかならずファイルから読み込むようにします。
         ファイルの形式は上の行から
@@ -1090,7 +1090,7 @@ Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoar
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *c1 = new TCanvas("c1", Form("%d:ch%d Plot Energy", iBoard, iCh), 800, 600);
+    TCanvas *c1 = new TCanvas("c1", Form("%d:ch%d Plot Energy", iBoard, iCh), 1600, 1200);
     c1->Draw();
     gStyle->SetOptStat(0);
     gPad->SetGrid();
@@ -1100,7 +1100,7 @@ Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoar
         delete fH1ChargeIntegral;
     }
 
-    Int_t histDiv = 500;
+    Int_t histDiv = 200;
     fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s || Board %d, CH %d", fRootFile.Data(), iBoard, iCh), histDiv, xmin, xmax);
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
     fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
@@ -1582,12 +1582,12 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
 }
 
 Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
-    Long64_t nentries = fChain->GetEntriesFast();
-    // Long64_t nentries = 10000;
+    // Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t nentries = 10000;
     Long64_t counter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
-    canvas->Divide(2,2);
+    canvas->Divide(2,4);
     gStyle->SetPalette(kCool);
     TH1D* fH1EnergySpectra[2][4][divOfTime];
     for(Int_t iBoard=0; iBoard<2; iBoard++){
