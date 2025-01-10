@@ -1701,3 +1701,102 @@ Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
     
     return counter;
 }
+
+Double_t DRS4Ana::time_divided_adcSum(Int_t divOfTime = 10){
+    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = 10000;
+    Long64_t counter = 0;
+    Int_t numOfBoards = 1;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
+    canvas->Divide(2,numOfBoards*2);
+    if(divOfTime>1){
+        gStyle->SetPalette(kCool);
+    }
+    TH1D* fH1EnergySpectra[2][4][divOfTime];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                fH1EnergySpectra[iBoard][iCh][iDiv] = new TH1D(Form("fH1EnergySpectra || iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), Form("iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), 100, 0, 250);
+            }
+            canvas->cd(iBoard*4+iCh+1);
+            gPad->SetGrid();
+        }
+    }
+    gPad->SetGrid();
+    gStyle->SetOptStat(0);
+
+    Double_t chargeInt_buf;
+    Int_t colorIndex_key, colorIndex;
+    TLegend* legend[2][4];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            legend[iBoard][iCh] = new TLegend(0.7, 0.5, 0.9, 0.9);
+        }
+    }
+
+    for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+        for(Int_t Entry = iDiv*(nentries/divOfTime); Entry<(iDiv+1)*(nentries/divOfTime); Entry++){
+            fChain->GetEntry(Entry);
+            counter++;
+            if(counter % 1000 == 0){
+                std::cout << "\tcounter : " << counter << std::endl;
+            }
+
+            for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+                for(Int_t iCh=0; iCh<4; iCh++){
+                    canvas->cd(iBoard*4+iCh+1);
+                    chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 0, 1023);
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Fill(-chargeInt_buf);
+
+                }
+            }
+        }
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                colorIndex = 255*iDiv/divOfTime;
+                colorIndex_key = TColor::GetColorPalette(colorIndex);
+                fH1EnergySpectra[iBoard][iCh][iDiv]->SetLineColor(colorIndex_key);
+            }
+        }
+    }
+
+    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                canvas->cd(iBoard*4+iCh+1);
+
+                if(iDiv == 0){
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw();
+                }
+                else{
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw("SAME");
+                }
+                legend[iBoard][iCh]->SetTextSize(0.03);
+                legend[iBoard][iCh]->SetBorderSize(1);
+                // 凡例にエントリを追加
+                TString legendLabel = Form("Time Div %d", iDiv + 1);
+                legend[iBoard][iCh]->AddEntry(fH1EnergySpectra[iBoard][iCh][iDiv], legendLabel, "l");
+                std::cout << Form("\tDraw : iBoard %d, iCh %d, iDiv %d", iBoard, iCh, iDiv) << std::endl;        
+            }
+        }
+    }
+    if(divOfTime > 1){
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            canvas->cd(iBoard*4+iCh + 1);
+            legend[iBoard][iCh]->Draw();
+        }
+        }
+    }
+    canvas->Update();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
+    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.pdf", filename_figure.Data()));
+    
+    return counter;
+}
