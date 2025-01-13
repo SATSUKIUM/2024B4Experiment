@@ -63,6 +63,7 @@ ex) root[] binary2tree_sato3("../data/test001.dat")
 
 #define DEBUG 0
 #define TIME_FLAG 1
+#define DISCR_FLAG 1
 #define Thr_set -0.020 //DAQ時に設定したtrigger threshold
 
 #ifdef DEBUG
@@ -245,7 +246,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
             fseek(f, -4, SEEK_CUR);
             break;
         }
-        printf("\tBoard found : %d board(s)\n", how_many_boards);
+        printf("\tBoard found : %d board(s)\n", how_many_boards+1);
         printf("\t\tBoard serial number: %d\n", boardHeader.board_serial_number);
         serialNumber_buf[how_many_boards] = boardHeader.board_serial_number; // Set Tree data
         // read time bin widths
@@ -261,7 +262,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 break;
             }
             chID = channelHeader.chName[2] - '0' - 1; // = 0,1,2,3
-            printf("\nTime Bin Width found\n");
+            printf("\nTime Bin Width(timing calibration data) found\n");
             printf("\t\tBoard ID : %d (zero index) || ", how_many_boards);
             printf("Channel %d (ch1-4):\n", chID + 1);
             fread(&bin_width[how_many_boards][chID][0], sizeof(float), 1024, f);
@@ -353,7 +354,10 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
     }
     treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
-    treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
+    if(DISCR_FLAG){
+        treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
+    }
+    
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
         // set tree data
@@ -451,21 +455,25 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
                     if(flag_b4exp_event_selection == 0){
-                        flag_b4exp_trig =1;
+                        flag_b4exp_trig =1; //イベントセレクションするフラグが立ってなければ、立てる
                     }
                     if(iBoard*4+chID +1 >= 4 && voltage_buf < thr_V*0.001){
-                        flag_b4exp_trig = 1;
+                        flag_b4exp_trig = 1; //イベントセレクションをする
                     }
-                    if(voltage_buf < Thr_set){
-                        flag_discriCell++;
+
+                    if(DISCR_FLAG){
+                        if(voltage_buf < Thr_set){
+                        flag_discriCell++;// 閾値を超えていればフラグを進める
+                        }
+                        else{
+                            flag_discriCell = 0;//3回連続じゃなければフラグを元に戻す
+                        }
+                        if(flag_discriCell == 3 && flag_discriFirstCell == 0){
+                            flag_discriFirstCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
+                            discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
+                        }
                     }
-                    else{
-                        flag_discriCell = 0;
-                    }
-                    if(flag_discriCell == 3 && flag_discriFirstCell == 0){
-                        flag_discriFirstCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
-                        discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
-                    }
+                    
                     
                     waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
