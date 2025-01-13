@@ -121,6 +121,7 @@ public:
     virtual TString Makedir_Date();
     virtual Int_t IfFile_duplication(TString folderPath, TString &fileName);
     virtual Double_t Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0);
+    virtual Double_t NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 250.0, Int_t numPeaks = 10, Double_t fitRange = 3.0, Double_t adcTimeRange = 600.0);
 
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;
