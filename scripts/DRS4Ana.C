@@ -30,10 +30,19 @@ Please read the macro for the detail.
 #include <TTree.h>
 #include <TGraphErrors.h>
 #include <TLine.h>
+#include <TPad.h>
 
 #include <fstream>
 #include <filesystem>
 #include <TSystem.h>
+
+#include <iomanip>
+#include <chrono>
+#include <ctime> //時刻情報
+
+#include <TLegend.h>
+
+#include <fstream>
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
@@ -55,6 +64,35 @@ void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
     fChain->Draw(Form("-1.0*adcSum[%d][%d]>>fH1AdcSum", iBoard, iCh));
 
     // c_adcsum->Print(Form("%s_ch%d_adcSum.pdf", fRootFile.Data(), iCh));
+}
+TString DRS4Ana::Makedir_Date(){
+    //YYYYMMDDのフォルダを作る関数。呼び出せば勝手にYYYYMMDDのフォルダができる。
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm);
+    TString folderPath = TString::Format("./figure/%s", date);
+
+    if(gSystem->AccessPathName(folderPath)){
+        if(gSystem->mkdir(folderPath, true) != 0){
+                std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+                return -1;
+        }
+    }
+    return (folderPath);
+}
+Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
+    //例えば、"./figure/YYYYMMDD"というパスと、hoge.pdfを渡せば、そのディレクトリにhoge.pdfとhoge2.pdfが存在する場合に、渡した"hoge.pdf"を"hoge3.pdf"に変えてくれる関数
+    Int_t index =1;
+    while(gSystem->AccessPathName(folderPath + '/' + fileName) == 0){
+        Int_t lastDotPos = fileName.Last('.');
+        TString beforeDot = fileName(0, lastDotPos);
+        TString afterDot = fileName(lastDotPos, fileName.Length());
+        fileName = beforeDot + TString::Format("%d", index) + afterDot;
+        index++;
+        std::cout << Form("\tfilename : %s exists, rename...", fileName.Data()) << std::endl;
+    }
+    return index;
 }
 
 void DRS4Ana::PlotWave(Int_t iBoard, Int_t iCh, Int_t EventID)
@@ -394,8 +432,9 @@ Double_t DRS4Ana::Output_chargeintegral(Int_t iCh, Double_t Vcut, Double_t xmin,
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks)
+Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks, Double_t fitRange = 2.0)
 {
+    Int_t append_option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 0;
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -422,21 +461,23 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     {
         fChain->GetEntry(jentry);
 
-        // Int_t iBoard = 0; //今はとりあえずiBoardをここで宣言したが、ゆくゆくはautomaeted_peaksearchの引数にiBoard入れておきたい。←しました。
-
-        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+        Double_t chargeIntegral;
+        if(timecut_Option == 1){
+            chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, Tmax_for_fH1CI-10, Tmax_for_fH1CI+300); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+            std::cout << "\tchargeIntegralTmin : " << Tmax_for_fH1CI-10 << std::endl << "\tchargeIntegralTmax : " << Tmax_for_fH1CI+300 << std::endl;
+        }
+        else{
+            chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, 0, 1024); //電圧の和を取る時間の範囲を最後２つの変数に書いてる
+            //std::cout << "\tchargeIntegralTmin : " << fTime[iBoard][iCh][0] << std::endl << "\tchargeIntegralTmax : " << fTime[iBoard][iCh][1023] << std::endl;
+        }
+        
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            // fH1ChargeIntegral->Fill(chargeIntegral);//元のコード
-            //PMTのパルスは負極性だからマイナスを付けた
             fH1ChargeIntegral->Fill(1.0*(-chargeIntegral)+0); //sum voltage
-            // fH1ChargeIntegral->Fill(52.926*(-chargeIntegral)+1.1751); //for PMT good for HV -1700 V
-            //fH1ChargeIntegral->Fill(52.926*(-chargeIntegral)+1.1751); //for PMT alpha for HV -1500 V
-            // fH1ChargeIntegral->Fill(17.41*(-chargeIntegral)-26.05); //for PMT for sato_NaI for -1300 V
-            // fH1ChargeIntegral->Fill(10.76*(-chargeIntegral)-198.1); //for PMT for huruno_PMT_1 HV -1150 V
         }
     }
+    gPad->SetGrid();
     fH1ChargeIntegral->Draw();
 
 
@@ -452,9 +493,8 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     std::vector<Double_t> sigmas_mean;
     std::vector<Double_t> sigmas_gaus;
     std::vector<TFitResultPtr> fitresults;
-    Double_t fitrange = 2.0;
     for(int i=0; i<foundPeaks; ++i){
-        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitrange, peakPositions[i]+fitrange); //要調整。特に範囲
+        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
         gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
         std::cout << "debug" << std::endl;
@@ -476,10 +516,27 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
     rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
 
-    std::ofstream ofs(Form("./output/%s_data.txt",rootFile.Data()));
+    std::ofstream ofs;
+    if(append_option == 1){
+        ofs.open("./output/automated_peaksearch_data.txt", std::ios::app);
+    }
+    else{
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
+    }
+    
     auto mean_temp = means.begin();
     auto sigma_mean_temp = sigmas_mean.begin();
     auto sigma_gaus_temp = sigmas_gaus.begin();
+
+    if(append_option == 1){
+        ofs << std::endl << "=========================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+        std::tm local_tm = *std::localtime(&now_c);
+
+        ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    }
     ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
     while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end()){
         ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
@@ -490,12 +547,38 @@ Double_t DRS4Ana::automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, D
     ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
     ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
     ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
-    ofs << "fitrange : " << fitrange << std::endl; // ピーク中心からの範囲
+    ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
     ofs.close();
     
 
-    filename_figure = Form("./figure/%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
-    c1->SaveAs(filename_figure);
+    // 1. 日付を取得
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm); // "YYYYMMDD"形式で日付を取得
+
+    // 2. フォルダパスを作成
+    TString folderPath = TString::Format("./figure/%s", date);
+
+    // 3. フォルダが存在しない場合は作成
+    if (gSystem->AccessPathName(folderPath)) {
+        if (gSystem->mkdir(folderPath, true) != 0) {
+            std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+            return -1;
+        }
+    }
+
+    filename_figure = Form("%s:ch%d_automated_peaksearch.pdf", rootFile.Data(), iCh);
+
+    // 既にファイルが存在するか確認
+    Int_t index = 1;
+    while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
+        // ファイルが存在する場合、ファイル名にインデックスを追加
+        filename_figure = Form("%s:ch%d_automated_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        index++;
+    }
+
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
 
     return (Double_t)counter;
 }
@@ -522,26 +605,30 @@ Double_t DRS4Ana::PlotTriggerRate(Int_t iCh = 0){
         delete fH1TriggerRate;
     }
 
+    //DAQの開始時刻と終了時刻の差をとる。
     fChain->GetEntry(0);
     Double32_t eventTime_begin = fEventTimeInSec + fEventTimeInNanoSec*10e-9; //time when started log
     Int_t eventTime_begin_InSec = fEventTimeInSec;
     fChain->GetEntry(nentries-1);
     Double32_t eventTime_end = fEventTimeInSec + fEventTimeInNanoSec*10e-9; //time when ended log
     Int_t eventTime_end_InSec = fEventTimeInSec;
+
     Int_t howLong_DAQ_spent = eventTime_end_InSec - eventTime_begin_InSec;
     std::cout << "how long DAQ spent: " << howLong_DAQ_spent << std::endl;
     // Double_t timeBin = howLong_DAQ_spent/10.0;
 
 
     // fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), static_cast<Int_t>(timeBin), eventTime_begin, eventTime_end);
-    fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), howLong_DAQ_spent, eventTime_begin, eventTime_end);
+
+    //秒数を60で割って、60sあたりのトリガー数を入れたい
+    fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), howLong_DAQ_spent/60.0, 0, howLong_DAQ_spent);
     fH1TriggerRate->SetXTitle("time [s]");
-    fH1TriggerRate->SetYTitle("[counts]");
+    fH1TriggerRate->SetYTitle("[counts]/1min");
 
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
-        fH1TriggerRate->Fill(fEventTimeInSec+fEventTimeInNanoSec*10e-9);
+        fH1TriggerRate->Fill(-eventTime_begin_InSec+fEventTimeInSec+fEventTimeInNanoSec*10e-9);
         counter++;
     }
     fH1TriggerRate->Draw();
@@ -863,46 +950,71 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 800, 600);
+    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 600);
+    canvas->Divide(3,1);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
-    fH2Energy_PMTs = new TH2F("name", "title", 200, 0, 600, 200, 0, 600);
+    TH1D *fH1EnergySpectra[2];
+    for(Int_t i=0; i<2; i++){
+        fH1EnergySpectra[i] = new TH1D("fH1EnergySpectra", Form("hist%d", i), 500, 0, 600);
+    }
+
+    fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("2D hist : energy between two PMTs;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", x_iBoard, x_iCh, y_iBoard, y_iCh));
+    canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
-    
-    
     gPad->SetGrid();
     gPad->SetLogz();
-    // gStyle->SetPalette(kInvertedDarkBodyRadiator);
+    gStyle->SetOptStat(0);
 
-    Double_t x_p0, x_p1, y_p0, y_p1; //fitting parameter
-    Double_t x_p0_e, x_p1_e, y_p0_e ,y_p1_e; //error of the fitting parameter
-    x_p0 = 0.0;
-    x_p1 = 1.0;
-    y_p0 = 0.0;
-    y_p1 = 1.0;
-    // x_p0_e = 1.0; //no need to use
-    x_p1_e = 1.0;
-    // y_p0_e = 1.0; //no need to use
-    y_p1_e = 1.0;
+    //フィッティングパラメータを記録するベクトルの取り決め -> 要素はそれぞれ2つ。一つ目の要素はx軸のスケール、二つ目の要素はy軸のスケール
+    std::vector<Double_t> p0, p1;
+    std::vector<Double_t> p0_error, p1_error;
 
-    if(x_iBoard == 0 && x_iCh == 0){
-        printf("\n\t[Message]: template used\n");
-        //for huruno_1 for HV 1350 V
-        x_p0 = -52.05;
-        x_p1 = 7.161;
-        // x_p0_e;
-        x_p1_e = 0.0006377;
-    }
-    if(y_iBoard == 0 && y_iCh == 2){
-        printf("\n\t[Message]: template used\n");
-        //for sato_NaI for HV 1300 V
-        y_p0 = -39.94;
-        y_p1 = 17.62;
-        // x_p0_e;
-        y_p1_e = 0.0009443;
+    std::vector<Int_t> iBoards, iChs;
+    iBoards.push_back(x_iBoard);
+    iBoards.push_back(y_iBoard);
+    iChs.push_back(x_iCh);
+    iChs.push_back(y_iCh);
+
+    for(Int_t i=0; i<2; i++){
+        if(iBoards[i] == 0){
+            switch(iChs[i]){
+                case 0:
+                    p1.push_back(5.487);
+                    p0.push_back(-19.46);
+                    p1_error.push_back(0.002241);
+                    p0_error.push_back(0.08402);
+                    std::cout << "\t\tiB=0, iC=0" << std::endl;
+                break;
+                case 1:
+                    p1.push_back(6.078);
+                    p0.push_back(-42.98);
+                    p1_error.push_back(0.001818);
+                    p0_error.push_back(0.08929);
+                    std::cout << "\t\tiB=0, iC=1" << std::endl;
+                break;
+                case 2:
+                    p1.push_back(6.737);
+                    p0.push_back(-24.38);
+                    p1_error.push_back(0.004241);
+                    p0_error.push_back(0.1042);
+                    std::cout << "\t\tiB=0, iC=2" << std::endl;
+                break;
+                case 3:
+                    p1.push_back(12.05);
+                    p0.push_back(-10.61);
+                    p1_error.push_back(0.001818);
+                    p0_error.push_back(0.413);
+                    std::cout << "\t\tiB=0, iC=3" << std::endl;
+                break;
+            }
+        }
+        else{
+            std::cout <<"\tiBoard==1は工事中" << std::endl;
+        }
     }
     
     Double_t x_energy, y_energy, x_error, y_error;
@@ -910,13 +1022,15 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
-        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1020);
-        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1020);
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1024);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1024);
 
-        x_energy = x_p0 + x_p1*x_charge_buf;
-        y_energy = y_p0 + y_p1*y_charge_buf;
+        x_energy = p0[0] + p1[0]*x_charge_buf;
+        y_energy = p0[1] + p1[1]*y_charge_buf;
 
         fH2Energy_PMTs->Fill(x_energy, y_energy);
+        fH1EnergySpectra[0]->Fill(x_energy);
+        fH1EnergySpectra[1]->Fill(y_energy);
 
 
         if(Entry % 500 == 0){
@@ -925,9 +1039,16 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
         counter++;
         
     }
+    canvas->cd(1);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
+    canvas->cd(2);
+    fH1EnergySpectra[0]->Draw();
+    canvas->cd(3);
+    fH1EnergySpectra[1]->Draw();
 
-
+    canvas->cd(1);
     TLine *line = new TLine(0, 511, 511,0);
     line->SetLineColor(kBlack);
     line->SetLineWidth(2);
@@ -936,99 +1057,106 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
 
     canvas->Update();
 
-    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    //保存用のディレクトリを作る
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')) + "_fH2Energy_PMTs.pdf";
     filename_figure.ReplaceAll(".", "_");
-    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
-    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
-    canvas->SaveAs(Form("./figure/fH2Energy_PMTs_%s.png", filename_figure.Data()));
-    canvas->SaveAs(Form("./figure/fH2Energy_PMTs_%s.pdf", filename_figure.Data()));
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
     
     return counter;
 }
 
-//PlotEnergy: ukai is in charge.
-Double_t DRS4Ana::PlotEnergy(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax)
-{
+Double_t DRS4Ana::PlotEnergy(TString calbData = "./output/data.txt", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
+    /*
+        エネルギー較正の式はかならずファイルから読み込むようにします。
+        ファイルの形式は上の行から
+        iBoard 0 iCh 0
+        iB 0 iC 1
+        iB 0 iC 2
+        iB 0 iC 3
+        iB 1 iC 0
+        iB 1 iC 1
+        iB 1 iC 2
+        iB 1 iC 3
+        とします。それぞれの行には4つ要素をスペース区切りで書きます。
+        エネルギー較正の式をp0+p1*xとすると、行の要素は
+        p0 Δp0 p1 Δp1 とします。
+        9行目より後は読み込まれないようにしてあるので、メモ用紙にでも使ってください。
+    */
     Long64_t nentries = fChain->GetEntriesFast();
-
-    //Long64_t skipEntries = 16300; // スキップしたいエントリの数
-    //Long64_t start = nentries - skipEntries; // 除外する開始点
-
     Long64_t counter = 0;
 
-    gStyle->SetOptStat(1);
-
-    TCanvas *c1 = new TCanvas("c1",
-                                    Form("%d:ch%d Plot Energy", iBoard, iCh), //absで絶対値
-                                    800, 600);
+    TCanvas *c1 = new TCanvas("c1", Form("%d:ch%d Plot Energy", iBoard, iCh), 1600, 1200);
     c1->Draw();
+    gStyle->SetOptStat(0);
+    gPad->SetGrid();
 
     if (fH1ChargeIntegral != NULL)
     {
         delete fH1ChargeIntegral;
     }
-    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s,Board%d,%dch", fRootFile.Data(), iBoard+1, iCh+1),
-                                 1000, xmin, xmax);
+
+    Int_t histDiv = 200;
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s || Board %d, CH %d", fRootFile.Data(), iBoard, iCh), histDiv, xmin, xmax);
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
-    fH1ChargeIntegral->SetYTitle("[counts]");
+    fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
-    Double_t a = 0.0, b = 0.0;
-
-    // iBoard と iCh に対応する a, b を設定
-    if (iBoard == 0) {
-        switch (iCh) {
-            case 0: a = 7.161; b = -52.05; break;  // huruno1
-            case 1: a = 4.005; b = -8.499; break;  // huruno2
-            case 2: a = 17.62; b = -39.94; break;  // sato
-            case 3: a = 39.36; b = 10.52; break;   // PMT4
+    Double_t p0_buf, p1_buf, p0e_buf,p1e_buf;
+    std::ifstream ifs(calbData);
+    Int_t line_index = 0;
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
+    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
+        if(line_index % 4 == line_index){
+            p0[0][line_index] = p0_buf;
+            p0e[0][line_index] = p0e_buf;
+            p1[0][line_index] = p1_buf;
+            p1e[0][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
-    } else if (iBoard == 1) {
-        switch (iCh) {
-            case 0: a = 39.36; b = 10.52; break;    // PMT2
-            case 1: a = 24.38; b = 8.1; break;      // PMTA
-            case 2: a = 0.0; b = 0.0; break;      // good (未設定)
-            case 3: a = 31.54; b = 15.59; break;  // PMT3
+        else if((line_index-4) % 4 == line_index){
+            p0[1][line_index] = p0_buf;
+            p0e[1][line_index] = p0e_buf;
+            p1[1][line_index] = p1_buf;
+            p1e[1][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
-    } else {
-        return -1;
+        line_index++;
+        if(line_index == 8){
+            break;
+        }
     }
+    ifs.close();
 
-    for (Long64_t jentry = 0; jentry < nentries; jentry++)
-    //for (Long64_t jentry = 0; jentry < start; jentry++)
-    {
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
         fChain->GetEntry(jentry);
-        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut);
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, 0, 1023);
    
-
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            fH1ChargeIntegral->Fill(- a * chargeIntegral + b);
+            fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
         }
-
-    
-
     }
-    // // 第2のピークに対するフィッティング
-     //TF1 *fitFunc1 = new TF1("fitFunc1", "gaus", 450, 550); // 第2ピークに対する範囲
-     //fH1ChargeIntegral->Fit(fitFunc1, "R");
- // 第2のピークに対するフィッティング
-     //TF1 *fitFunc2 = new TF1("fitFunc2", "gaus", 1100, 1300); // 第2ピークに対する範囲
-    // fitFunc2->SetParameters(500, 10, 3); // 初期パラメータ
-    //fH1ChargeIntegral->Fit(fitFunc2, "R");
-    
     fH1ChargeIntegral->Draw();
-    // fitFunc1->Draw("same");
-    // fitFunc2->Draw("same");
 
-    TString name;
-    name = Form("Board%dch%d.pdf",iBoard+1, iCh+1);
-    c1->SaveAs(name);
+    //保存用のディレクトリを作る
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    filename_figure += "_energy_spectrum.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
 
     return (Double_t)counter;
 }
 
-//SumChargeIntegral: ukai is in charge.
 Double_t DRS4Ana::SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax)
 {
     gStyle->SetOptStat(1); // 統計ボックス表示の有無 1が表示 0が非表示
@@ -1131,8 +1259,6 @@ Double_t DRS4Ana::SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, In
     return totalChargeIntegral;
 }
 
-
-//PlotWavesWithThreshold: ukai is in charge.
 Double_t DRS4Ana::PlotWavesWithThreshold(Int_t iBoard, Int_t iCh)
 {
     TCanvas *c_wave = new TCanvas("c_canvas", fRootFile.Data(), 800, 600);
@@ -1173,4 +1299,515 @@ Double_t DRS4Ana::PlotWavesWithThreshold(Int_t iBoard, Int_t iCh)
     Long64_t counter = 0;
     return counter;
     
+}
+
+Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks, Double_t fitRange = 2.0)
+{
+    Int_t append_option = 1; //1 for not to overwrite the output.
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    if (fH1MaxVoltage != NULL)
+    {
+        delete fH1MaxVoltage;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
+    fH1MaxVoltage = new TH1F("fH1MaxVoltage", Form("%s:ch%d SCA spectrum [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax),500, xmin, xmax);
+
+    gPad->SetGrid();
+    fH1MaxVoltage->SetXTitle("Max voltage [V]");//for voltage sum
+    fH1MaxVoltage->SetYTitle("[counts]/bin");
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    {
+        fChain->GetEntry(jentry);
+        Double_t pulseHight = 0.0;
+        pulseHight = GetAbsMaxVoltage(iBoard, iCh);
+        if( pulseHight > 0){
+            counter++;
+            fH1MaxVoltage->Fill(pulseHight);
+        }
+    }
+    
+    fH1MaxVoltage->Draw();
+
+
+    TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
+    spectrum->SetResolution(5); //
+    Double_t spec_sigma = 0.05;
+    Double_t spec_thr = 0.01;
+    Int_t foundPeaks = spectrum->Search(fH1MaxVoltage, spec_sigma, "", spec_thr); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
+    Double_t* peakPositions = spectrum->GetPositionX();
+
+    std::vector<TF1*> fits; //"gaus"フィッティングを複数格納するベクトル
+    std::vector<Double_t> means;
+    std::vector<Double_t> sigmas_mean;
+    std::vector<Double_t> sigmas_gaus;
+    std::vector<TFitResultPtr> fitresults;
+    for(int i=0; i<foundPeaks; ++i){
+        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
+        gaussian->SetParameters(fH1MaxVoltage->GetBinContent(fH1MaxVoltage->FindBin(peakPositions[i]), peakPositions[i], 1.0));
+        TFitResultPtr fit_result = fH1MaxVoltage->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
+        std::cout << "debug" << std::endl;
+        Int_t checking = fit_result->Status();
+        if(checking != 0){}
+        else{
+            fits.push_back(gaussian);
+            means.push_back(gaussian->GetParameter(1));
+            // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
+            sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
+            sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
+        }
+    }
+    c1->Update();
+
+    
+    
+    TString filename_figure;
+    TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
+    rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
+
+    std::ofstream ofs;
+    if(append_option == 1){
+        ofs.open("./output/SCA_peaksearch_data.txt", std::ios::app);
+    }
+    else{
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
+    }
+    
+    auto mean_temp = means.begin();
+    auto sigma_mean_temp = sigmas_mean.begin();
+    auto sigma_gaus_temp = sigmas_gaus.begin();
+
+    if(append_option == 1){
+        ofs << std::endl << "=========================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+        std::tm local_tm = *std::localtime(&now_c);
+
+        ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    }
+    ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
+    while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end()){
+        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
+        ++mean_temp;
+        ++sigma_mean_temp;
+        ++sigma_gaus_temp;
+    }
+    ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
+    ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
+    ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
+    ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
+    ofs.close();
+    
+
+    // 1. 日付を取得
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm); // "YYYYMMDD"形式で日付を取得
+
+    // 2. フォルダパスを作成
+    TString folderPath = TString::Format("./figure/%s", date);
+
+    // 3. フォルダが存在しない場合は作成
+    if (gSystem->AccessPathName(folderPath)) {
+        if (gSystem->mkdir(folderPath, true) != 0) {
+            std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+            return -1;
+        }
+    }
+
+    filename_figure = Form("%s:ch%d_SCA_peaksearch.pdf", rootFile.Data(), iCh);
+
+    // 既にファイルが存在するか確認
+    Int_t index = 1;
+    while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
+        // ファイルが存在する場合、ファイル名にインデックスを追加
+        filename_figure = Form("%s:ch%d_SCA_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        index++;
+    }
+
+    
+    c1->SaveAs(folderPath + '/' + filename_figure);
+
+    return (Double_t)counter;
+}
+
+
+Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t timeCut_begin = 0, Double_t timeCut_end = 1024.0)
+{
+    Int_t append_Option = 1; //1 for not to overwrite the output.
+    Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
+
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    if(timecut_Option != 1){
+        timeCut_begin = fChargeIntegralTmin;
+        timeCut_end = fChargeIntegralTmax;
+    }
+
+    if (fH1ChargeIntegral != NULL)
+    {
+        delete fH1ChargeIntegral;
+    }
+
+    std::cout << "================================================================" << std::endl << "GSO peaksearch" << std::endl << "\tiBoard : " << iBoard << std::endl << "\tiCh : " << iCh << std::endl << "\tadcMin : " << adcMin << std::endl << "\tadcMax : " << adcMax << std::endl << std::endl;
+    std::cout << "\tFit information" << std::endl << "\t\ttimeCut_begin = " << timeCut_begin << std::endl << "\t\ttimeCut_end = " << timeCut_end << std::endl << "\t\tfitRange = " << fitRange << std::endl;
+    std::cout << "================================================================" << std::endl;
+
+    //canvasの宣言など...
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral(for GSO) [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax), 500, adcMin, adcMax);
+    fH1ChargeIntegral->SetXTitle("voltage sum [V]");
+    fH1ChargeIntegral->SetYTitle("[counts]");
+    gPad->SetGrid();
+
+    //chargeIntegralの計算
+    Double_t chargeIntegral;
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    {
+        fChain->GetEntry(jentry);
+        chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, timeCut_begin, timeCut_end);
+        
+        if (chargeIntegral > -9999.9)
+        {
+            counter++;
+            fH1ChargeIntegral->Fill(-chargeIntegral);
+        }
+    }
+    fH1ChargeIntegral->Draw();
+
+    //まずはpeaksearchを自動で行う
+    TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
+    spectrum->SetResolution(5);
+    Double_t spec_sigma = 2.0;
+    Double_t spec_thr = 0.005;
+    Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
+    Double_t* peakPositions = spectrum->GetPositionX();
+
+    //peaksearchの結果に応じてフィッティングを行い、パラメータを最適化する
+    std::vector<TF1*> fits; //"gaus"フィッティングを複数格納するベクトル
+    std::vector<Double_t> means;
+    std::vector<Double_t> sigmas_mean;
+    std::vector<Double_t> sigmas_gaus;
+    std::vector<TFitResultPtr> fitresults;
+    for(int i=0; i<foundPeaks; ++i){
+        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
+        gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
+        TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
+        Int_t checking = fit_result->Status();
+        if(checking != 0){}
+        else{
+            fits.push_back(gaussian);
+            means.push_back(gaussian->GetParameter(1));
+            // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
+            sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
+            sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
+        }
+    }
+    c1->Update();
+
+    //結果の図やフィッティングパラメータを保存する。フィッティングパラメータは"./output/GSO_peaksearch_data.txt"に追記して保存する。図は"./figure/"にYYYYMMDDというフォルダを作ってその中に保存する。
+    TString filename_figure;
+    TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
+    rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
+
+    std::ofstream ofs;
+    if(append_Option == 1){
+        ofs.open("./output/GSO_peaksearch_data.txt", std::ios::app);
+    }
+    else{
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
+    }
+    
+    auto mean_temp = means.begin();
+    auto sigma_mean_temp = sigmas_mean.begin();
+    auto sigma_gaus_temp = sigmas_gaus.begin();
+
+    if(append_Option == 1){
+        ofs << std::endl << "================================================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+        std::tm local_tm = *std::localtime(&now_c);
+
+        ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    }
+    ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
+    while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end()){
+        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
+        ++mean_temp;
+        ++sigma_mean_temp;
+        ++sigma_gaus_temp;
+    }
+    ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
+    ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
+    ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
+    ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
+    ofs.close();
+    
+
+    //図を保存するフォルダのための日付
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm); // "YYYYMMDD"形式で日付を取得
+    //YYYYMMDDフォルダのパス
+    TString folderPath = TString::Format("./figure/%s", date);
+    //フォルダが存在しない場合は作成
+    if (gSystem->AccessPathName(folderPath)) {
+        if (gSystem->mkdir(folderPath, true) != 0) {
+            std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+            return -1;
+        }
+    }
+
+    filename_figure = Form("%s:ch%d_GSO_peaksearch.pdf", rootFile.Data(), iCh);
+
+    // 既にファイルが存在するか確認
+    Int_t index = 1;
+    while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
+        // ファイルが存在する場合、ファイル名にインデックスを追加
+        filename_figure = Form("%s:ch%d_automated_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        index++;
+    }
+
+    c1->SaveAs(folderPath + '/' + filename_figure);
+
+    return (Double_t)counter;
+}
+
+Double_t DRS4Ana::time_divided_spectrum(Int_t divOfTime = 10){
+    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = 10000;
+    Long64_t counter = 0;
+    Int_t numOfBoards = 1;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
+    canvas->Divide(2,numOfBoards*2);
+    if(divOfTime>1){
+        gStyle->SetPalette(kCool);
+    }
+    TH1D* fH1EnergySpectra[2][4][divOfTime];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                fH1EnergySpectra[iBoard][iCh][iDiv] = new TH1D(Form("fH1EnergySpectra || iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), Form("iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), 100, 0, 600);
+            }
+            canvas->cd(iBoard*4+iCh+1);
+            gPad->SetGrid();
+        }
+    }
+    gPad->SetGrid();
+    gStyle->SetOptStat(0);
+
+
+    Double_t p0[2][4], p1[2][4];
+    p0[0][0] = -19.46;
+    p1[0][0] = 5.487;
+    p0[0][1] = -42.98;
+    p1[0][1] = 6.078;
+    p0[0][2] = -24.38;
+    p1[0][2] = 6.737;
+    p0[0][3] = -10.61;
+    p1[0][3] = 12.05;//ため息が出る汚さ
+
+    Double_t p0_buf, p1_buf;
+    Double_t chargeInt_buf;
+    Int_t colorIndex_key, colorIndex;
+    TLegend* legend[2][4];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            legend[iBoard][iCh] = new TLegend(0.7, 0.5, 0.9, 0.9);
+        }
+    }
+
+    for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+        for(Int_t Entry = iDiv*(nentries/divOfTime); Entry<(iDiv+1)*(nentries/divOfTime); Entry++){
+            fChain->GetEntry(Entry);
+            counter++;
+            if(counter % 1000 == 0){
+                std::cout << "\tcounter : " << counter << std::endl;
+            }
+
+            for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+                for(Int_t iCh=0; iCh<4; iCh++){
+                    p0_buf = p0[iBoard][iCh];
+                    p1_buf = p1[iBoard][iCh];
+
+                    canvas->cd(iBoard*4+iCh+1);
+
+                    if(iBoard == 0 && iCh == 3){
+                        // chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 300, 800);
+                        chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 200, 450);
+                    }
+                    else{
+                        chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 0, 1023);
+                    }
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Fill(p0_buf+(-chargeInt_buf)*p1_buf);
+
+                }
+            }
+        }
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                colorIndex = 255*iDiv/divOfTime;
+                colorIndex_key = TColor::GetColorPalette(colorIndex);
+                fH1EnergySpectra[iBoard][iCh][iDiv]->SetLineColor(colorIndex_key);
+            }
+        }
+    }
+
+    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                canvas->cd(iBoard*4+iCh+1);
+
+                if(iDiv == 0){
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw();
+                }
+                else{
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw("SAME");
+                }
+                legend[iBoard][iCh]->SetTextSize(0.03);
+                legend[iBoard][iCh]->SetBorderSize(1);
+                // 凡例にエントリを追加
+                TString legendLabel = Form("Time Div %d", iDiv + 1);
+                legend[iBoard][iCh]->AddEntry(fH1EnergySpectra[iBoard][iCh][iDiv], legendLabel, "l");
+                std::cout << Form("\tDraw : iBoard %d, iCh %d, iDiv %d", iBoard, iCh, iDiv) << std::endl;        
+            }
+        }
+    }
+    if(divOfTime > 1){
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            canvas->cd(iBoard*4+iCh + 1);
+            legend[iBoard][iCh]->Draw();
+        }
+        }
+    }
+    canvas->Update();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
+    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.pdf", filename_figure.Data()));
+    
+    return counter;
+}
+
+Double_t DRS4Ana::time_divided_adcSum(Int_t divOfTime = 10){
+    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = 10000;
+    Long64_t counter = 0;
+    Int_t numOfBoards = 1;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 1600, 1200);
+    canvas->Divide(2,numOfBoards*2);
+    if(divOfTime>1){
+        gStyle->SetPalette(kCool);
+    }
+    TH1D* fH1EnergySpectra[2][4][divOfTime];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                fH1EnergySpectra[iBoard][iCh][iDiv] = new TH1D(Form("fH1EnergySpectra || iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), Form("iB : %d, iC : %d, iDiv : %d", iBoard, iCh, iDiv), 400, 0, 250);
+            }
+            canvas->cd(iBoard*4+iCh+1);
+            gPad->SetGrid();
+        }
+    }
+    gPad->SetGrid();
+    gStyle->SetOptStat(0);
+
+    Double_t chargeInt_buf;
+    Int_t colorIndex_key, colorIndex;
+    TLegend* legend[2][4];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            legend[iBoard][iCh] = new TLegend(0.7, 0.5, 0.9, 0.9);
+        }
+    }
+
+    for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+        for(Int_t Entry = iDiv*(nentries/divOfTime); Entry<(iDiv+1)*(nentries/divOfTime); Entry++){
+            fChain->GetEntry(Entry);
+            counter++;
+            if(counter % 1000 == 0){
+                std::cout << "\tcounter : " << counter << std::endl;
+            }
+
+            for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+                for(Int_t iCh=0; iCh<4; iCh++){
+                    canvas->cd(iBoard*4+iCh+1);
+                    chargeInt_buf = GetChargeIntegral(iBoard, iCh, 20, 0, 1023);
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Fill(-chargeInt_buf);
+
+                }
+            }
+        }
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                colorIndex = 255*iDiv/divOfTime;
+                colorIndex_key = TColor::GetColorPalette(colorIndex);
+                fH1EnergySpectra[iBoard][iCh][iDiv]->SetLineColor(colorIndex_key);
+            }
+        }
+    }
+
+    for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            for(Int_t iDiv=0; iDiv<divOfTime; iDiv++){
+                canvas->cd(iBoard*4+iCh+1);
+
+                if(iDiv == 0){
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw();
+                }
+                else{
+                    fH1EnergySpectra[iBoard][iCh][iDiv]->Draw("SAME");
+                }
+                legend[iBoard][iCh]->SetTextSize(0.03);
+                legend[iBoard][iCh]->SetBorderSize(1);
+                // 凡例にエントリを追加
+                TString legendLabel = Form("Time Div %d", iDiv + 1);
+                legend[iBoard][iCh]->AddEntry(fH1EnergySpectra[iBoard][iCh][iDiv], legendLabel, "l");
+                std::cout << Form("\tDraw : iBoard %d, iCh %d, iDiv %d", iBoard, iCh, iDiv) << std::endl;        
+            }
+        }
+    }
+    if(divOfTime > 1){
+        for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            canvas->cd(iBoard*4+iCh + 1);
+            legend[iBoard][iCh]->Draw();
+        }
+        }
+    }
+    canvas->Update();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    printf("\n\tfigure saved as: %s\n", filename_figure.Data());
+    // canvas->SaveAs(Form("../figure/%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.png", filename_figure.Data()));
+    canvas->SaveAs(Form("./figure/timeDiv_%s.pdf", filename_figure.Data()));
+    
+    return counter;
+}
+Double_t DRS4Ana::Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0){
+    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = 10000;
+    Long64_t counter = 0;
+    for(Int_t eventID=0; eventID<nentries; eventID++){
+        fChain->GetEntry(eventID);
+        printf("\ttrigger : %d (%.1f [ns])\n", fDiscriCell[iBoard][iCh], fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]]);
+        counter++;
+    }
+    return (Double_t)counter;
 }

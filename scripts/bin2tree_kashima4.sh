@@ -3,7 +3,7 @@
 #!/bin/bash
 
 # .datファイルが格納されているフォルダー
-DAT_FOLDER="../data/20241215/RD9979_s_1/"
+DAT_FOLDER="../data/20241226/RC7493_m_3"
 
 # ROOTスクリプトのパス
 ROOT_SCRIPT="binary2tree_kashima.C"

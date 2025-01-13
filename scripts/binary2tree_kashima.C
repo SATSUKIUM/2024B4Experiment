@@ -63,6 +63,8 @@ ex) root[] binary2tree_sato3("../data/test001.dat")
 
 #define DEBUG 0
 #define TIME_FLAG 1
+#define DISCR_FLAG 1
+#define Thr_set -0.020 //DAQ時に設定したtrigger threshold
 
 #ifdef DEBUG
 #define DEBUG_PRINT(level, fmt, ...) \
@@ -193,7 +195,14 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         return 0;
     }
 
-    TFile f_root(Form("%s.root", binaryDataFile), "recreate");
+    TString outputFilename;
+    if(flag_b4exp_event_selection == 1){
+        outputFilename = Form("%s_EventSelection.root", binaryDataFile);
+    }
+    else{
+        outputFilename = Form("%s.root", binaryDataFile);
+    }
+    TFile f_root(outputFilename, "recreate");
     
     int serialNumber_buf[16]; //daisy-chain is allowed with up to 16 boards.
 
@@ -237,7 +246,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
             fseek(f, -4, SEEK_CUR);
             break;
         }
-        printf("\tBoard found : %d board(s)\n", how_many_boards);
+        printf("\tBoard found : %d board(s)\n", how_many_boards+1);
         printf("\t\tBoard serial number: %d\n", boardHeader.board_serial_number);
         serialNumber_buf[how_many_boards] = boardHeader.board_serial_number; // Set Tree data
         // read time bin widths
@@ -253,7 +262,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 break;
             }
             chID = channelHeader.chName[2] - '0' - 1; // = 0,1,2,3
-            printf("\nTime Bin Width found\n");
+            printf("\nTime Bin Width(timing calibration data) found\n");
             printf("\t\tBoard ID : %d (zero index) || ", how_many_boards);
             printf("Channel %d (ch1-4):\n", chID + 1);
             fread(&bin_width[how_many_boards][chID][0], sizeof(float), 1024, f);
@@ -281,7 +290,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     Int_t numOfBoards = how_many_boards;
 
     //efficiently calculate time[numOfBoard][4][1024]
-    printf("\n\tDEBUG : efficiently calculate time\n");
+    printf("\n\tDEBUG : efficiently calculate time(start)\n");
     float cumulative_time_bin[numOfBoards][4][1024];
     float sum_time_bin_buf;
     for(int iboard=0; iboard<numOfBoards; iboard++){
@@ -295,7 +304,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
             }
         }
     }
-    printf("\n\tDEBUG : efficiently calculate time\n");
+    printf("\n\tDEBUG : efficiently calculate time(end))\n");
 
 
     
@@ -309,6 +318,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     Double_t timeBinWidth[numOfBoards][4][1024];
 
     Int_t triggerCell[numOfBoards];
+    Int_t discriCell[numOfBoards][4];
     UInt_t scaler[numOfBoards][4];
     Double_t waveform[numOfBoards][4][1024];
     Double_t time[numOfBoards][4][1024];
@@ -337,13 +347,17 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     //
 
     //iBoardについてforループがあったけど、いらないと判断したので削除
-    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));
+    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));// readoutの始まったセル。トリガーのかかったセルではないことに注意
     // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i"); //よくわからないブランチ。値を見てもゼロだった。
     treeDRS4BoardEvent->Branch("waveform", waveform, Form("waveform[%d][4][1024]/D", numOfBoards));
     if(TIME_FLAG){
         treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
     }
     treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
+    if(DISCR_FLAG){
+        treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
+    }
+    
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
         // set tree data
@@ -434,18 +448,32 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
                 adcSum[iBoard][chID] = 0;
+                Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
+                Int_t flag_discriFirstCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
                 for (int icell = 0; icell < 1024; icell++)
                 {
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
                     if(flag_b4exp_event_selection == 0){
-                        flag_b4exp_trig =1;
+                        flag_b4exp_trig =1; //イベントセレクションするフラグが立ってなければ、立てる
                     }
-                    if(iBoard*4+chID +1 >= 4){
-                        if(voltage_buf < thr_V*0.001){
-                            flag_b4exp_trig = 1;
+                    if(iBoard*4+chID +1 >= 4 && voltage_buf < thr_V*0.001){
+                        flag_b4exp_trig = 1; //イベントセレクションをする
+                    }
+
+                    if(DISCR_FLAG){
+                        if(voltage_buf < Thr_set){
+                        flag_discriCell++;// 閾値を超えていればフラグを進める
+                        }
+                        else{
+                            flag_discriCell = 0;//3回連続じゃなければフラグを元に戻す
+                        }
+                        if(flag_discriCell == 3 && flag_discriFirstCell == 0){
+                            flag_discriFirstCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
+                            discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
                         }
                     }
+                    
                     
                     waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
