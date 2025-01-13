@@ -1801,5 +1801,13 @@ Double_t DRS4Ana::time_divided_adcSum(Int_t divOfTime = 10){
     return counter;
 }
 Double_t DRS4Ana::Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0){
-    
+    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = 10000;
+    Long64_t counter = 0;
+    for(Int_t eventID=0; eventID<nentries; eventID++){
+        fChain->GetEntry(eventID);
+        printf("\ttrigger : %d (%.1f [ns])\n", fDiscriCell[iBoard][iCh], fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]]);
+        counter++;
+    }
+    return (Double_t)counter;
 }

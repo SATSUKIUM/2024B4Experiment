@@ -30,7 +30,7 @@ Please read the macro for the detail.
 
 #include <vector>
 
-#define NUM_OF_BOARDS 2
+#define NUM_OF_BOARDS 1
 
 class DRS4Ana
 {
@@ -50,6 +50,7 @@ public:
     Double_t fWaveform[NUM_OF_BOARDS][4][1024]; //[fNumOfBoards]
     Double_t fTime[NUM_OF_BOARDS][4][1024];     //[fNumOfBoards]
     Double_t fAdcSum[NUM_OF_BOARDS][4];         //[fNumOfBoards]
+    Int_t fDiscriCell[NUM_OF_BOARDS][4];
 
     // List of branches
     TBranch *b_numOfBoards;        //!
@@ -227,6 +228,7 @@ void DRS4Ana::Init(TTree *tree)
     fChain->SetBranchAddress("waveform", fWaveform, &b_waveform);
     fChain->SetBranchAddress("time", fTime, &b_time);
     fChain->SetBranchAddress("adcSum", fAdcSum, &b_adcSum);
+    fChain->SetBranchAddress("discriCell", fDiscriCell);
 
     Notify();
 
