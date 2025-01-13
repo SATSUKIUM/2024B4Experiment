@@ -119,6 +119,7 @@ public:
     virtual Double_t time_divided_adcSum(Int_t divOfTime = 10);
     virtual TString Makedir_Date();
     virtual Int_t IfFile_duplication(TString folderPath, TString &fileName);
+    virtual Double_t Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0);
 
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;

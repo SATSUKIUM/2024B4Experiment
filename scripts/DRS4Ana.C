@@ -1800,3 +1800,6 @@ Double_t DRS4Ana::time_divided_adcSum(Int_t divOfTime = 10){
     
     return counter;
 }
+Double_t DRS4Ana::Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0){
+    
+}
