@@ -28,7 +28,7 @@ void energy_calb(TString input_Folder = "./output/"){
 
     TCanvas* canvas = new TCanvas("canvas", Form("%s", input_Filepath.Data()));
     TGraphErrors* graph = new TGraphErrors;
-    TF1* func = new TF1("func", "[0]*x +[1]", 0, 0.5);
+    TF1* func = new TF1("func", "[1]*x +[0]", 0, 0.5);
     func->SetParameters(1000, 0);
     int index_data = 0;
     while(ifs >> energy >> ch >> sigma_ch >> sigma_gaus){
@@ -56,6 +56,5 @@ void energy_calb(TString input_Folder = "./output/"){
         index++;
     }
 
-    
     canvas->SaveAs("./figure/" + filename_figure);
 }
