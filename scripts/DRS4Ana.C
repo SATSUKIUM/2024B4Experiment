@@ -1808,11 +1808,24 @@ Double_t DRS4Ana::Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0){
     Long64_t nentries = fChain->GetEntriesFast();
     // Long64_t nentries = 10000;
     Long64_t counter = 0;
+    if(fH1TriggerTime != NULL){
+        delete fH1TriggerTime;
+    }
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
+    fH1TriggerTime = new TH1F("fH1TriggerTime", Form("%s: (iBoard %d, iCh %d Trigger Time", fRootFile.Data(), iBoard, iCh), 128, 0, 1023);
+
+    Int_t discriCell;
     for(Int_t eventID=0; eventID<nentries; eventID++){
         fChain->GetEntry(eventID);
-        printf("\ttrigger : %d (%.1f [ns])\n", fDiscriCell[iBoard][iCh], fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]]);
+        discriCell = fDiscriCell[iBoard][iCh];
+        
+        if(counter % 10000 == 0){
+            printf("\ttrigger : %d (%.1f [ns])\n", discriCell, fTime[iBoard][iCh][discriCell]);
+        }
+        fH1TriggerTime->Fill(discriCell);
         counter++;
     }
+    fH1TriggerTime->Draw();
     return (Double_t)counter;
 }
 

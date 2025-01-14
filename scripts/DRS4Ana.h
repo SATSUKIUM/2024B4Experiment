@@ -136,6 +136,7 @@ public:
     TH2F *fH2Waveform1 = NULL;
     TH2F *fH2Energy_PMTs = NULL;
     TH1F *fH1SumChargeIntegral = NULL;
+    TH1F *fH1TriggerTime = NULL;
 
 private:
     Double_t fTimeBinWidthInNanoSec;
