@@ -162,7 +162,8 @@ void PrintChannelHeader(ChannelHeader *p)
 int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
 {
     Int_t flag_b4exp_event_selection = 0;
-    int flag_b4exp_trig = 0;
+    Int_t flag_b4exp_trig = 0;
+    Int_t flag_b4exp_longtrig = 0;
     if(thr_V != 0.0){
         flag_b4exp_event_selection = 1;
     }
@@ -448,6 +449,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
                 adcSum[iBoard][chID] = 0;
+                flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
                 Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
                 Int_t flag_discriFirstCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
                 for (int icell = 0; icell < 1024; icell++)
@@ -458,7 +460,13 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                         flag_b4exp_trig =1; //イベントセレクションをそもそもしない場合は全てのイベントをパスさせる
                     }
                     if(iBoard*4+chID +1 >= 4 && voltage_buf < thr_V){
-                        flag_b4exp_trig = 1; //GSOにヒットあり
+                        flag_b4exp_longtrig++;
+                    }
+                    else{
+                        flag_b4exp_longtrig = 0;
+                    }
+                    if(flag_b4exp_longtrig == 3){
+                        flag_b4exp_trig++; //GSOにヒットあり
                     }
 
                     if(DISCR_FLAG){
