@@ -455,10 +455,10 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
                     if(flag_b4exp_event_selection == 0){
-                        flag_b4exp_trig =1; //イベントセレクションするフラグが立ってなければ、立てる
+                        flag_b4exp_trig =1; //イベントセレクションをそもそもしない場合は全てのイベントをパスさせる
                     }
-                    if(iBoard*4+chID +1 >= 4 && voltage_buf < thr_V*0.001){
-                        flag_b4exp_trig = 1; //イベントセレクションをする
+                    if(iBoard*4+chID +1 >= 4 && voltage_buf < thr_V){
+                        flag_b4exp_trig = 1; //GSOにヒットあり
                     }
 
                     if(DISCR_FLAG){
