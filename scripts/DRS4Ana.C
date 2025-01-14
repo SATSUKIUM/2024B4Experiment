@@ -947,7 +947,8 @@ Double_t DRS4Ana::Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh 
 }
 
 Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
-    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t nentries = 5e4;
     Long64_t counter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 600);
@@ -983,10 +984,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
         if(iBoards[i] == 0){
             switch(iChs[i]){
                 case 0:
-                    p1.push_back(5.487);
-                    p0.push_back(-19.46);
-                    p1_error.push_back(0.002241);
-                    p0_error.push_back(0.08402);
+                    p1.push_back(5.566);
+                    p0.push_back(-16.6);
+                    p1_error.push_back(0.002808);
+                    p0_error.push_back(0.08437);
                     std::cout << "\t\tiB=0, iC=0" << std::endl;
                 break;
                 case 1:
@@ -997,10 +998,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
                     std::cout << "\t\tiB=0, iC=1" << std::endl;
                 break;
                 case 2:
-                    p1.push_back(6.737);
-                    p0.push_back(-24.38);
-                    p1_error.push_back(0.004241);
-                    p0_error.push_back(0.1042);
+                    p1.push_back(6.842);
+                    p0.push_back(-18.77);
+                    p1_error.push_back(0.003518);
+                    p0_error.push_back(0.09072);
                     std::cout << "\t\tiB=0, iC=2" << std::endl;
                 break;
                 case 3:
@@ -1019,11 +1020,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
+    Double_t DiscriTime_x, DiscriTime_y;
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
+        DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
 
-        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, 0, 1024);
-        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 0, 1024);
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + 600);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + 600);
 
         x_energy = p0[0] + p1[0]*x_charge_buf;
         y_energy = p0[1] + p1[1]*y_charge_buf;
@@ -1856,7 +1860,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            fH1ChargeIntegral->Fill(-chargeIntegral);
+            fH1ChargeIntegral->Fill(-16.6 + 5.556*(-chargeIntegral));
         }
     }
     fH1ChargeIntegral->Draw();
@@ -1898,7 +1902,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
 
     std::ofstream ofs;
     if(append_Option == 1){
-        ofs.open("./output/GSO_peaksearch_data.txt", std::ios::app);
+        ofs.open("./output/NaI_peaksearch_data.txt", std::ios::app);
     }
     else{
         ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
@@ -1946,13 +1950,13 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
         }
     }
 
-    filename_figure = Form("%s:ch%d_GSO_peaksearch.pdf", rootFile.Data(), iCh);
+    filename_figure = Form("%s:ch%d_NaI_peaksearch.pdf", rootFile.Data(), iCh);
 
     // 既にファイルが存在するか確認
     Int_t index = 1;
     while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
-        filename_figure = Form("%s:ch%d_automated_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        filename_figure = Form("%s:ch%d_NaI_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
         index++;
     }
 
