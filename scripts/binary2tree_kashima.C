@@ -462,7 +462,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                     if(iBoard*4+chID +1 >= 4 && voltage_buf < thr_V){
                         flag_b4exp_longtrig++;
                     }
-                    else{
+                    else if(iBoard*4+chID +1 >= 4){
                         flag_b4exp_longtrig = 0;
                     }
                     if(flag_b4exp_longtrig == 3){
