@@ -1812,7 +1812,9 @@ Double_t DRS4Ana::Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0){
         delete fH1TriggerTime;
     }
     TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
-    fH1TriggerTime = new TH1F("fH1TriggerTime", Form("%s: (iBoard %d, iCh %d Trigger Time", fRootFile.Data(), iBoard, iCh), 128, 0, 1023);
+    Int_t div = 512;
+    fH1TriggerTime = new TH1F("fH1TriggerTime", Form("%s: (iBoard %d, iCh %d Trigger Time", fRootFile.Data(), iBoard, iCh), div, 0, 1023);
+    fH1TriggerTime->SetTitle(Form(";trigger cell( nearly equal to trigger time [ns]);count per %.2f", 1024/div));
 
     Int_t discriCell;
     for(Int_t eventID=0; eventID<nentries; eventID++){
