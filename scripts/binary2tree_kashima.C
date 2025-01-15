@@ -404,7 +404,9 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         for (Int_t iBoard = 0; iBoard < numOfBoards; iBoard++)
         {
             flag_b4exp_trig = 0;
-            flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
+            if(flag_b4exp_event_selection == 0){
+                flag_b4exp_trig =1; //イベントセレクションをそもそもしない場合は全てのイベントをパスさせる
+            }
 
             // read board header
             fread(&boardHeader, sizeof(boardHeader), 1, f);
@@ -452,6 +454,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 adcSum[iBoard][chID] = 0;
                 Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
                 Int_t flag_found_discriCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
+                flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
                 for (int icell = 0; icell < 1024; icell++)
                 {
                     // convert data to volts
@@ -470,19 +473,16 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                         flag_b4exp_trig++; //GSOにヒットあり
                     }
 
-                    if(DISCR_FLAG){
-                        if(voltage_buf < Thr_set){
-                        flag_discriCell++;// 閾値を超えていればフラグを進める
-                        }
-                        else{
-                            flag_discriCell = 0;//3回連続じゃなければフラグを元に戻す
-                        }
-                        if(flag_discriCell == 3 && flag_found_discriCell == 0){
-                            flag_found_discriCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
-                            discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
-                        }
+                    if(voltage_buf < Thr_set){
+                    flag_discriCell++;// 閾値を超えていればフラグを進める
                     }
-                    
+                    else{
+                        flag_discriCell = 0;//3回連続じゃなければフラグを元に戻す
+                    }
+                    if(flag_discriCell == 3 && flag_found_discriCell == 0){
+                        flag_found_discriCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
+                        discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
+                    }
                     
                     waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
@@ -512,9 +512,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
             }
         }
-        if(flag_b4exp_event_selection == 0){
-            flag_b4exp_trig =1; //イベントセレクションをそもそもしない場合は全てのイベントをパスさせる
-        }
+        
         if(flag_b4exp_trig != 0){
             treeDRS4BoardEvent->Fill();
         }
