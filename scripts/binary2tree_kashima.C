@@ -404,6 +404,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         for (Int_t iBoard = 0; iBoard < numOfBoards; iBoard++)
         {
             flag_b4exp_trig = 0;
+            flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
 
             // read board header
             fread(&boardHeader, sizeof(boardHeader), 1, f);
@@ -449,21 +450,21 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
                 adcSum[iBoard][chID] = 0;
-                flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
                 Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
-                Int_t flag_discriFirstCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
+                Int_t flag_found_discriCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
                 for (int icell = 0; icell < 1024; icell++)
                 {
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
-                    if(flag_b4exp_event_selection == 0){
-                        flag_b4exp_trig =1; //イベントセレクションをそもそもしない場合は全てのイベントをパスさせる
-                    }
-                    if(iBoard*4+chID +1 >= 4 && voltage_buf < thr_V){
-                        flag_b4exp_longtrig++;
-                    }
-                    else if(iBoard*4+chID +1 >= 4){
-                        flag_b4exp_longtrig = 0;
+                    
+
+                    if(iBoard*4+chID + 1 >= 4){
+                        if(voltage_buf < thr_V){
+                            flag_b4exp_longtrig++;
+                        }
+                        else{
+                            flag_b4exp_longtrig = 0;
+                        }
                     }
                     if(flag_b4exp_longtrig == 3){
                         flag_b4exp_trig++; //GSOにヒットあり
@@ -476,8 +477,8 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                         else{
                             flag_discriCell = 0;//3回連続じゃなければフラグを元に戻す
                         }
-                        if(flag_discriCell == 3 && flag_discriFirstCell == 0){
-                            flag_discriFirstCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
+                        if(flag_discriCell == 3 && flag_found_discriCell == 0){
+                            flag_found_discriCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
                             discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
                         }
                     }
@@ -510,6 +511,9 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 }
                 DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
             }
+        }
+        if(flag_b4exp_event_selection == 0){
+            flag_b4exp_trig =1; //イベントセレクションをそもそもしない場合は全てのイベントをパスさせる
         }
         if(flag_b4exp_trig != 0){
             treeDRS4BoardEvent->Fill();
