@@ -115,7 +115,7 @@ public:
     virtual Double_t SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax);
     virtual Double_t PlotWavesWithThreshold(Int_t iBoard, Int_t iCh);
     virtual Double_t automated_peaksearch_SCA_mode(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0, Int_t numPeaks = 10, Double_t fitRange = 2.0);
-    virtual Double_t GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 250.0, Int_t numPeaks = 10, Double_t fitRange = 3.0, Double_t adcTimeRange = 600.0);
+    virtual Double_t GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 250.0, Int_t numPeaks = 10, Double_t fitRange = 3.0, Double_t adcTimeRange = 180.0);
     virtual Double_t time_divided_spectrum(Int_t divOfTime = 10);
     virtual Double_t time_divided_adcSum(Int_t divOfTime = 10);
     virtual TString Makedir_Date();
