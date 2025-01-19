@@ -1857,10 +1857,10 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::cout << "================================================================" << std::endl;
 
     //canvasの宣言など...
-    TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
-    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral(for GSO) [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax), 500, adcMin, adcMax);
-    fH1ChargeIntegral->SetXTitle("voltage sum [V]");
-    fH1ChargeIntegral->SetYTitle("[counts]");
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 1200, 900);
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral(for NaI) [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax), 500, adcMin, adcMax);
+    fH1ChargeIntegral->SetXTitle("Voltage sum [V]");
+    fH1ChargeIntegral->SetYTitle(Form("[counts] per %.2f V", (adcMax-adcMin)/500));
     gPad->SetGrid();
 
     //chargeIntegralの計算
