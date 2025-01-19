@@ -1875,7 +1875,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            fH1ChargeIntegral->Fill(-16.6 + 5.556*(-chargeIntegral));
+            fH1ChargeIntegral->Fill(-chargeIntegral);
         }
     }
     fH1ChargeIntegral->Draw();
