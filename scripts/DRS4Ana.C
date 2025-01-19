@@ -1913,7 +1913,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     //結果の図やフィッティングパラメータを保存する。フィッティングパラメータは"./output/GSO_peaksearch_data.txt"に追記して保存する。図は"./figure/"にYYYYMMDDというフォルダを作ってその中に保存する。
     TString filename_figure;
     TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
-    rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
+    rootFile.ReplaceAll(".", "_"); //.dat.rootのドットを"_"に変えた
 
     std::ofstream ofs;
     if(append_Option == 1){
