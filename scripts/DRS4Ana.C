@@ -1441,7 +1441,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
 }
 
 
-Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t timeCut_begin = 0, Double_t timeCut_end = 1024.0)
+Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t adcTimeRange = 600.0)
 {
     Int_t append_Option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
@@ -1449,9 +1449,11 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    if(timecut_Option != 1){
-        timeCut_begin = fChargeIntegralTmin;
-        timeCut_end = fChargeIntegralTmax;
+    Double_t timeCut_begin, timeCut_end;
+
+    if(timecut_Option == 1){
+        timeCut_begin = fDiscriCell[iBoard][iCh] - 50; //50 ns before trig
+        timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange; //adcTimeRange ns after trig
     }
 
     if (fH1ChargeIntegral != NULL)
@@ -1464,10 +1466,10 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::cout << "================================================================" << std::endl;
 
     //canvasの宣言など...
-    TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 1600, 1200);
     fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral(for GSO) [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax), 500, adcMin, adcMax);
     fH1ChargeIntegral->SetXTitle("voltage sum [V]");
-    fH1ChargeIntegral->SetYTitle("[counts]");
+    fH1ChargeIntegral->SetYTitle(Form("[counts] per %.2f V", (adcMax-adcMin)/500));
     gPad->SetGrid();
 
     //chargeIntegralの計算
@@ -1475,6 +1477,8 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     for (Long64_t jentry = 0; jentry < nentries; jentry++)
     {
         fChain->GetEntry(jentry);
+        timeCut_begin = fDiscriCell[iBoard][iCh] - 50; //50 ns before trig
+        timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange; //adcTimeRange ns after trig
         chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, timeCut_begin, timeCut_end);
         
         if (chargeIntegral > -9999.9)
@@ -1518,7 +1522,7 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     //結果の図やフィッティングパラメータを保存する。フィッティングパラメータは"./output/GSO_peaksearch_data.txt"に追記して保存する。図は"./figure/"にYYYYMMDDというフォルダを作ってその中に保存する。
     TString filename_figure;
     TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
-    rootFile.ReplaceAll(".", "_dot_"); //.dat.rootのドットを"dot"に変えた
+    rootFile.ReplaceAll(".", "_"); //.dat.rootのドットを"_"に変えた
 
     std::ofstream ofs;
     if(append_Option == 1){
@@ -1869,7 +1873,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     {
         fChain->GetEntry(jentry);
         timeCut_begin = fDiscriCell[iBoard][iCh] - 50;//トリガー時刻から-50 ns遡ってsum
-        timeCut_end = fDiscriCell[iBoard][iCh] + 600;//トリガー時刻から+600 nsまでsum
+        timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange;//トリガー時刻から+adcTimeRange nsまでsum
         chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, timeCut_begin, timeCut_end);
         
         if (chargeIntegral > -9999.9)
