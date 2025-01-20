@@ -60,6 +60,7 @@ ex) root[] binary2tree_sato3("../data/test001.dat")
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <TTimeStamp.h>
 
 #define DEBUG 0
 #define TIME_FLAG 1
@@ -314,12 +315,6 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t even
 
     Double_t timeBinWidth[numOfBoards][4][1024];
 
-    Int_t triggerCell[numOfBoards];
-    Int_t discriCell[numOfBoards][4];
-    UInt_t scaler[numOfBoards][4];
-    Double_t waveform[numOfBoards][4][1024];
-    Double_t time[numOfBoards][4][1024];
-    Double_t adcSum[numOfBoards][4];
 
     //--------------------------------------------------
     // Define a tree for board infomation
@@ -353,6 +348,7 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t even
         }
     }
 
+    Int_t previous_block_UNIXTime;
     //--------------------------------------------------
     // Loop over all events in the data file
     //--------------------------------------------------
@@ -367,6 +363,8 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t even
         if(eventHeader.event_serial_number%eventGap == 0){
             printf("Found event #%d %d %d\n", eventHeader.event_serial_number, eventHeader.second, eventHeader.millisecond);
             PrintEventHeader(&eventHeader);
+            printf("gap btwn events : %d", eventHeader.second-previous_block_UNIXTime);
+            previous_block_UNIXTime = eventHeader.second;
         }
         
 
@@ -397,7 +395,6 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t even
             else
             {
                 DEBUG_PRINT(1, "   Trigger cell: %d\n", triggerCellHeader.trigger_cell);
-                triggerCell[iBoard] = triggerCellHeader.trigger_cell; // Set Tree data
             }
             if (numOfBoards > 1)
             {
