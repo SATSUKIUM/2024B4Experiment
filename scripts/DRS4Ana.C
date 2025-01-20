@@ -1074,7 +1074,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     return counter;
 }
 
-Double_t DRS4Ana::PlotEnergy(TString key = "0120", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
+Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
     /*
         エネルギー較正の式はかならずファイルから読み込むようにします。
         ファイルの形式は上の行から
@@ -1136,16 +1136,34 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", Int_t iBoard = 0, Int_t iCh =
     }
     ifs.close();
 
-    for (Long64_t jentry = 0; jentry < nentries; jentry++){
-        fChain->GetEntry(jentry);
-        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, 0, 1023);
-   
-        if (chargeIntegral > -9999.9)
-        {
-            counter++;
-            fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+    Double_t discriTime;
+    if(key_Crystal == "NaI"){
+        for (Long64_t jentry = 0; jentry < nentries; jentry++){
+            fChain->GetEntry(jentry);
+            discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 600);
+    
+            if (chargeIntegral > -9999.9)
+            {
+                counter++;
+                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+            }
         }
     }
+    else if(key_Crystal == "GSO"){
+        for (Long64_t jentry = 0; jentry < nentries; jentry++){
+            fChain->GetEntry(jentry);
+            discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 180);
+    
+            if (chargeIntegral > -9999.9)
+            {
+                counter++;
+                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+            }
+        }
+    }
+    
     fH1ChargeIntegral->Draw();
 
     //保存用のディレクトリを作る
