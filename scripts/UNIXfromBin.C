@@ -389,7 +389,7 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
             if (memcmp(boardHeader.bn, "B#", 2) != 0)
             {
                 printf("Invalid board header in file \'%s\', aborting.\n", filename);
-                return n;
+                return 100;
             }
             if (debug_frag >= 1)
                 PrintBoardHeader(&boardHeader);
