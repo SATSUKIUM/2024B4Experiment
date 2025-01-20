@@ -356,7 +356,7 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t even
     //--------------------------------------------------
     // Loop over all events in the data file
     //--------------------------------------------------
-    for (int n = 0;; n++)
+    for (int n = 0; n<eventUpperLimit; n++)
     {
         // read event header
         int ret = fread(&eventHeader, sizeof(eventHeader), 1, f);
