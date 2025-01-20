@@ -158,14 +158,11 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
+int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t eventUpperLimit = 100000)
 {
     Int_t flag_b4exp_event_selection = 0;
     Int_t flag_b4exp_trig = 0;
     Int_t flag_b4exp_longtrig = 0;
-    if(thr_V != 0.0){
-        flag_b4exp_event_selection = 1;
-    }
     FileHeader fileHeader;
     TimeHeader timeHeader;
     BoardHeader boardHeader;
@@ -372,8 +369,7 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
             PrintEventHeader(&eventHeader);
         }
         
-        if (debug_frag >= 1)
-            PrintEventHeader(&eventHeader);
+
         eventTime->Set((Int_t)eventHeader.year, (Int_t)eventHeader.month, (Int_t)eventHeader.day,
                        (Int_t)eventHeader.hour, (Int_t)eventHeader.minute, (Int_t)eventHeader.second,
                        (Int_t)eventHeader.millisecond * 1E6,
@@ -391,8 +387,6 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
                 printf("Invalid board header in file \'%s\', aborting.\n", filename);
                 return n;
             }
-            if (debug_frag >= 1)
-                PrintBoardHeader(&boardHeader);
             // read trigger cell <- Number of first readout cell
             fread(&triggerCellHeader, sizeof(triggerCellHeader), 1, f);
             if (memcmp(triggerCellHeader.tc, "T#", 2) != 0)
