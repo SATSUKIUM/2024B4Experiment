@@ -133,7 +133,6 @@ void PrintEventHeader(EventHeader *p)
     printf("\tserial number: %d\n", p->event_serial_number);
     printf("\ttime: %d-%d-%d, %d:%d:%d.%03d\n", p->year, p->month, p->day,
            p->hour, p->minute, p->second, p->millisecond);
-    printf("\trange: %d\n", p->range);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -346,18 +345,6 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
     TTimeStamp *eventTime = new TTimeStamp;
     treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
     //
-
-    //iBoardについてforループがあったけど、いらないと判断したので削除
-    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));// readoutの始まったセル。トリガーのかかったセルではないことに注意
-    // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i"); //よくわからないブランチ。値を見てもゼロだった。
-    treeDRS4BoardEvent->Branch("waveform", waveform, Form("waveform[%d][4][1024]/D", numOfBoards));
-    if(TIME_FLAG){
-        treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
-    }
-    treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
-    if(DISCR_FLAG){
-        treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
-    }
     
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
