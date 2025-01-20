@@ -158,7 +158,7 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t eventUpperLimit = 100000)
+int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t eventLowerLimit = 0, Int_t eventUpperLimit = 10000000, Int_t eventGap = 10000)
 {
     Int_t flag_b4exp_event_selection = 0;
     Int_t flag_b4exp_trig = 0;
@@ -364,7 +364,7 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t even
         {
             break;
         }
-        if(eventHeader.event_serial_number%10000 == 0){
+        if(eventHeader.event_serial_number%eventGap == 0){
             printf("Found event #%d %d %d\n", eventHeader.event_serial_number, eventHeader.second, eventHeader.millisecond);
             PrintEventHeader(&eventHeader);
         }
