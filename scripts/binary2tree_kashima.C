@@ -159,7 +159,7 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
+int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0, Int_t numOfEvent = 10000000)
 {
     Int_t flag_b4exp_event_selection = 0;
     Int_t flag_b4exp_trig = 0;
@@ -379,7 +379,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     //--------------------------------------------------
     // Loop over all events in the data file
     //--------------------------------------------------
-    for (int n = 0;; n++)
+    for (int n = 0; n<numOfEvent; n++)
     {
         // read event header
         int ret = fread(&eventHeader, sizeof(eventHeader), 1, f);
