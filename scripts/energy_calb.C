@@ -18,36 +18,36 @@ PMTのエネルギー較正用の直線フィッティング
 #include <filesystem>
 #include <TSystem.h>
 
-using namespace std;
 void energy_calb(TString input_Folder = "./output/"){
-    // ifstream ifs("../data/sato_NaI.txt");
-    // ifstream ifs("../data/huruno_PMT_2.txt");
     TString input_Filepath = Form("%sdata.txt",input_Folder.Data());
-    ifstream ifs(input_Filepath);
-    double_t energy, ch, sigma_ch, sigma_gaus;
+    std::ifstream ifs(input_Filepath);
 
     TCanvas* canvas = new TCanvas("canvas", Form("%s", input_Filepath.Data()));
     TGraphErrors* graph = new TGraphErrors;
-    TF1* func = new TF1("func", "[1]*x +[0]", 0, 0.5);
-    func->SetParameters(1000, 0);
-    int index_data = 0;
-    while(ifs >> energy >> ch >> sigma_ch >> sigma_gaus){
-        graph->SetPoint(index_data, ch, energy);
-        graph->SetPointError(index_data, sigma_ch, 0);
-        cout << index_data << endl;
-        index_data++;
-    }
-    ifs.close();
-    gPad->SetGrid();
     graph->SetTitle(Form("energy calibration form %s;voltage_sum [V];Photoelectric peak energy [keV]", input_Filepath.Data()));
     graph->SetMarkerStyle(20);
     graph->SetMarkerSize(0.5);
+    gPad->SetGrid();
     gStyle->SetOptFit();
+
+    double_t energy, ch, sigma_ch, sigma_gaus;
+
+    Int_t index_data = 0;
+    while(ifs >> energy >> ch >> sigma_ch >> sigma_gaus){
+        graph->SetPoint(index_data, ch, energy);
+        graph->SetPointError(index_data, sigma_ch, 0);
+        std::cout << "Plot point : " << index_data << std::endl;
+        index_data++;
+    }
+    ifs.close();
+
+    TF1* func = new TF1("func", "[0]+[1]*x", 0, 0.5);
+    func->SetParameters(0, 5);
     graph->Fit(func);
     graph->Draw("ap"); //axisとpointを描画する
-
+    std::cout << Form("================================================================\nFitting parameter for %s\n\t%f %f %f %f", input_Filepath, func->GetParameter(0), func->GetParError(0), func->GetParameter(1), func->GetParError(1)) << std::endl;
+    
     TString filename_figure = "energy_calb.pdf";
-
     // 既にファイルが存在するか確認
     Int_t index = 1;
     while (gSystem->AccessPathName("./figure/" + filename_figure) == 0) {
