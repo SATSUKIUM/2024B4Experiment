@@ -159,7 +159,7 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
+int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0)
 {
     Int_t flag_b4exp_event_selection = 0;
     Int_t flag_b4exp_trig = 0;
@@ -347,6 +347,19 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
     treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
     //
 
+    //iBoardについてforループがあったけど、いらないと判断したので削除
+    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));// readoutの始まったセル。トリガーのかかったセルではないことに注意
+    // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i"); //よくわからないブランチ。値を見てもゼロだった。
+    treeDRS4BoardEvent->Branch("waveform", waveform, Form("waveform[%d][4][1024]/D", numOfBoards));
+    if(TIME_FLAG){
+        treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
+    }
+    treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
+    if(DISCR_FLAG){
+        treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
+    }
+    
+
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
         // set tree data
         for(Int_t iCh=0; iCh<4; iCh++){
@@ -389,7 +402,7 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
             if (memcmp(boardHeader.bn, "B#", 2) != 0)
             {
                 printf("Invalid board header in file \'%s\', aborting.\n", filename);
-                return 100;
+                return n;
             }
             if (debug_frag >= 1)
                 PrintBoardHeader(&boardHeader);
@@ -403,6 +416,11 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
             else
             {
                 DEBUG_PRINT(1, "   Trigger cell: %d\n", triggerCellHeader.trigger_cell);
+                triggerCell[iBoard] = triggerCellHeader.trigger_cell; // Set Tree data
+            }
+            if (numOfBoards > 1)
+            {
+                DEBUG_PRINT(1, "Found data for board #%d\n", boardHeader.board_serial_number);
             }
             //--------------------------------------------------
             // Read channel data
@@ -421,20 +439,16 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", const Doub
 
                 fread(&scaler_buf, sizeof(int), 1, f); //scaler means ??
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
-
-                for (int icell = 0; icell < 1024; icell++)
-                {
-                    // read channel header
-                    fread(&channelHeader, sizeof(channelHeader), 1, f);
-                    if (channelHeader.c[0] != 'C')
-                    {
-                        // event header found
-                        fseek(f, -4, SEEK_CUR);
-                        break;
-                    }
-                    }
-                }
             }
+        }
+        
+        if(flag_b4exp_trig != 0){
+            // treeDRS4BoardEvent->Fill();
+        }
     } // end of event loop;
-    return 0;
+
+    treeDRS4BoardEvent->Print();
+    treeDRS4BoardEvent->Write();
+
+    return treeDRS4BoardEvent->GetEntries();
 }
