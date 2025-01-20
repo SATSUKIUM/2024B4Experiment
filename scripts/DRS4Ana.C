@@ -1110,7 +1110,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", Int_t iBoard = 0, Int_t iCh =
     fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
     Double_t p0_buf, p1_buf, p0e_buf,p1e_buf;
-    TString calb_data_filepath = Form("./cfg/%s/data.txt", key);
+    TString calb_data_filepath = Form("./cfg/%s/data.txt", key.data());
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
