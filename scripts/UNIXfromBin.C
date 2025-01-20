@@ -363,7 +363,7 @@ int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t even
         if(eventHeader.event_serial_number%eventGap == 0){
             printf("Found event #%d %d %d\n", eventHeader.event_serial_number, eventHeader.second, eventHeader.millisecond);
             PrintEventHeader(&eventHeader);
-            printf("gap btwn events : %d\n", eventHeader.second-previous_block_UNIXTime);
+            printf("\tgap btwn events : %d\n", eventHeader.second-previous_block_UNIXTime);
             previous_block_UNIXTime = eventHeader.second;
         }
         
