@@ -100,7 +100,7 @@ public:
     virtual Double_t automated_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0, Int_t numPeaks = 10, Double_t fitRange = 2.0);
     virtual void Output_EventTime(Int_t iCh = 0);
     virtual Double_t PlotTriggerRate(Int_t iCh = 0);
-    virtual Double_t Overlay_PlotWaves(Int_t iCh = 0);
+    virtual Double_t Overlay_PlotWaves(Int_t iBoard = 0, Int_t iCh = 0);
     virtual void DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0);
 
     virtual void Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index = 0);
