@@ -292,7 +292,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
 
     // debug
     for(int icell=0; icell<1024; icell++){
-        printf("\t%f\n", bin_width[0][0][icell]);
+        printf("\t%f %f %f %f || %f %f %f %f\n", bin_width[0][0][icell], bin_width[0][1][icell], bin_width[0][2][icell], bin_width[0][3][icell], bin_width[1][0][icell], bin_width[1][1][icell], bin_width[1][2][icell], bin_width[1][3][icell]);
     }
 
     //efficiently calculate time[numOfBoard][4][1024]
