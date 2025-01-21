@@ -463,7 +463,6 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
                 for (int icell = 0; icell < 1024; icell++)
                 {
-                    printf("DEBUG : icell %d\n" ,icell);
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
                     
@@ -494,16 +493,14 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                     waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
                     // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
 
-                    if(TIME_FLAG && flag_b4exp_trig != 0){
+                    if(TIME_FLAG){
                         cumulative_time_buf = cumulative_time_bin[iBoard][chID][(icell+triggerCell[iBoard])%1024] - cumulative_time_bin[iBoard][chID][triggerCell[iBoard]];
 
                         if(cumulative_time_buf >= 0){
                             time[iBoard][chID][icell] = cumulative_time_buf;
-                            printf("%d\ttime || %lf\n", icell, time[iBoard][chID][icell]);
                         }
                         else{
                             time[iBoard][chID][icell] = cumulative_time_bin[iBoard][chID][1023] + cumulative_time_buf;
-                            printf("%d\ttime || %lf\n", icell, time[iBoard][chID][icell]);
                         }
 
                         // // calculate time for this cell
