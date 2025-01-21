@@ -290,6 +290,11 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         }
     Int_t numOfBoards = how_many_boards;
 
+    // debug
+    for(int icell=0; icell<1024; icell++){
+        printf("\t%f\n", bin_width[0][0][icell]);
+    }
+
     //efficiently calculate time[numOfBoard][4][1024]
     printf("\n\tDEBUG : efficiently calculate time(start)\n");
     float cumulative_time_bin[numOfBoards][4][1024];
