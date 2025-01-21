@@ -45,7 +45,7 @@ void energy_calb(TString input_Folder = "./output/"){
     func->SetParameters(0, 5);
     graph->Fit(func);
     graph->Draw("ap"); //axisとpointを描画する
-    std::cout << Form("================================================================\nFitting parameter for %s\n\t%f %f %f %f", input_Filepath, func->GetParameter(0), func->GetParError(0), func->GetParameter(1), func->GetParError(1)) << std::endl;
+    std::cout << Form("================================================================\nFitting parameter for %s\n\t%f %f %f %f", input_Filepath.Data(), func->GetParameter(0), func->GetParError(0), func->GetParameter(1), func->GetParError(1)) << std::endl;
     
     TString filename_figure = "energy_calb.pdf";
     // 既にファイルが存在するか確認
