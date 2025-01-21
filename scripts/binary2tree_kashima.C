@@ -498,9 +498,11 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
 
                         if(cumulative_time_buf >= 0){
                             time[iBoard][chID][icell] = cumulative_time_buf;
+                            printf("\t\tDEBUG: cumulative_time_buf >= 0\n");
                         }
                         else{
                             time[iBoard][chID][icell] = cumulative_time_bin[iBoard][chID][1023] + cumulative_time_buf;
+                            printf("\t\tDEBUG: cumulative_time_buf < 0\n");
                         }
 
                         // // calculate time for this cell
