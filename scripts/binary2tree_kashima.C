@@ -463,6 +463,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
                 for (int icell = 0; icell < 1024; icell++)
                 {
+                    printf("DEBUG : icell %d\n" ,icell);
                     // convert data to volts
                     voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
                     
