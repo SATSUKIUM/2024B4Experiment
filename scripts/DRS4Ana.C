@@ -1575,7 +1575,7 @@ for (int i = 0; i < foundPeaks; ++i) {
         peakPositions[i] + fitRange
     );
     
-    cout << "no fit1" << endl;
+    std::cout << "no fit1" << std::endl;
 
     // 初期パラメータの設定
      gaussian_plus_linear->SetParameters(
@@ -1593,7 +1593,7 @@ for (int i = 0; i < foundPeaks; ++i) {
 
     if (checking != 0) {
         // フィッティングが失敗した場合の処理（必要に応じて記述）
-        cout << "no fit" << endl;
+        std::cout << "no fit" << std::endl;
     } else {
         // フィッティング成功時の処理
         fits.push_back(gaussian_plus_linear);
