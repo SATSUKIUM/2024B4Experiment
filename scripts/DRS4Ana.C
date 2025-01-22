@@ -1342,7 +1342,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
 
     TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
     spectrum->SetResolution(5); //
-    Double_t spec_sigma = 0.05;
+    Double_t spec_sigma = 0.25;
     Double_t spec_thr = 0.01;
     Int_t foundPeaks = spectrum->Search(fH1MaxVoltage, spec_sigma, "", spec_thr); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
     Double_t* peakPositions = spectrum->GetPositionX();
@@ -1352,6 +1352,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
     std::vector<Double_t> sigmas_mean;
     std::vector<Double_t> sigmas_gaus;
     std::vector<TFitResultPtr> fitresults;
+
     for(int i=0; i<foundPeaks; ++i){
         TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
         gaussian->SetParameters(fH1MaxVoltage->GetBinContent(fH1MaxVoltage->FindBin(peakPositions[i]), peakPositions[i], 1.0));
@@ -1367,6 +1368,8 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
             sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
         }
     }
+
+
     c1->Update();
 
     
@@ -1472,7 +1475,7 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     TCanvas *c1 = new TCanvas("c1", "Canvas", 1600, 1200);
     fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral(for GSO) [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax), 500, adcMin, adcMax);
     fH1ChargeIntegral->SetXTitle("voltage sum [V]");
-    fH1ChargeIntegral->SetYTitle(Form("[counts] per %.2f V", (adcMax-adcMin)/500));
+    fH1ChargeIntegral->SetYTitle(Form("[counts / %.2f V]", (adcMax-adcMin)/500));
     gPad->SetGrid();
 
     //chargeIntegralの計算
@@ -1495,9 +1498,10 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     //まずはpeaksearchを自動で行う
     TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
     spectrum->SetResolution(5);
-    Double_t spec_sigma = 2.0;
-    Double_t spec_thr = 0.005;
-    Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr); //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
+    Double_t spec_sigma = 6.0; //分解能みたいな 小さいほど鋭いピークになる
+    Double_t spec_thr = 0.001;
+    Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr);
+    //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
     Double_t* peakPositions = spectrum->GetPositionX();
 
     //peaksearchの結果に応じてフィッティングを行い、パラメータを最適化する
@@ -1505,21 +1509,69 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::vector<Double_t> means;
     std::vector<Double_t> sigmas_mean;
     std::vector<Double_t> sigmas_gaus;
+    std::vector<Double_t> intercept;
+    std::vector<Double_t> slope;
     std::vector<TFitResultPtr> fitresults;
-    for(int i=0; i<foundPeaks; ++i){
-        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
-        gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
-        TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
-        Int_t checking = fit_result->Status();
-        if(checking != 0){}
-        else{
-            fits.push_back(gaussian);
-            means.push_back(gaussian->GetParameter(1));
-            // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
-            sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
-            sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
-        }
+
+  
+
+    // for(int i=0; i<foundPeaks; ++i){
+    //     TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
+    //     gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
+    //     TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
+    //     Int_t checking = fit_result->Status();
+    //     if(checking != 0){}
+    //     else{
+    //         fits.push_back(gaussian);
+    //         means.push_back(gaussian->GetParameter(1));
+    //         // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
+    //         sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
+    //         sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
+    //     }
+    // }
+
+
+for (int i = 0; i < foundPeaks; ++i) {
+    // ガウス関数 + 一次関数の定義
+    TF1* gaussian_plus_linear = new TF1(
+        Form("gaussian_plus_linear_%d", i),
+        //"[0] * exp(-0.5 * ((x - [1])/[2])**2) + [3] + [4]*x", 
+        "gaus+pol1(3)", 
+        peakPositions[i] - fitRange, 
+        peakPositions[i] + fitRange
+    );
+    
+    cout << "no fit1" << endl;
+
+    // 初期パラメータの設定
+     gaussian_plus_linear->SetParameters(
+         fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i])), // ガウスの振幅 [0]
+         peakPositions[i],                                                       // ガウスの中心 [1]
+         1.0,                                                                    // ガウスの幅 [2]
+         50.0,                                                                    // 一次関数の切片 [3]
+         -5.0                                                                    // 一次関数の傾き [4]
+     );
+
+    // フィッティング
+    TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); // オプション "RS+" を使用
+    std::cout << "debug" << std::endl;
+    Int_t checking = fit_result->Status();
+
+    if (checking != 0) {
+        // フィッティングが失敗した場合の処理（必要に応じて記述）
+        cout << "no fit" << endl;
+    } else {
+        // フィッティング成功時の処理
+        fits.push_back(gaussian_plus_linear);
+        means.push_back(gaussian_plus_linear->GetParameter(1));           // ガウス中心値
+        sigmas_mean.push_back(gaussian_plus_linear->GetParError(1));      // ガウス中心値の誤差
+        sigmas_gaus.push_back(gaussian_plus_linear->GetParameter(2));     // ガウス幅
+        intercept.push_back(gaussian_plus_linear->GetParameter(3));       // 切片
+        slope.push_back(gaussian_plus_linear->GetParameter(4));           // 傾き
     }
+}
+
+
     c1->Update();
 
     //結果の図やフィッティングパラメータを保存する。フィッティングパラメータは"./output/GSO_peaksearch_data.txt"に追記して保存する。図は"./figure/"にYYYYMMDDというフォルダを作ってその中に保存する。
@@ -1538,6 +1590,10 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     auto mean_temp = means.begin();
     auto sigma_mean_temp = sigmas_mean.begin();
     auto sigma_gaus_temp = sigmas_gaus.begin();
+    auto intercept_temp = intercept.begin();
+    auto slope_temp = slope.begin();
+
+
 
     if(append_Option == 1){
         ofs << std::endl << "================================================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
@@ -1548,12 +1604,14 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
         ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
 
     }
-    ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
-    while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end()){
-        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
-        ++mean_temp;
-        ++sigma_mean_temp;
-        ++sigma_gaus_temp;
+    ofs << "means, sigmas of means, sigmas of gaussian, intercept ,slope" << std::endl << std::endl;
+    while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end() && intercept_temp != intercept.end() && slope_temp != slope.end()){
+        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << " " << *intercept_temp << " " << " " << *slope_temp <<  std::endl;
+        ++mean_temp; //peak[1]
+        ++sigma_mean_temp; //sigma_m 
+        ++sigma_gaus_temp; //sigma[2]
+        ++intercept_temp; //切片[3]
+        ++slope_temp; //傾き[4]
     }
     ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
     ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
