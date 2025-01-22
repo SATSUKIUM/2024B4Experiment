@@ -125,3 +125,4 @@ ChatGPTに聞いたら割と分かりやすく教えてくれます。
 
 # cloneの仕方
  git clone git@github.com:SATSUKIUM/2024B4Experiment.git
+aa
