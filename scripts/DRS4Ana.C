@@ -1076,7 +1076,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     return counter;
 }
 
-Double_t DRS4Ana::PlotEnergy(TString key = "0120", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
+Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
     /*
         エネルギー較正の式はかならずファイルから読み込むようにします。
         ファイルの形式は上の行から
@@ -1093,6 +1093,14 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", Int_t iBoard = 0, Int_t iCh =
         p0 Δp0 p1 Δp1 とします。
         9行目より後は読み込まれないようにしてあるので、メモ用紙にでも使ってください。
     */
+    std::cout << iBoard << std::endl;
+    std::cout << iCh << std::endl;
+    std::cout << Vcut << std::endl;
+    std::cout << key_Crystal << std::endl;
+    std::cout << xmin << std::endl;
+    std::cout << xmax << std::endl;
+
+
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -1111,7 +1119,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", Int_t iBoard = 0, Int_t iCh =
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
     fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
-    Double_t p0_buf, p1_buf, p0e_buf,p1e_buf;
+    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
     TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
@@ -1137,17 +1145,43 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", Int_t iBoard = 0, Int_t iCh =
         }
     }
     ifs.close();
-
-    for (Long64_t jentry = 0; jentry < nentries; jentry++){
-        fChain->GetEntry(jentry);
-        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, 0, 1023);
-   
-        if (chargeIntegral > -9999.9)
-        {
-            counter++;
-            fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+    for(Int_t ib=0; ib<2; ib++){
+        for(Int_t ic=0; ic<4; ic++){
+            printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
         }
     }
+
+    Double_t discriTime;
+    if(key_Crystal == "NaI"){
+        for (Long64_t jentry = 0; jentry < nentries; jentry++){
+            fChain->GetEntry(jentry);
+            discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 600);
+    
+            if (chargeIntegral > -9999.9)
+            {
+                counter++;
+                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+            }
+        }
+    }
+    else if(key_Crystal == "GSO"){
+        for (Long64_t jentry = 0; jentry < nentries; jentry++){
+            fChain->GetEntry(jentry);
+            discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 180);
+    
+            if (chargeIntegral > -9999.9)
+            {
+                counter++;
+                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+            }
+        }
+    }
+    else{
+        std::cout << "key is invalid" << std::endl;
+    }
+    
     fH1ChargeIntegral->Draw();
 
     //保存用のディレクトリを作る

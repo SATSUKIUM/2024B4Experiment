@@ -60,6 +60,7 @@ ex) root[] binary2tree_sato3("../data/test001.dat")
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <TTimeStamp.h>
 
 #define DEBUG 0
 #define TIME_FLAG 1
@@ -133,7 +134,6 @@ void PrintEventHeader(EventHeader *p)
     printf("\tserial number: %d\n", p->event_serial_number);
     printf("\ttime: %d-%d-%d, %d:%d:%d.%03d\n", p->year, p->month, p->day,
            p->hour, p->minute, p->second, p->millisecond);
-    printf("\trange: %d\n", p->range);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -159,14 +159,11 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0, Int_t numOfEvent = 10000000)
+int UNIXfromBin(const Char_t *binaryDataFile = "../data/test001.dat", Int_t eventLowerLimit = 0, Int_t eventUpperLimit = 10000000, Int_t eventGap = 10000)
 {
     Int_t flag_b4exp_event_selection = 0;
     Int_t flag_b4exp_trig = 0;
     Int_t flag_b4exp_longtrig = 0;
-    if(thr_V != 0.0){
-        flag_b4exp_event_selection = 1;
-    }
     FileHeader fileHeader;
     TimeHeader timeHeader;
     BoardHeader boardHeader;
@@ -290,12 +287,6 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         }
     Int_t numOfBoards = how_many_boards;
 
-    // debug print timebin
-    for(int icell=0; icell<1024; icell++){
-        printf("\n*******************************\n\tPrint time bin of each CH\n\t%f %f %f %f || %f %f %f %f\n", bin_width[0][0][icell], bin_width[0][1][icell], bin_width[0][2][icell], bin_width[0][3][icell], bin_width[1][0][icell], bin_width[1][1][icell], bin_width[1][2][icell], bin_width[1][3][icell]);
-    }
-    printf("*******************************\n");
-
     //efficiently calculate time[numOfBoard][4][1024]
     printf("\n\tDEBUG : efficiently calculate time(start)\n");
     float cumulative_time_bin[numOfBoards][4][1024];
@@ -324,12 +315,6 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
 
     Double_t timeBinWidth[numOfBoards][4][1024];
 
-    Int_t triggerCell[numOfBoards];
-    Int_t discriCell[numOfBoards][4];
-    UInt_t scaler[numOfBoards][4];
-    Double_t waveform[numOfBoards][4][1024];
-    Double_t time[numOfBoards][4][1024];
-    Double_t adcSum[numOfBoards][4];
 
     //--------------------------------------------------
     // Define a tree for board infomation
@@ -352,18 +337,6 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     TTimeStamp *eventTime = new TTimeStamp;
     treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
     //
-
-    //iBoardについてforループがあったけど、いらないと判断したので削除
-    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));// readoutの始まったセル。トリガーのかかったセルではないことに注意
-    // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i"); //よくわからないブランチ。値を見てもゼロだった。
-    treeDRS4BoardEvent->Branch("waveform", waveform, Form("waveform[%d][4][1024]/D", numOfBoards));
-    if(TIME_FLAG){
-        treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
-    }
-    treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
-    if(DISCR_FLAG){
-        treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
-    }
     
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
@@ -375,17 +348,11 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         }
     }
 
-
-    //--------------------------------------------------
-    // Initialize statistics
-    //--------------------------------------------------
-    ndt = 0;
-    sumdt = sumdt2 = 0;
-
+    Int_t previous_block_UNIXTime;
     //--------------------------------------------------
     // Loop over all events in the data file
     //--------------------------------------------------
-    for (int n = 0; n<numOfEvent; n++)
+    for (int n = 0; n<eventUpperLimit; n++)
     {
         // read event header
         int ret = fread(&eventHeader, sizeof(eventHeader), 1, f);
@@ -393,12 +360,16 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         {
             break;
         }
-        if(eventHeader.event_serial_number%10000 == 0){
+        if(eventHeader.event_serial_number%eventGap == 0){
             printf("Found event #%d %d %d\n", eventHeader.event_serial_number, eventHeader.second, eventHeader.millisecond);
+            if(eventLowerLimit < n && n < eventUpperLimit){
+            PrintEventHeader(&eventHeader);
+            printf("\tgap btwn events : %d\n", eventHeader.second-previous_block_UNIXTime);
+            previous_block_UNIXTime = eventHeader.second;
+            }
         }
         
-        if (debug_frag >= 1)
-            PrintEventHeader(&eventHeader);
+
         eventTime->Set((Int_t)eventHeader.year, (Int_t)eventHeader.month, (Int_t)eventHeader.day,
                        (Int_t)eventHeader.hour, (Int_t)eventHeader.minute, (Int_t)eventHeader.second,
                        (Int_t)eventHeader.millisecond * 1E6,
@@ -409,20 +380,13 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         //--------------------------------------------------
         for (Int_t iBoard = 0; iBoard < numOfBoards; iBoard++)
         {
-            flag_b4exp_trig = 0;
-            if(flag_b4exp_event_selection == 0){
-                flag_b4exp_trig =1; //イベントセレクションをそもそもしない場合は全てのイベントをパスさせる
-            }
-
             // read board header
             fread(&boardHeader, sizeof(boardHeader), 1, f);
             if (memcmp(boardHeader.bn, "B#", 2) != 0)
             {
                 printf("Invalid board header in file \'%s\', aborting.\n", filename);
-                return 0;
+                return n;
             }
-            if (debug_frag >= 1)
-                PrintBoardHeader(&boardHeader);
             // read trigger cell <- Number of first readout cell
             fread(&triggerCellHeader, sizeof(triggerCellHeader), 1, f);
             if (memcmp(triggerCellHeader.tc, "T#", 2) != 0)
@@ -433,7 +397,6 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
             else
             {
                 DEBUG_PRINT(1, "   Trigger cell: %d\n", triggerCellHeader.trigger_cell);
-                triggerCell[iBoard] = triggerCellHeader.trigger_cell; // Set Tree data
             }
             if (numOfBoards > 1)
             {
@@ -456,71 +419,11 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
 
                 fread(&scaler_buf, sizeof(int), 1, f); //scaler means ??
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
-
-                adcSum[iBoard][chID] = 0;
-                Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
-                Int_t flag_found_discriCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
-                flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
-                for (int icell = 0; icell < 1024; icell++)
-                {
-                    // convert data to volts
-                    voltage_buf = (voltage[icell] / 65536.0 + eventHeader.range / 1000.0 - 0.5);
-                    
-
-                    if(iBoard*4+chID + 1 >= 4){
-                        if(voltage_buf < thr_V){
-                            flag_b4exp_longtrig++;
-                        }
-                        else{
-                            flag_b4exp_longtrig = 0;
-                        }
-                    }
-                    if(flag_b4exp_longtrig == 3){
-                        flag_b4exp_trig++; //GSOにヒットあり
-                    }
-
-                    if(voltage_buf < Thr_set){
-                    flag_discriCell++;// 閾値を超えていればフラグを進める
-                    }
-                    else{
-                        flag_discriCell = 0;//3回連続じゃなければフラグを元に戻す
-                    }
-                    if(flag_discriCell == 3 && flag_found_discriCell == 0){
-                        flag_found_discriCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
-                        discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
-                    }
-                    
-                    waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
-                    // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
-
-                    if(TIME_FLAG){
-                        cumulative_time_buf = cumulative_time_bin[iBoard][chID][(icell+triggerCell[iBoard])%1024] - cumulative_time_bin[iBoard][chID][triggerCell[iBoard]];
-
-                        if(cumulative_time_buf >= 0){
-                            time[iBoard][chID][icell] = cumulative_time_buf;
-                        }
-                        else{
-                            time[iBoard][chID][icell] = cumulative_time_bin[iBoard][chID][1023] + cumulative_time_buf;
-                        }
-
-                        // // calculate time for this cell
-                        // time[iBoard][chID][icell] = 0;
-                        // for (int j = 0; j < icell; j++)
-                        // {
-                        //     time[iBoard][chID][icell] += bin_width[iBoard][chID][(j + triggerCellHeader.trigger_cell) % 1024];
-                        // }
-                        // // time[iboard][chID][icell] = time_buf[iboard][chID][icell]; // Set Tree data
-                    }
-                    
-                    adcSum[iBoard][chID] += waveform[iBoard][chID][icell];     // Set Tree data
-                    DEBUG_PRINT(3, "bd%d ch%d cell%d:, v=%f, sum=%f\n", iBoard, chID, icell, waveform[iBoard][chID][icell], adcSum[iBoard][chID]);
-                }
-                DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
             }
         }
         
         if(flag_b4exp_trig != 0){
-            treeDRS4BoardEvent->Fill();
+            // treeDRS4BoardEvent->Fill();
         }
     } // end of event loop;
 
