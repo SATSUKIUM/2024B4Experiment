@@ -1575,7 +1575,6 @@ for (int i = 0; i < foundPeaks; ++i) {
         peakPositions[i] + fitRange
     );
     
-    std::cout << "no fit1" << std::endl;
 
     // 初期パラメータの設定
      gaussian_plus_linear->SetParameters(

@@ -3,7 +3,7 @@
 #!/bin/bash
 
 # .datファイルが格納されているフォルダー
-DAT_FOLDER="${1:-../data/20241226/sato_NaI_m_2}"
+DAT_FOLDER="../../../sotuken/0119/mod_s3"
 
 # ROOTスクリプトのパス
 ROOT_SCRIPT="binary2tree_kashima.C"
@@ -44,3 +44,8 @@ find "$DAT_FOLDER" -type f -name "*.dat" | parallel -j 8 '
 '
 
 echo "All files processed and moved."
+
+
+# 動作させる時は
+# chmod +x bin2tree_kashima4.sh
+# ./bin2tree_kashima4.sh
