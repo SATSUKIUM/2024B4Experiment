@@ -124,4 +124,4 @@ ChatGPTに聞いたら割と分かりやすく教えてくれます。
 - Markdown記法について https://qiita.com/tbpgr/items/989c6badefff69377da7
 
 # cloneの仕方
- git clone git@github.com:SATSUKIUM/2024B4Experiment.git
+ git clone git@github.com:SATSUKIUM/2024B4Experiment.git    
