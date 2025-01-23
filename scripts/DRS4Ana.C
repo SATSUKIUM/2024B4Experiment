@@ -1547,23 +1547,6 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::vector<Double_t> slope;
     std::vector<TFitResultPtr> fitresults;
 
-  
-
-    // for(int i=0; i<foundPeaks; ++i){
-    //     TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
-    //     gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
-    //     TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
-    //     Int_t checking = fit_result->Status();
-    //     if(checking != 0){}
-    //     else{
-    //         fits.push_back(gaussian);
-    //         means.push_back(gaussian->GetParameter(1));
-    //         // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
-    //         sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
-    //         sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
-    //     }
-    // }
-
 
 for (int i = 0; i < foundPeaks; ++i) {
     // ガウス関数 + 一次関数の定義
@@ -1602,6 +1585,31 @@ for (int i = 0; i < foundPeaks; ++i) {
         intercept.push_back(gaussian_plus_linear->GetParameter(3));       // 切片
         slope.push_back(gaussian_plus_linear->GetParameter(4));           // 傾き
     }
+
+
+
+    // 各成分を個別にプロットする
+        TF1* gauss1 = new TF1("gauss1", "gaus", peakPositions[i] - fitRange, 
+        peakPositions[i] + fitRange);
+        gauss1->SetParameters(
+            gaussian_plus_linear->GetParameter(0), // 振幅
+            gaussian_plus_linear->GetParameter(1), // 中心
+            gaussian_plus_linear->GetParameter(2)  // 幅
+        );
+        gauss1->SetLineColor(kOrange+7);
+        gauss1->SetLineStyle(1);
+        gauss1->Draw("LSAME");
+
+        TF1* linear = new TF1("linear", "pol1", peakPositions[i] - fitRange, 
+        peakPositions[i] + fitRange);
+        linear->SetParameters(
+            gaussian_plus_linear->GetParameter(3), // 切片
+            gaussian_plus_linear->GetParameter(4)  // 傾き
+        );
+        linear->SetLineColor(kGreen+1);
+        linear->SetLineStyle(1);
+        linear->Draw("LSAME");
+
 }
 
 
@@ -2070,6 +2078,244 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
         filename_figure = Form("%s:ch%d_NaI_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        index++;
+    }
+
+    c1->SaveAs(folderPath + '/' + filename_figure);
+
+    return (Double_t)counter;
+}
+
+
+
+
+Double_t DRS4Ana::peak_divided(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0.0, Double_t adcMax = 150.0, Double_t fitXmin = 0.0, Double_t fitXmax = 0.0, Double_t adcTimeRange = 180.0)
+{
+    Int_t append_Option = 1; //1 for not to overwrite the output.
+    Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
+
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    Double_t timeCut_begin, timeCut_end;
+
+    if(timecut_Option == 1){
+        timeCut_begin = fDiscriCell[iBoard][iCh] - 50; //50 ns before trig
+        timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange; //adcTimeRange ns after trig
+    }
+
+    if (fH1ChargeIntegral != NULL)
+    {
+        delete fH1ChargeIntegral;
+    }
+
+    std::cout << "================================================================" << std::endl << "GSO peaksearch" << std::endl << "\tiBoard : " << iBoard << std::endl << "\tiCh : " << iCh << std::endl << "\tadcMin : " << adcMin << std::endl << "\tadcMax : " << adcMax << std::endl << std::endl;
+    std::cout << "\tFit information" << std::endl << "\t\ttimeCut_begin = " << timeCut_begin << std::endl << "\t\ttimeCut_end = " << timeCut_end << std::endl;
+    std::cout << "================================================================" << std::endl;
+
+    //canvasの宣言など...
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 1600, 1200);
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral(for GSO) [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax), 500, adcMin, adcMax);
+    fH1ChargeIntegral->SetXTitle("voltage sum [V]");
+    fH1ChargeIntegral->SetYTitle(Form("[counts / %.2f V]", (adcMax-adcMin)/500));
+    gPad->SetGrid();
+
+    //chargeIntegralの計算
+    Double_t chargeIntegral;
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    {
+        fChain->GetEntry(jentry);
+        timeCut_begin = fDiscriCell[iBoard][iCh] - 50; //50 ns before trig
+        timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange; //adcTimeRange ns after trig
+        chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, timeCut_begin, timeCut_end);
+        
+        if (chargeIntegral > -9999.9)
+        {
+            counter++;
+            fH1ChargeIntegral->Fill(-chargeIntegral);
+        }
+    }
+    fH1ChargeIntegral->Draw();
+
+    // //まずはpeaksearchを自動で行う
+    // TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
+    // spectrum->SetResolution(5);
+    // Double_t spec_sigma = 6.0; //分解能みたいな 小さいほど鋭いピークになる
+    // Double_t spec_thr = 0.001;
+    // Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr);
+    // //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
+    // Double_t* peakPositions = spectrum->GetPositionX();
+
+    //peaksearchの結果に応じてフィッティングを行い、パラメータを最適化する
+    std::vector<TF1*> fits; //"gaus"フィッティングを複数格納するベクトル
+    std::vector<Double_t> means1;
+    std::vector<Double_t> sigmas_mean1;
+    std::vector<Double_t> sigmas_gaus1;
+    std::vector<Double_t> means2;
+    std::vector<Double_t> sigmas_mean2;
+    std::vector<Double_t> sigmas_gaus2;
+    std::vector<Double_t> intercept;
+    std::vector<Double_t> slope;
+    std::vector<TFitResultPtr> fitresults;
+    
+
+    // ガウス関数 + 一次関数の定義
+    TF1* gaussian_plus_linear = new TF1(
+        Form("gaussian_plus_linear"),
+        //"[0] * exp(-0.5 * ((x - [1])/[2])**2) + [3] + [4]*x", 
+        "gaus+gaus(3)+pol1(6)", 
+        fitXmin, 
+        fitXmax
+    );
+    
+
+    // 初期パラメータの設定
+     gaussian_plus_linear->SetParameters(
+         300.0,     // ガウスの振幅 [0]
+         3.5,     // ガウスの中心 [1]
+         0.01,     // ガウスの幅 [2]
+         200.0,   // ガウスの振幅 [3]
+         4.0,     // ガウスの中心 [4]
+         0.1,      // ガウスの幅 [5]
+         100.0,    // 一次関数の切片 [6]
+         -10.0     // 一次関数の傾き [7]
+     );
+
+    // フィッティング
+    TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); // オプション "RS+" を使用
+    std::cout << "debug" << std::endl;
+    Int_t checking = fit_result->Status();
+
+    if (checking != 0) {
+        // フィッティングが失敗した場合の処理（必要に応じて記述）
+        std::cout << "no fit" << std::endl;
+    } else {
+        // フィッティング成功時の処理
+        fits.push_back(gaussian_plus_linear);
+        means1.push_back(gaussian_plus_linear->GetParameter(1));           // ガウス中心値
+        sigmas_mean1.push_back(gaussian_plus_linear->GetParError(1));      // ガウス中心値の誤差
+        sigmas_gaus1.push_back(gaussian_plus_linear->GetParameter(2));     // ガウス幅
+        
+        means2.push_back(gaussian_plus_linear->GetParameter(4));           // ガウス中心値
+        sigmas_mean2.push_back(gaussian_plus_linear->GetParError(4));      // ガウス中心値の誤差
+        sigmas_gaus2.push_back(gaussian_plus_linear->GetParameter(5));     // ガウス幅
+        
+        intercept.push_back(gaussian_plus_linear->GetParameter(6));       // 切片
+        slope.push_back(gaussian_plus_linear->GetParameter(7));           // 傾き
+    }
+
+// 各成分を個別にプロットする
+        TF1* gauss1 = new TF1("gauss1", "gaus", fitXmin, fitXmax);
+        gauss1->SetParameters(
+            gaussian_plus_linear->GetParameter(0), // 振幅
+            gaussian_plus_linear->GetParameter(1), // 中心
+            gaussian_plus_linear->GetParameter(2)  // 幅
+        );
+        gauss1->SetLineColor(kOrange+7);
+        gauss1->SetLineStyle(1);
+        gauss1->Draw("LSAME");
+
+        TF1* gauss2 = new TF1("gauss2", "gaus", fitXmin, fitXmax);
+        gauss2->SetParameters(
+            gaussian_plus_linear->GetParameter(3), // 振幅
+            gaussian_plus_linear->GetParameter(4), // 中心
+            gaussian_plus_linear->GetParameter(5)  // 幅
+        );
+        gauss2->SetLineColor(kGreen+2);
+        gauss2->SetLineStyle(1);
+        gauss2->Draw("LSAME");
+
+        TF1* linear = new TF1("linear", "pol1", fitXmin, fitXmax);
+        linear->SetParameters(
+            gaussian_plus_linear->GetParameter(6), // 切片
+            gaussian_plus_linear->GetParameter(7)  // 傾き
+        );
+        linear->SetLineColor(kRed);
+        linear->SetLineStyle(1);
+        linear->Draw("LSAME");
+
+    c1->Update();
+
+    //結果の図やフィッティングパラメータを保存する。フィッティングパラメータは"./output/GSO_peaksearch_data.txt"に追記して保存する。図は"./figure/"にYYYYMMDDというフォルダを作ってその中に保存する。
+    TString filename_figure;
+    TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
+    rootFile.ReplaceAll(".", "_"); //.dat.rootのドットを"_"に変えた
+
+    std::ofstream ofs;
+    if(append_Option == 1){
+        ofs.open("./output/GSO_peak_divided.txt", std::ios::app);
+    }
+    else{
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
+    }
+    
+    auto mean_temp1 = means1.begin();
+    auto sigma_mean_temp1 = sigmas_mean1.begin();
+    auto sigma_gaus_temp1 = sigmas_gaus1.begin();
+
+    auto mean_temp2 = means2.begin();
+    auto sigma_mean_temp2 = sigmas_mean2.begin();
+    auto sigma_gaus_temp2 = sigmas_gaus2.begin();
+    auto intercept_temp = intercept.begin();
+    auto slope_temp = slope.begin();
+
+
+
+    if(append_Option == 1){
+        ofs << std::endl << "================================================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+        std::tm local_tm = *std::localtime(&now_c);
+
+        ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    }
+    ofs << "means1, sigmas of means1, sigmas of gaussian1" << std::endl << "means2, sigmas of means2, sigmas of gaussian2" << std::endl <<"intercept ,slope" << std::endl << std::endl;
+    while(mean_temp1 != means1.end() && sigma_mean_temp1 != sigmas_mean1.end() && sigma_gaus_temp1 != sigmas_gaus1.end() 
+    && mean_temp2 != means2.end() && sigma_mean_temp2 != sigmas_mean2.end() && sigma_gaus_temp2 != sigmas_gaus2.end() 
+    && intercept_temp != intercept.end() && slope_temp != slope.end()){
+        
+        ofs << *mean_temp1 << " " << *sigma_mean_temp1 << " " << *sigma_gaus_temp1 << std::endl
+        << *mean_temp2 << " " << *sigma_mean_temp2 << " " << *sigma_gaus_temp2 << std::endl
+        << *intercept_temp << " " << " " << *slope_temp <<  std::endl;
+        ++mean_temp1; //peak[1]
+        ++sigma_mean_temp1; //sigma_m 
+        ++sigma_gaus_temp1; //sigma[2]
+        ++mean_temp2; //peak[1]
+        ++sigma_mean_temp2; //sigma_m 
+        ++sigma_gaus_temp2; //sigma[2]
+        ++intercept_temp; //切片[3]
+        ++slope_temp; //傾き[4]
+    }
+    // ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
+    // ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
+    // ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
+    // ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
+    // ofs.close();
+    
+
+    //図を保存するフォルダのための日付
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm); // "YYYYMMDD"形式で日付を取得
+    //YYYYMMDDフォルダのパス
+    TString folderPath = TString::Format("./figure/%s", date);
+    //フォルダが存在しない場合は作成
+    if (gSystem->AccessPathName(folderPath)) {
+        if (gSystem->mkdir(folderPath, true) != 0) {
+            std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+            return -1;
+        }
+    }
+
+    filename_figure = Form("%s:ch%d_peak_divide.pdf", rootFile.Data(), iCh);
+
+    // 既にファイルが存在するか確認
+    Int_t index = 1;
+    while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
+        // ファイルが存在する場合、ファイル名にインデックスを追加
+        filename_figure = Form("%s:ch%d_peak_divided_%d.pdf", rootFile.Data(), iCh, index);
         index++;
     }
 
