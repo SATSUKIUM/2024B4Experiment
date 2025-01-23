@@ -376,3 +376,41 @@ numPeak : 10
 spec_sigma : 2
 spec_thr : 0.005
 fitrange : 0.5
+.rootfile || filepath : ../../../sotuken/0119/mod_s3/Na.dat.root
+2025-01-23 13:05:24
+means, sigmas of means, sigmas of gaussian, intercept ,slope
+
+2.2736 0.00458012 0.550079 -24.987  93.7401
+5.9125 0.00532367 0.427962 497.068  -58.4253
+2.11094 0.00605908 0.419749 -33.0236  128.519
+
+numPeak : 3
+spec_sigma : 6
+spec_thr : 0.001
+fitrange : 2
+
+================================================================
+.rootfile || filepath : ../../../sotuken/0119/mod_s3/Eu.dat.root
+2025-01-23 13:06:07
+means, sigmas of means, sigmas of gaussian, intercept ,slope
+
+1.37831 0.0031391 0.225919 238.802  113.529
+3.6506 0.00881182 0.310828 946.801  -151.462
+
+numPeak : 3
+spec_sigma : 6
+spec_thr : 0.001
+fitrange : 2
+
+================================================================
+.rootfile || filepath : ../../../sotuken/0119/mod_s3/Eu.dat.root
+2025-01-23 13:06:31
+means, sigmas of means, sigmas of gaussian, intercept ,slope
+
+1.37831 0.0031391 0.225919 238.802  113.529
+3.6506 0.00881182 0.310828 946.801  -151.462
+
+numPeak : 2
+spec_sigma : 6
+spec_thr : 0.001
+fitrange : 2
