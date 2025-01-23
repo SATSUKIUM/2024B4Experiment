@@ -3,7 +3,7 @@
 #!/bin/bash
 
 # .datファイルが格納されているフォルダー
-DAT_FOLDER="../../../sotuken/0119/mod_s3"
+DAT_FOLDER="../../../sotuken/0123/s4"
 
 # ROOTスクリプトのパス
 ROOT_SCRIPT="binary2tree_kashima.C"
@@ -12,7 +12,7 @@ ROOT_SCRIPT="binary2tree_kashima.C"
 ROOT_DEST_FOLDER="${DAT_FOLDER}/ROOT_FILES"
 echo "Root destination folder: $ROOT_DEST_FOLDER"
 
-# ROOT_DEST_FOLDERが存在しない場合は作成
+# ROOT_DEST_FOLDERが存在しない場合は作成1       
 mkdir -p "$ROOT_DEST_FOLDER"
 
 # ターゲットディレクトリに書き込み権限を与える
