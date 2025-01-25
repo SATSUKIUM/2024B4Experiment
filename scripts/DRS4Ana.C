@@ -835,7 +835,7 @@ Double_t DRS4Ana::Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0){
     return counter;
 }
 
-Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -858,78 +858,74 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    //フィッティングパラメータを記録するベクトルの取り決め -> 要素はそれぞれ2つ。一つ目の要素はx軸のスケール、二つ目の要素はy軸のスケール
-    std::vector<Double_t> p0, p1;
-    std::vector<Double_t> p0_error, p1_error;
-
-    std::vector<Int_t> iBoards, iChs;
-    iBoards.push_back(x_iBoard);
-    iBoards.push_back(y_iBoard);
-    iChs.push_back(x_iCh);
-    iChs.push_back(y_iCh);
-
-    for(Int_t i=0; i<2; i++){
-        if(iBoards[i] == 0){
-            switch(iChs[i]){
-                case 0:
-                    p1.push_back(5.566);
-                    p0.push_back(-16.6);
-                    p1_error.push_back(0.002808);
-                    p0_error.push_back(0.08437);
-                    std::cout << "\t\tiB=0, iC=0" << std::endl;
-                break;
-                case 1:
-                    p1.push_back(6.078);
-                    p0.push_back(-42.98);
-                    p1_error.push_back(0.001818);
-                    p0_error.push_back(0.08929);
-                    std::cout << "\t\tiB=0, iC=1" << std::endl;
-                break;
-                case 2:
-                    p1.push_back(6.842);
-                    p0.push_back(-18.77);
-                    p1_error.push_back(0.003518);
-                    p0_error.push_back(0.09072);
-                    std::cout << "\t\tiB=0, iC=2" << std::endl;
-                break;
-                case 3:
-                    p1.push_back(12.05);
-                    p0.push_back(-10.61);
-                    p1_error.push_back(0.001818);
-                    p0_error.push_back(0.413);
-                    std::cout << "\t\tiB=0, iC=3" << std::endl;
-                break;
-            }
+    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
+    TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
+    std::ifstream ifs(calb_data_filepath);
+    Int_t line_index = 0;
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
+    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
+        if(line_index % 4 == line_index){
+            p0[0][line_index] = p0_buf;
+            p0e[0][line_index] = p0e_buf;
+            p1[0][line_index] = p1_buf;
+            p1e[0][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
-        else{
-            std::cout <<"\tiBoard==1は工事中" << std::endl;
+        else if((line_index-4) % 4 == line_index){
+            p0[1][line_index] = p0_buf;
+            p0e[1][line_index] = p0e_buf;
+            p1[1][line_index] = p1_buf;
+            p1e[1][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
+        }
+        line_index++;
+        if(line_index == 8){
+            break;
         }
     }
-    
+    ifs.close();
+
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
     Double_t DiscriTime_x, DiscriTime_y;
+    Double_t adcSum_timerange_x, adcSum_timerange_y;
+    if(key_Crystal_x == "NaI"){
+        adcSum_timerange_x = 600;
+    }
+    else if(key_Crystal_x == "GSO"){
+        adcSum_timerange_x = 180;
+    }
+    else{
+        printf("\t\nx axis || type of crystal is invalid\n");
+    }
+    if(key_Crystal_y == "NaI"){
+        adcSum_timerange_y = 600;
+    }
+    else if(key_Crystal_y == "GSO"){
+        adcSum_timerange_y = 180;
+    }
+    else{
+        printf("\t\ny axis || type of crystal is invalid\n");
+    }
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
         DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
 
-        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + 600);
-        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + 600);
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
 
-        x_energy = p0[0] + p1[0]*x_charge_buf;
-        y_energy = p0[1] + p1[1]*y_charge_buf;
+        x_energy = p0[x_iBoard][x_iCh] + p1[x_iBoard][x_iCh]*x_charge_buf;
+        y_energy = p0[y_iBoard][y_iCh] + p1[y_iBoard][y_iCh]*y_charge_buf;
 
         fH2Energy_PMTs->Fill(x_energy, y_energy);
         fH1EnergySpectra[0]->Fill(x_energy);
         fH1EnergySpectra[1]->Fill(y_energy);
 
-
         if(Entry % 500 == 0){
             printf("\tPoint plot : %d\n", Entry);
         }
         counter++;
-        
     }
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
@@ -945,7 +941,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     line->SetLineColor(kBlack);
     line->SetLineWidth(2);
     line->Draw("SAME");
-
 
     canvas->Update();
 
