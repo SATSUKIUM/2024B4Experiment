@@ -1006,32 +1006,9 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
     fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
-    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
-    TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
-    std::ifstream ifs(calb_data_filepath);
-    Int_t line_index = 0;
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index % 4 == line_index){
-            p0[0][line_index] = p0_buf;
-            p0e[0][line_index] = p0e_buf;
-            p1[0][line_index] = p1_buf;
-            p1e[0][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-        }
-        else if((line_index-4) % 4 == line_index){
-            p0[1][line_index] = p0_buf;
-            p0e[1][line_index] = p0e_buf;
-            p1[1][line_index] = p1_buf;
-            p1e[1][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-        }
-        line_index++;
-        if(line_index == 8){
-            break;
-        }
-    }
-    ifs.close();
+    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    
     for(Int_t ib=0; ib<2; ib++){
         for(Int_t ic=0; ic<4; ic++){
             printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
