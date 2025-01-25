@@ -836,8 +836,7 @@ Double_t DRS4Ana::Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0){
 }
 
 Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
-    // Long64_t nentries = fChain->GetEntriesFast();
-    Long64_t nentries = 5e4;
+    Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 600);
