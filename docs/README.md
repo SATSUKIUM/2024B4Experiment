@@ -1,9 +1,8 @@
-# HOWTOUSE.mdはscripts内のコード、関数の使用説明書を書く場所です
+# README.mdはscripts内のコード、関数の使用説明書を書く場所です
 大きく分けて、DRS4Anaとそれ以外です。それ以外は単独で動くものが多いです。
 ## .Lのタイプ
 単独のスクリプトを使うとき、`root hoge.C`とすることがあるはず。このとき、そのスクリプトに引数を渡したければどうするのがいいでしょうか。答えは、
-
-`root`
-`.L hoge.C`
-`hoge("../data.txt")`
+- `root` (ROOTの起動)
+- `.L hoge.C` (hoge.Cというスクリプトの読み込み。hoge.C内に記述された関数を全て読み込む。)
+- `hoge("../data.txt")` (hoge.C内のhoge(TString filepath){...}という関数を使う。)<br>
 とすれば引数を渡せます。
