@@ -21,3 +21,11 @@ DRS4Ana.h(ヘッダファイル)とDRS4Ana.C(ソースファイル)のペアで�
 ### `IfFile_duplication(TString folderPath, TString &fileName)`
 同じファイルがある場合に名前を変えてくれる関数<br>
 例えば、"./figure/YYYYMMDD"というパスと、hoge.pdfを渡せば、そのディレクトリにhoge.pdfとhoge2.pdfが存在する場合に、渡した"hoge.pdf"を"hoge3.pdf"に変えてくれる関数
+### `PlotPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)`
+記録されるパルスの下に直流成分が乗っていることがある。これはベースラインまたはペデスタルと呼ばれ、パルスの正しい電荷量を計算するにはベースライン(ペデスタル)を引く処理が必要である。<br>
+`GetChargeIntegral`ではそのような処理をしているが、ベースライン電圧がどれくらいか知ることはデバッグの上で重要である。<br>
+ペデスタルの分布を描く関数。
+### `GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t TcutMin = 0, Double_t TcutMax = 1000)`
+- 負パルスか正パルスのどちらを使用しているかによって、異常な波形がある場合に-9999.9を返す
+- `GetPedestal`でペデスタルを得る
+- fTime(1番目のセルからの時間)のある領域にわたって、fWaveform(電圧値)の和をとる
