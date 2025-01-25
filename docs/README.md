@@ -29,3 +29,13 @@ DRS4Ana.h(ヘッダファイル)とDRS4Ana.C(ソースファイル)のペアで�
 - 負パルスか正パルスのどちらを使用しているかによって、異常な波形がある場合に-9999.9を返す
 - `GetPedestal`でペデスタルを得る
 - fTime(1番目のセルからの時間)のある領域にわたって、fWaveform(電圧値)の和をとる
+### `automated_peaksearch(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks, Double_t fitRange = 2.0)`
+chargeIntegralのヒストグラムに自動でピークサーチしてフィッティングをする関数であるが、**レガシーな仕様**が含まれているため、使用は推奨されない
+### `PlotTriggerRate(Int_t iCh = 0)`
+DAQの時のレートをプロットする
+### `Overlay_PlotWaves(Int_t iBoard=0, Int_t iCh=0)`
+波形の重ね書き2次元ヒストグラムを表示する。対話モードでやった方が早いよ。
+### `DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0)`
+timing calibrationで取得される、各セルごとの時間幅などを出力するデバッグ用のコード
+### `Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index)`と`Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0)`
+マスターとスレイブからチャンネルをひとつづつ選んで横に並べて波形を1イベントづつ見るコード。**仕様が古いのでもう使うことはないんじゃないかな。**
