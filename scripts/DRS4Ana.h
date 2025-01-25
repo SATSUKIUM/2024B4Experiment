@@ -109,8 +109,7 @@ public:
     virtual Double_t Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10);
     virtual Double_t GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10, Double_t trigger_voltage = -0.025);
     virtual Double_t Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0);
-    virtual Double_t Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
-    virtual Double_t Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
+    virtual Double_t Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual Double_t PlotEnergy(TString key, TString key_Crystal, Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax);
     virtual Double_t SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax);
     virtual Double_t PlotWavesWithThreshold(Int_t iBoard, Int_t iCh);
@@ -123,6 +122,7 @@ public:
     virtual Double_t Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0);
     virtual Double_t NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 250.0, Int_t numPeaks = 10, Double_t fitRange = 3.0, Double_t adcTimeRange = 600.0);
     virtual Double_t peak_divided(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Double_t fitXmin = 0.0, Double_t fitXmax = 0.0, Double_t adcTimeRange = 180.0);
+    virtual void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]);
 
 
 
