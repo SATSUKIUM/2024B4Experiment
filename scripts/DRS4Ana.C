@@ -605,7 +605,7 @@ Double_t DRS4Ana::PlotTriggerRate(Int_t iCh = 0){
     return(counter);
 }
 
-Double_t DRS4Ana::Overlay_PlotWaves(Int_t iBoard = 0 ,Int_t iCh = 0){
+Double_t DRS4Ana::Overlay_PlotWaves(Int_t iBoard=0, Int_t iCh=0){
     Long64_t nentries = fChain->GetEntriesFast();
     std::cout << "nentries: " << nentries << std::endl;
 
@@ -617,9 +617,8 @@ Double_t DRS4Ana::Overlay_PlotWaves(Int_t iBoard = 0 ,Int_t iCh = 0){
     fH2Overlay_Waves = new TH2F();
 
     //ビンなどは適宜変える
-    fChain->Draw(Form("waveform[%d][%d]:Iteration$>>fH2Overlay_Waves(300, %f, %f, 300, -0.5, 0.05)",iBoard, iCh, fTime[iBoard][iCh][1023]/1024.0, fTime[iBoard][iCh][1023]), "", "colz", nentries, 0); 
+    fChain->Draw(Form("waveform[%d][%d]:time[%d][%d]>>fH2Overlay_Waves(500, 0, %f, 500, -0.55, 0.05)",iBoard, iCh, iBoard, iCh, fTime[iBoard][iCh][1023]), "", "colz", nentries, 0); 
     //Draw(expression, selection, option, nentries, nfirstentry)
-
 
     TH2F* hist = (TH2F*)gROOT->FindObject("fH2Overlay_Waves");
     if(hist){
@@ -628,6 +627,7 @@ Double_t DRS4Ana::Overlay_PlotWaves(Int_t iBoard = 0 ,Int_t iCh = 0){
         hist->SetTitle(Form("fH2Overlay_Waves:%s", fRootFile.Data()));
     }
     gPad->SetLogz();
+    gStyle->SetOptStat(0);
     Long64_t counter = 0;
     return counter;
 }
