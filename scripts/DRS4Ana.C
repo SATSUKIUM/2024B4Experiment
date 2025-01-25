@@ -647,7 +647,7 @@ Double_t DRS4Ana::Overlay_PlotWaves(Int_t iBoard = 0 ,Int_t iCh = 0){
     fH2Overlay_Waves = new TH2F();
 
     //ビンなどは適宜変える
-    fChain->Draw(Form("waveform[%d][%d]:%fIteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.5, 0.05)",iBoard, iCh, fTime[iBoard][iCh][1023]/1024.0, fTime[iBoard][iCh][1023]), "", "colz", nentries, 0); 
+    fChain->Draw(Form("waveform[%d][%d]:Iteration$>>fH2Overlay_Waves(300, %f, %f, 300, -0.5, 0.05)",iBoard, iCh, fTime[iBoard][iCh][1023]/1024.0, fTime[iBoard][iCh][1023]), "", "colz", nentries, 0); 
     //Draw(expression, selection, option, nentries, nfirstentry)
 
 
