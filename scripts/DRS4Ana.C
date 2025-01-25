@@ -1033,34 +1033,27 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     }
 
     Double_t discriTime;
+    Double_t adcSum_timerange;
     if(key_Crystal == "NaI"){
-        for (Long64_t jentry = 0; jentry < nentries; jentry++){
-            fChain->GetEntry(jentry);
-            discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 600);
-    
-            if (chargeIntegral > -9999.9)
-            {
-                counter++;
-                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
-            }
-        }
+        adcSum_timerange = 600;
     }
     else if(key_Crystal == "GSO"){
-        for (Long64_t jentry = 0; jentry < nentries; jentry++){
-            fChain->GetEntry(jentry);
-            discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 180);
-    
-            if (chargeIntegral > -9999.9)
-            {
-                counter++;
-                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
-            }
-        }
+        adcSum_timerange = 180;
     }
     else{
         std::cout << "key is invalid" << std::endl;
+    }
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
+        fChain->GetEntry(jentry);
+        discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + adcSum_timerange);
+
+        if (chargeIntegral > -9999.9)
+        {
+            counter++;
+            fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+        }
     }
     
     fH1ChargeIntegral->Draw();
