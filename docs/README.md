@@ -39,3 +39,33 @@ DAQの時のレートをプロットする
 timing calibrationで取得される、各セルごとの時間幅などを出力するデバッグ用のコード
 ### `Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index)`と`Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0)`
 マスターとスレイブからチャンネルをひとつづつ選んで横に並べて波形を1イベントづつ見るコード。**仕様が古いのでもう使うことはないんじゃないかな。**
+### `Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10)`
+波形を重ね書きしたときに、頻度が高い部分(トリガータイミングであろう部分)だけ描画するコードだけど、今のトリガータイミングの計算には**使っていない**。`GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10, Double_t trigger_voltage = -0.025)`も同様。
+### `Plot_scatter_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1)`
+エネルギーの2Dhistoの前身であるゴミ。消しました。
+### `Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1)`
+- `key`とはエネルギー較正用のdata.txtが入っているフォルダ名であり、`./cfg/key/data.txt`に書いてもらうことになる。
+- 2Dヒストグラムの縦軸と横軸のそれぞのシンチレーターの種類を"NaI"か"GSO"かで選び、adcSumの時間幅を決める。
+    - NaIなら、trig-50からtrig+600
+    - GSOなら、trig-50からtrig+180
+### `PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600)`
+上に準ずる。
+### `SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax)`
+あとで
+### `PlotWavesWithThreshold(Int_t iBoard, Int_t iCh)`
+あとで
+### `automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax, Int_t numPeaks, Double_t fitRange = 2.0)`
+電荷量じゃなくて、パルスの波高でピークサーチしたいと思う時があるかもしれない。いや、ありませんので説明は省きます。
+### `GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t adcTimeRange = 180.0)`
+GSO結晶で撮ったエネルギースペクトルのピークサーチ用コード
+- chargeIntegralの幅が[trig-50, trig+180]になっている
+- 引数`fitrange`とは、ピークサーチ後にフィッティングを行う際の幅
+- 引数`adcTimeRange`とは、trigからどれくらい後までchargeIntegralするかの時間幅
+### `time_divided_spectrum(Int_t divOfTime = 10)`
+イベント数を分割して、chargeIntegralのスペクトルを重ね書きする。ゲインの時間変化などの解析に用いる。`time_divided_adcSum(Int_t divOfTime = 10)`はchargeIntegralに係数を付けてないバージョン。これ片方要らんなぁ...
+### `Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0)`
+ツリーのfDsicriCellに記録されたセルを吐き出してデバッグを行うコード。fDiscriCellとは、波形が3回連続で-0.020 Vを下回ったタイミングをトリガータイミングとしたセル番号。
+### `:NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t adcTimeRange = 600.0)`
+GSO_peaksearchと同様。
+### `peak_divided(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0.0, Double_t adcMax = 150.0, Double_t fitXmin = 0.0, Double_t fitXmax = 0.0, Double_t adcTimeRange = 180.0)`
+わかんない
