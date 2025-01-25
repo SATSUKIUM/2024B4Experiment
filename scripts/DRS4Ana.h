@@ -122,6 +122,7 @@ public:
     virtual Double_t Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0);
     virtual Double_t NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 250.0, Int_t numPeaks = 10, Double_t fitRange = 3.0, Double_t adcTimeRange = 600.0);
     virtual Double_t peak_divided(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Double_t fitXmin = 0.0, Double_t fitXmax = 0.0, Double_t adcTimeRange = 180.0);
+    virtual void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]);
 
 
 
