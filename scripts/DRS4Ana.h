@@ -45,12 +45,12 @@ public:
     // TTimeStamp      *eventTime;
     Int_t fEventTimeInSec;
     Int_t fEventTimeInNanoSec;
-    Int_t *fTriggerCell;          //[fNumOfBoards]
-    Double_t ***fWaveform; //[fNumOfBoards]
-    Double_t ***fTime;     //[fNumOfBoards]
-    Double_t **fAdcSum;         //[fNumOfBoards]
-    Int_t **fDiscriCell;
-    Int_t *fSerialNumber;
+    Int_t fTriggerCell[2];          //[fNumOfBoards]
+    Double_t fWaveform[2][4][1024]; //[fNumOfBoards]
+    Double_t fTime[2][4][1024];     //[fNumOfBoards]
+    Double_t fAdcSum[2][4];         //[fNumOfBoards]
+    Int_t fDiscriCell[2][4];
+    Int_t fSerialNumber[2];
 
     // List of branches
     TBranch *b_numOfBoards;        //!
@@ -180,22 +180,6 @@ DRS4Ana::DRS4Ana(const Char_t *fRootFile_par) : fChain(0)
 
     //ボード情報の初期化
     fNumOfBoards=Init_BoardInfo(tree_Info);
-    fTriggerCell = new Int_t[fNumOfBoards];
-    fWaveform = new Double_t **[fNumOfBoards];
-    fTime = new Double_t **[fNumOfBoards];
-    fAdcSum = new Double_t *[fNumOfBoards];
-    fSerialNumber = new Int_t[fNumOfBoards];
-    fDiscriCell = new Int_t *[fNumOfBoards];
-    for(Int_t iBoard=0; iBoard<fNumOfBoards; iBoard++){
-        fWaveform[iBoard] = new Double_t *[4];
-        fTime[iBoard] = new Double_t *[4];
-        fAdcSum[iBoard] = new Double_t [4];
-        fDiscriCell[iBoard] = new Int_t [4];
-        for(Int_t iCh=0; iCh<4; iCh++){
-            fWaveform[iBoard][iCh] = new Double_t[1024];
-            fTime[iBoard][iCh] = new Double_t[1024];
-        }
-    }
 
     //イベント情報の初期化
     Init(tree_Event);
@@ -238,9 +222,16 @@ Int_t DRS4Ana::Init_BoardInfo(TTree *tree_Info){
     }
     
     tree_Info->SetBranchAddress("numOfBoards", &fNumOfBoards);
+    tree_Info->SetBranchAddress("serialNumber", &fSerialNumber);
     tree_Info->GetEntry(0);
 
     printf("\n\tDRS4Ana.h->Init_BoardInfo->fNumOfBoards = %d\n", fNumOfBoards);
+    if(fNumOfBoards == 1){
+        printf("\t\tiBoard 0 | searialNumber %d", fSerialNumber[0]);
+    }
+    else if(fNumOfBoards == 2){
+        printf("\t\tiBoard 0 | searialNumber %d\n\t\tiBoard 1 | serialNumber %d", fSerialNumber[0], fSerialNumber[1]);
+    }
     return(fNumOfBoards);
 }
 void DRS4Ana::Init(TTree *tree_Event)
@@ -269,15 +260,10 @@ void DRS4Ana::Init(TTree *tree_Event)
     fChain->SetBranchAddress("adcSum", fAdcSum, &b_adcSum);
     fChain->SetBranchAddress("discriCell", fDiscriCell);
 
-    printf("\n\tInit checkpoint1\n");
-
     Notify();
-    printf("\n\tInit checkpoint2\n");
     fChain->GetEntry(1);
-    printf("\n\tInit checkpoint3\n");
     
     fTimeBinWidthInNanoSec = fTime[0][0][1023]/1024.0; //original fTime[0][0][1]
-    printf("\n\tInit checkpoint4\n");
     fWaveformXmin = fTime[0][0][0];
     fWaveformXmax = fTime[0][0][1023];
     fWaveformYmin = -0.5;
@@ -285,7 +271,6 @@ void DRS4Ana::Init(TTree *tree_Event)
 
     fADCsumXmin = 0.0;
     fADCsumXmax = 200.0;
-    printf("\n\tInit checkpoint5\n");
 
     fPedestalTmin = fTime[0][0][0];
     fPedestalTmax = fTime[0][0][1023] / 40.0;
@@ -294,7 +279,6 @@ void DRS4Ana::Init(TTree *tree_Event)
 
     // fSignalPolarity = 1; // positive signal
     fSignalPolarity = -1; // negative signal
-    printf("\n\tInit finished\n");
 }
 
 
