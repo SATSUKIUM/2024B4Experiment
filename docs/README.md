@@ -6,3 +6,18 @@
 - `.L hoge.C` (hoge.Cというスクリプトの読み込み。hoge.C内に記述された関数を全て読み込む。)
 - `hoge("../data.txt")` (hoge.C内のhoge(TString filepath){...}という関数を使う。)<br>
 とすれば引数を渡せます。
+## root hoge.Cのタイプ
+単独のスクリプトを使うとき、`root hoge.C`とするときの挙動は、「勝手にhoge.C内のhoge関数が読み込まれる」です。
+## DRS4Anaについて
+DRS4Ana.h(ヘッダファイル)とDRS4Ana.C(ソースファイル)のペアで動くDRS4Anaクラスの総称。
+
+- クラスとは
+    - 複数の関数を柔軟に使えるようひとまとめにしたデータと関数のセット
+    - スクリプトでは、毎回書かれた通りの動作しかできないが、クラスを使えばユーザーの操作で関数①の後に関数②を使ったり、関数①の後に関数③を使ってから関数②を使うこともできる。
+- ヘッダファイルとソースファイル
+    - 一つのコード内でクラスの定義と、クラスの使用を記述できるが、一般的にはファイルを分けて記述しておくのがふつう。
+### `Makedir_Date()`
+`./figure/`にYYYYMMDDのフォルダを作る
+### `IfFile_duplication(TString folderPath, TString &fileName)`
+同じファイルがある場合に名前を変えてくれる関数<br>
+例えば、"./figure/YYYYMMDD"というパスと、hoge.pdfを渡せば、そのディレクトリにhoge.pdfとhoge2.pdfが存在する場合に、渡した"hoge.pdf"を"hoge3.pdf"に変えてくれる関数
