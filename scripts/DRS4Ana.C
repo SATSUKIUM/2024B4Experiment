@@ -272,36 +272,6 @@ Double_t DRS4Ana::PlotPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
     return pedMean / counter;
 }
 
-// Double_t DRS4Ana::GetChargeIntegral(Int_t iCh, Double_t Vcut)
-// {
-//     if (fSignalPolarity == 1)
-//     {
-//         if (GetMaxVoltage(iCh) <= Vcut)
-//         {
-//             return -9999.9;
-//         }
-//     }
-//     else
-//     {
-//         if (GetMinVoltage(iCh) >= Vcut)
-//         {
-//             return -9999.9;
-//         }
-//     }
-
-//     Double_t pedestal = GetPedestal(iCh, Vcut);
-
-//     Double_t charge = 0.0;
-//     for (Int_t i = 0; i < 1024; i++)
-//     {
-//         if (fTime[0][iCh][i] >= fChargeIntegralTmin && fTime[0][iCh][i] <= fChargeIntegralTmax)
-//         {
-//             charge += fWaveform[0][iCh][i] - pedestal;
-//         }
-//     }
-//     return charge;
-// }
-
 Double_t DRS4Ana::GetChargeIntegral(Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t TcutMin = 0, Double_t TcutMax = 1000)
 {
     if (fSignalPolarity == 1)
