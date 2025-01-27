@@ -964,7 +964,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key
     return counter;
 }
 
-Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600, Int_t number = 0){
+Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
     /*
         エネルギー較正の式はかならずファイルから読み込むようにします。
         ファイルの形式は上の行から
@@ -981,6 +981,18 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         p0 Δp0 p1 Δp1 とします。
         9行目より後は読み込まれないようにしてあるので、メモ用紙にでも使ってください。
     */
+   Int_t flag_SlaveOnly = 0;
+    std::cout << Form("\n\tnumOfBoards : %d", fNumOfBoards) << std::endl;
+    if(fNumOfBoards == 1){
+        std::cout << Form("Board info\n\tmaster board : %d\n", fSerialNumber[0]) << std::endl;
+        if(fSerialNumber[0] == 32814){
+            flag_SlaveOnly = 1;
+        }
+    }
+    else if(fNumOfBoards == 2){
+        std::cout << Form("Boards info\n\tmaster board : %d\n\tslave board : %d", fSerialNumber[0], fSerialNumber[1]) << std::endl;
+    }
+
     std::cout << "iBoard:" << " " << iBoard << std::endl;
     std::cout << "iCh:" << " " <<iCh << std::endl;
     std::cout << "Vcut:" << " " <<Vcut << std::endl;
@@ -1016,11 +1028,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
             printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
         }
     }
-
-    Int_t iBoard2 = number / 4;
-    std::cout << p0[iBoard2][iCh] << " " << p1[iBoard2][iCh] << std::endl;
    
-
     Double_t discriTime;
     Double_t adcSum_timerange;
     if(key_Crystal == "NaI"){
@@ -1041,7 +1049,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+            fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral));
         }
     }
     
