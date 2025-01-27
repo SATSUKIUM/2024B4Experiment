@@ -1010,7 +1010,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
 
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e);
-    
+
     for(Int_t ib=0; ib<2; ib++){
         for(Int_t ic=0; ic<4; ic++){
             printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
@@ -1358,10 +1358,11 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t adcTimeRange = 180.0)
+Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0)
 {
     Int_t append_Option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
+    Double_t adcTimeRange = 180.0;
 
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -1369,8 +1370,8 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     Double_t timeCut_begin, timeCut_end;
 
     if(timecut_Option == 1){
-        timeCut_begin = fDiscriCell[iBoard][iCh] - 50; //50 ns before trig
-        timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange; //adcTimeRange ns after trig
+        timeCut_begin = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] - 50; //50 ns before trig
+        timeCut_end = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] + adcTimeRange; //adcTimeRange ns after trig
     }
 
     if (fH1ChargeIntegral != NULL)
@@ -1818,10 +1819,11 @@ Double_t DRS4Ana::Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0){
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t adcTimeRange = 600.0)
+Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0)
 {
     Int_t append_Option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
+    Double_t adcTimeRange = 600.0;
 
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
@@ -1830,8 +1832,8 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
 
     if(timecut_Option == 1){
         fChain->GetEntry(0);
-        timeCut_begin = fDiscriCell[iBoard][iCh];
-        timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange;
+        timeCut_begin = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+        timeCut_end = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] + adcTimeRange;
     }
 
     if (fH1ChargeIntegral != NULL)
