@@ -647,13 +647,14 @@ Double_t DRS4Ana::Overlay_PlotWaves(Int_t iBoard = 0 ,Int_t iCh = 0){
     fH2Overlay_Waves = new TH2F();
 
     //ビンなどは適宜変える
-    fChain->Draw(Form("waveform[%d][%d]:%fIteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.5, 0.05)",iBoard, iCh, fTime[iBoard][iCh][1023]/1024.0, fTime[iBoard][iCh][1023]), "", "colz", nentries, 0); 
     //Draw(expression, selection, option, nentries, nfirstentry)
-
+    fChain->Draw(Form("waveform[%d][%d]:Iteration$>>fH2Overlay_Waves(300, %f, %f, 300, -0.5, 0.05)",iBoard, iCh, fTime[iBoard][iCh][1023]/1024.0, fTime[iBoard][iCh][1023]), "", "colz", nentries, 0); 
+  
 
     TH2F* hist = (TH2F*)gROOT->FindObject("fH2Overlay_Waves");
     if(hist){
         hist->SetXTitle("Time (ns)");
+        hist->GetXaxis()->SetRange(fTime[iBoard][iCh][1023]/1024.0, fTime[iBoard][iCh][1023]);
         hist->SetYTitle("Waveform (V)");
         hist->SetTitle(Form("fH2Overlay_Waves:%s", fRootFile.Data()));
     }
@@ -1076,7 +1077,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(Int_t x_iBoard = 0, Int_t x_iCh =
     return counter;
 }
 
-Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600){
+Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600, Int_t number = 0){
     /*
         エネルギー較正の式はかならずファイルから読み込むようにします。
         ファイルの形式は上の行から
@@ -1093,20 +1094,21 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         p0 Δp0 p1 Δp1 とします。
         9行目より後は読み込まれないようにしてあるので、メモ用紙にでも使ってください。
     */
-    std::cout << iBoard << std::endl;
-    std::cout << iCh << std::endl;
-    std::cout << Vcut << std::endl;
-    std::cout << key_Crystal << std::endl;
-    std::cout << xmin << std::endl;
-    std::cout << xmax << std::endl;
+    std::cout << "iBoard:" << " " << iBoard << std::endl;
+    std::cout << "iCh:" << " " <<iCh << std::endl;
+    std::cout << "Vcut:" << " " <<Vcut << std::endl;
+    std::cout << "key_Crystal:" << " " <<key_Crystal << std::endl;
+    std::cout << "xmin:" << " " <<xmin << std::endl;
+    std::cout << "xmax:" << " " <<xmax << std::endl;
 
 
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
+    Double_t timeCut_begin, timeCut_end;
 
     TCanvas *c1 = new TCanvas("c1", Form("%d:ch%d Plot Energy", iBoard, iCh), 1600, 1200);
     c1->Draw();
-    gStyle->SetOptStat(0);
+    //gStyle->SetOptStat(0);
     gPad->SetGrid();
 
     if (fH1ChargeIntegral != NULL)
@@ -1125,18 +1127,18 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     Int_t line_index = 0;
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
     while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index % 4 == line_index){
+        if(line_index < 4){
             p0[0][line_index] = p0_buf;
             p0e[0][line_index] = p0e_buf;
             p1[0][line_index] = p1_buf;
             p1e[0][line_index] = p1e_buf;
             std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
-        else if((line_index-4) % 4 == line_index){
-            p0[1][line_index] = p0_buf;
-            p0e[1][line_index] = p0e_buf;
-            p1[1][line_index] = p1_buf;
-            p1e[1][line_index] = p1e_buf;
+        else if(line_index >= 4 ){
+            p0[1][line_index-4] = p0_buf;
+            p0e[1][line_index-4] = p0e_buf;
+            p1[1][line_index-4] = p1_buf;
+            p1e[1][line_index-4] = p1e_buf;
             std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
         }
         line_index++;
@@ -1151,6 +1153,10 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         }
     }
 
+    Int_t iBoard2 = number / 4;
+    std::cout << p0[iBoard2][iCh] << " " << p1[iBoard2][iCh] << std::endl;
+   
+
     Double_t discriTime;
     if(key_Crystal == "NaI"){
         for (Long64_t jentry = 0; jentry < nentries; jentry++){
@@ -1161,7 +1167,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
             if (chargeIntegral > -9999.9)
             {
                 counter++;
-                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+                fH1ChargeIntegral->Fill(p0[iBoard2][iCh] + p1[iBoard2][iCh]*(-chargeIntegral));
             }
         }
     }
@@ -1169,12 +1175,23 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         for (Long64_t jentry = 0; jentry < nentries; jentry++){
             fChain->GetEntry(jentry);
             discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 180);
-    
+
+            timeCut_begin = fDiscriCell[iBoard][iCh] - 50; //50 ns before trig
+            timeCut_end = fDiscriCell[iBoard][iCh] + 180; //adcTimeRange ns after trig
+        
+           // Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, discriTime - 50, discriTime + 180);
+            Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, Vcut, timeCut_begin, timeCut_end);
+        
+            
+            //std::cout << discriTime-50 << " " << discriTime + 180 << std::endl;
+            
             if (chargeIntegral > -9999.9)
             {
                 counter++;
-                fH1ChargeIntegral->Fill(p0[iBoard][iCh] + p1[iBoard][iCh]*(-chargeIntegral));
+                fH1ChargeIntegral->Fill(p0[iBoard2][iCh] + p1[iBoard2][iCh]*(-chargeIntegral));
+
+                //fH1ChargeIntegral->Fill(-chargeIntegral);
+            
             }
         }
     }
@@ -1183,6 +1200,21 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     }
     
     fH1ChargeIntegral->Draw();
+
+     TF1* gaussian = new TF1("gaussian", "gaus", 400, 600);
+        // gauss1->SetParameters(
+        //     gaussian_plus_linear->GetParameter(0), // 振幅
+        //     gaussian_plus_linear->GetParameter(1), // 中心
+        //     gaussian_plus_linear->GetParameter(2)  // 幅
+        // );
+        //gauss1->SetLineColor(kOrange+7);
+        //gauss1->SetLineStyle(1);
+        //gauss->Draw("LSAME");
+        fH1ChargeIntegral -> Fit(gaussian, "R");
+        gaussian -> Draw("same");
+
+        c1->Update();
+        gStyle->SetOptFit(1);
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
@@ -1481,7 +1513,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
 }
 
 
-Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t adcTimeRange = 180.0)
+Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t spec_sigma = 2.0, Double_t adcTimeRange = 180.0)
 {
     Int_t append_Option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
@@ -1521,6 +1553,8 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
         timeCut_end = fDiscriCell[iBoard][iCh] + adcTimeRange; //adcTimeRange ns after trig
         chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, timeCut_begin, timeCut_end);
         
+    std::cout << timeCut_begin << " " << timeCut_end << std::endl;
+
         if (chargeIntegral > -9999.9)
         {
             counter++;
@@ -1532,8 +1566,10 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     //まずはpeaksearchを自動で行う
     TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
     spectrum->SetResolution(5);
-    Double_t spec_sigma = 5.0; //分解能みたいな 小さいほど鋭いピークになる
+
+   // Double_t spec_sigma = 5.0; //分解能みたいな 小さいほど鋭いピークになる
     Double_t spec_thr = 0.001;
+
     Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr);
     //要調整 .Search(a, b, c, d)のうち、bはどれくらいの太さ以上のピークを見つけたいか。cはオプション。dは最大のピークに対してどれくらいの大きさのピークまで探すかを指している。0.1だと最大のピークの10%の高さのピークまで探す。
     Double_t* peakPositions = spectrum->GetPositionX();
