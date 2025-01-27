@@ -1551,6 +1551,7 @@ for (int i = 0; i < foundPeaks; ++i) {
     ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
     ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
     ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
+    ofs << "spec sigma : " << spec_sigma << std::endl; //ピークサーチの幅
     ofs.close();
     
 
@@ -1946,6 +1947,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
     ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
     ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
+    ofs << "spec sigma : " << spec_sigma << std::endl; //ピークサーチの幅
     ofs.close();
     
 
