@@ -105,7 +105,8 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
     while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index % 4 == line_index){
+        //if(line_index % 4 == line_index){
+        if(line_index < 4){
             p0[0][line_index] = p0_buf;
             p0e[0][line_index] = p0e_buf;
             p1[0][line_index] = p1_buf;
@@ -113,11 +114,12 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
             std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
-        else if((line_index-4) % 4 == line_index){
-            p0[1][line_index] = p0_buf;
-            p0e[1][line_index] = p0e_buf;
-            p1[1][line_index] = p1_buf;
-            p1e[1][line_index] = p1e_buf;
+        //else if((line_index-4) % 4 == line_index){
+        else if(line_index < 8){
+            p0[1][line_index-4] = p0_buf;
+            p0e[1][line_index-4] = p0e_buf;
+            p1[1][line_index-4] = p1_buf;
+            p1e[1][line_index-4] = p1e_buf;
             std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
             std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
@@ -997,6 +999,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         std::cout << Form("Boards info\n\tmaster board : %d\n\tslave board : %d", fSerialNumber[0], fSerialNumber[1]) << std::endl;
     }
 
+
     std::cout << "iBoard:" << " " << iBoard << std::endl;
     std::cout << "iCh:" << " " <<iCh << std::endl;
     std::cout << "Vcut:" << " " <<Vcut << std::endl;
@@ -1027,11 +1030,11 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e);
 
-    for(Int_t ib=0; ib<2; ib++){
-        for(Int_t ic=0; ic<4; ic++){
-            printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
-        }
-    }
+    // for(Int_t ib=0; ib<2; ib++){
+    //     for(Int_t ic=0; ic<4; ic++){
+    //         printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
+    //     }
+    // }
    
     Double_t discriTime;
     Double_t adcSum_timerange;
@@ -1056,6 +1059,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
             fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral));
         }
     }
+
     
     fH1ChargeIntegral->Draw();
 
@@ -1370,7 +1374,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0)
+Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t spec_sigma = 5.0)
 {
     Int_t append_Option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
@@ -1411,7 +1415,6 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
         timeCut_end = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] + adcTimeRange; //adcTimeRange ns after trig
         chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, timeCut_begin, timeCut_end);
         
-    std::cout << timeCut_begin << " " << timeCut_end << std::endl;
 
         if (chargeIntegral > -9999.9)
         {
@@ -1425,7 +1428,7 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
     spectrum->SetResolution(5);
 
-    Double_t spec_sigma = 5.0; //分解能みたいな 小さいほど鋭いピークになる
+    //Double_t spec_sigma = 5.0; //分解能みたいな 小さいほど鋭いピークになる
     Double_t spec_thr = 0.001;
 
     Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr);
