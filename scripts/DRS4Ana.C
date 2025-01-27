@@ -1370,7 +1370,7 @@ Double_t DRS4Ana::automated_peaksearch_SCA_mode(Int_t iBoard, Int_t iCh, Double_
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0)
+Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t spec_sigma = 5.0)
 {
     Int_t append_Option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
@@ -1425,7 +1425,6 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     TSpectrum *spectrum = new TSpectrum(numPeaks); //numPeaksは実際に見つけたいピークよりも多く設定しておくと良い
     spectrum->SetResolution(5);
 
-    Double_t spec_sigma = 5.0; //分解能みたいな 小さいほど鋭いピークになる
     Double_t spec_thr = 0.001;
 
     Int_t foundPeaks = spectrum->Search(fH1ChargeIntegral, spec_sigma, "", spec_thr);
@@ -1831,7 +1830,7 @@ Double_t DRS4Ana::Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0){
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0)
+Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t spec_sigma = 5.0)
 {
     Int_t append_Option = 1; //1 for not to overwrite the output.
     Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
