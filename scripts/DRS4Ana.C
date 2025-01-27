@@ -1053,7 +1053,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral));
+            fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly*4][iCh] + p1[iBoard+flag_SlaveOnly*4][iCh]*(-chargeIntegral));
         }
     }
     
@@ -1854,7 +1854,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     }
 
     std::cout << "================================================================" << std::endl << "NaI peaksearch" << std::endl << "\tiBoard : " << iBoard << std::endl << "\tiCh : " << iCh << std::endl << "\tadcMin : " << adcMin << std::endl << "\tadcMax : " << adcMax << std::endl << std::endl;
-    std::cout << "\tFit information\n" << "\t\ttimeCut_begin = " << timeCut_begin << " (first event)\n" << "\t\ttimeCut_end = " << timeCut_end << " (first event)\n" << "\t\tfitRange = " << fitRange << std::endl;
+    std::cout << "\tFit information\n" << "\t\ttimeCut_begin = " << timeCut_begin << " (first event)\n" << "\t\ttimeCut_end = " << timeCut_end << " (first event)\n" << "\t\tfitRange = " << fitRange << "\n\t\tspec_sigma = " << spec_sigma << std::endl;
     std::cout << "================================================================" << std::endl;
 
     //canvasの宣言など...
