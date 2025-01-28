@@ -1441,47 +1441,47 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::vector<TFitResultPtr> fitresults;
 
 
-for (int i = 0; i < foundPeaks; ++i) {
-    // ガウス関数 + 一次関数の定義
-    TF1* gaussian_plus_linear = new TF1(
-        Form("gaussian_plus_linear_%d", i),
-        //"[0] * exp(-0.5 * ((x - [1])/[2])**2) + [3] + [4]*x", 
-        "gaus+pol1(3)", 
-        peakPositions[i] - fitRange, 
-        peakPositions[i] + fitRange
-    );
-    
+    for (int i = 0; i < foundPeaks; ++i) {
+        // ガウス関数 + 一次関数の定義
+        TF1* gaussian_plus_linear = new TF1(
+            Form("gaussian_plus_linear_%d", i),
+            //"[0] * exp(-0.5 * ((x - [1])/[2])**2) + [3] + [4]*x", 
+            "gaus+pol1(3)", 
+            peakPositions[i] - fitRange, 
+            peakPositions[i] + fitRange
+        );
+        
 
-    // 初期パラメータの設定
-     gaussian_plus_linear->SetParameters(
-         fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i])), // ガウスの振幅 [0]
-         peakPositions[i],                                                       // ガウスの中心 [1]
-         1.0,                                                                    // ガウスの幅 [2]
-         50.0,                                                                    // 一次関数の切片 [3]
-         -5.0                                                                    // 一次関数の傾き [4]
-     );
+        // 初期パラメータの設定
+        gaussian_plus_linear->SetParameters(
+            fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i])), // ガウスの振幅 [0]
+            peakPositions[i],                                                       // ガウスの中心 [1]
+            1.0,                                                                    // ガウスの幅 [2]
+            50.0,                                                                    // 一次関数の切片 [3]
+            -5.0                                                                    // 一次関数の傾き [4]
+        );
 
-    // フィッティング
-    TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); // オプション "RS+" を使用
-    std::cout << "debug" << std::endl;
-    Int_t checking = fit_result->Status();
+        // フィッティング
+        TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); // オプション "RS+" を使用
+        std::cout << "debug" << std::endl;
+        Int_t checking = fit_result->Status();
 
-    if (checking != 0) {
-        // フィッティングが失敗した場合の処理（必要に応じて記述）
-        std::cout << "no fit" << std::endl;
-    } else {
-        // フィッティング成功時の処理
-        fits.push_back(gaussian_plus_linear);
-        means.push_back(gaussian_plus_linear->GetParameter(1));           // ガウス中心値
-        sigmas_mean.push_back(gaussian_plus_linear->GetParError(1));      // ガウス中心値の誤差
-        sigmas_gaus.push_back(gaussian_plus_linear->GetParameter(2));     // ガウス幅
-        intercept.push_back(gaussian_plus_linear->GetParameter(3));       // 切片
-        slope.push_back(gaussian_plus_linear->GetParameter(4));           // 傾き
-    }
+        if (checking != 0) {
+            // フィッティングが失敗した場合の処理（必要に応じて記述）
+            std::cout << "no fit" << std::endl;
+        } else {
+            // フィッティング成功時の処理
+            fits.push_back(gaussian_plus_linear);
+            means.push_back(gaussian_plus_linear->GetParameter(1));           // ガウス中心値
+            sigmas_mean.push_back(gaussian_plus_linear->GetParError(1));      // ガウス中心値の誤差
+            sigmas_gaus.push_back(gaussian_plus_linear->GetParameter(2));     // ガウス幅
+            intercept.push_back(gaussian_plus_linear->GetParameter(3));       // 切片
+            slope.push_back(gaussian_plus_linear->GetParameter(4));           // 傾き
+        }
 
 
 
-    // 各成分を個別にプロットする
+        // 各成分を個別にプロットする
         TF1* gauss1 = new TF1("gauss1", "gaus", peakPositions[i] - fitRange, 
         peakPositions[i] + fitRange);
         gauss1->SetParameters(
@@ -1503,7 +1503,7 @@ for (int i = 0; i < foundPeaks; ++i) {
         linear->SetLineStyle(1);
         linear->Draw("LSAME");
 
-}
+    }
 
 
     c1->Update();
@@ -1893,20 +1893,48 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::vector<Double_t> means;
     std::vector<Double_t> sigmas_mean;
     std::vector<Double_t> sigmas_gaus;
+    std::vector<Double_t> intercepts;
+    std::vector<Double_t> slopes;
     std::vector<TFitResultPtr> fitresults;
+
     for(int i=0; i<foundPeaks; ++i){
-        TF1* gaussian = new TF1(Form("gaussian_%d",i), "gaus", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
-        gaussian->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0));
-        TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
+        TF1* gaussian_plus_linear = new TF1(Form("gaussian_plus_linear_%d",i), "gaus+pol(3)", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
+        /*
+            [0]*exp(-0.5*((x-[1])/[2])**2) + [3] + [4]*x
+        */
+
+        gaussian_plus_linear->SetParameters(fH1ChargeIntegral->GetBinContent(fH1ChargeIntegral->FindBin(peakPositions[i]), peakPositions[i], 1.0), peakPositions[i], 1.0, 1000, -5.0);
+        TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
         Int_t checking = fit_result->Status();
         if(checking != 0){}
         else{
-            fits.push_back(gaussian);
-            means.push_back(gaussian->GetParameter(1));
+            fits.push_back(gaussian_plus_linear);
+            means.push_back(gaussian_plus_linear->GetParameter(1));
             // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
-            sigmas_mean.push_back(gaussian->GetParError(1));//σ_mean
-            sigmas_gaus.push_back(gaussian->GetParameter(2));//σ
+            sigmas_mean.push_back(gaussian_plus_linear->GetParError(1));//σ_mean
+            sigmas_gaus.push_back(gaussian_plus_linear->GetParameter(2));//σ
+            intercepts.push_back(gaussian_plus_linear->GetParameter(3));//切片
+            slopes.push_back(gaussian_plus_linear->GetParameter(4));//傾き
         }
+
+        //ガウシアン、直線、その和を個々でプロットする
+        TF1* gauss = new TF1("gauss", "gaus", peakPositions[i] - fitRange, peakPositions[i] + fitRange);
+        gauss->SetParameters(
+            gaussian_plus_linear->GetParameter(0), gaussian_plus_linear->GetParameter(1), gaussian_plus_linear->GetParameter(2)
+        );
+        gauss->SetLineColor(kOrange);
+        gauss->SetLineStyle(1);
+        gauss->Draw("LSAME");
+        
+        TF1* linear = new TF1("linear", "pol1", peakPositions[i] - fitRange, 
+        peakPositions[i] + fitRange);
+        linear->SetParameters(
+            gaussian_plus_linear->GetParameter(3), // 切片
+            gaussian_plus_linear->GetParameter(4)  // 傾き
+        );
+        linear->SetLineColor(kGreen+1);
+        linear->SetLineStyle(1);
+        linear->Draw("LSAME");
     }
     c1->Update();
 
