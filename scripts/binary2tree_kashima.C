@@ -330,6 +330,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     Double_t waveform[numOfBoards][4][1024];
     Double_t time[numOfBoards][4][1024];
     Double_t adcSum[numOfBoards][4];
+    Double_t pedestal[numOfBoards][4];
 
     //--------------------------------------------------
     // Define a tree for board infomation
@@ -364,6 +365,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     if(DISCR_FLAG){
         treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
     }
+    treeDRS4BoardEvent->Branch("pedestal", pedestal, Form("pedestal[%d][4]/D : average voltage of initial 30 cells", numOfBoards));
     
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
@@ -458,6 +460,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
                 adcSum[iBoard][chID] = 0;
+                pedestal[iBoard][chID] = 0;
                 Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
                 Int_t flag_found_discriCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
                 flag_b4exp_longtrig = 0;// イベントセレクションのフラグ
@@ -513,8 +516,12 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                     }
                     
                     adcSum[iBoard][chID] += waveform[iBoard][chID][icell];     // Set Tree data
+                    if(icell<30){
+                        pedestal[iBoard][chID] += waveform[iBoard][chID][icell];
+                    }
                     DEBUG_PRINT(3, "bd%d ch%d cell%d:, v=%f, sum=%f\n", iBoard, chID, icell, waveform[iBoard][chID][icell], adcSum[iBoard][chID]);
                 }
+                pedestal[iBoard][chID] = pedestal[iBoard][chID]/30.0;
                 DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
             }
         }
