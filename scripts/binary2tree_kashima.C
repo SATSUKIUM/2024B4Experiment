@@ -365,7 +365,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     if(DISCR_FLAG){
         treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
     }
-    treeDRS4BoardEvent->Branch("pedestal", pedestal, Form("pedestal[%d][4]/D : average voltage of initial 30 cells", numOfBoards));
+    treeDRS4BoardEvent->Branch("pedestal", pedestal, Form("pedestal[%d][4]/D", numOfBoards));
     
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
