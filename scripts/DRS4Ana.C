@@ -1053,7 +1053,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
         if (chargeIntegral > -9999.9)
         {
             counter++;
-            fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly*4][iCh] + p1[iBoard+flag_SlaveOnly*4][iCh]*(-chargeIntegral));
+            fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral));
         }
     }
     
