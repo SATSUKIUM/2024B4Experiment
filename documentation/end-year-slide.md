@@ -11,5 +11,6 @@
         - 記録されるデータ
         - バイナリ
         - treeに変換
-    - DRS4 multi-board configuration
-    - トリガーロジック
+    - トリガーロジック・DRS4 multi-board configuration
+        - マスターボードだけがトリガーを発行できる。
+        - それゆえに8つあるカウンターのうち、3つのANDでトリガーを発行する
