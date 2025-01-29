@@ -1898,7 +1898,7 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::vector<TFitResultPtr> fitresults;
 
     for(int i=0; i<foundPeaks; ++i){
-        TF1* gaussian_plus_linear = new TF1(Form("gaussian_plus_linear_%d",i), "gaus+pol(3)", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
+        TF1* gaussian_plus_linear = new TF1(Form("gaussian_plus_linear_%d",i), "gaus+pol1(3)", peakPositions[i]-fitRange, peakPositions[i]+fitRange); //要調整。特に範囲
         /*
             [0]*exp(-0.5*((x-[1])/[2])**2) + [3] + [4]*x
         */
