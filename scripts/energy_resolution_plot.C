@@ -12,22 +12,56 @@
 #include <iomanip>
 #include <chrono>
 #include <ctime> //時刻情報
+#include <TSystem.h>
 
-using namespace std;
-void energy_resolution_plot(TString input_Folder = "./output/"){
+
+void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]){
+    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
+    TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
+    std::ifstream ifs(calb_data_filepath);
+    Int_t line_index = 0;
+    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
+        if(line_index % 4 == line_index){
+            p0[0][line_index] = p0_buf;
+            p0e[0][line_index] = p0e_buf;
+            p1[0][line_index] = p1_buf;
+            p1e[0][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
+            std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
+        }
+        else if((line_index-4) % 4 == line_index){
+            p0[1][line_index] = p0_buf;
+            p0e[1][line_index] = p0e_buf;
+            p1[1][line_index] = p1_buf;
+            p1e[1][line_index] = p1e_buf;
+            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
+            std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
+        }
+        line_index++;
+        if(line_index == 8){
+            break;
+        }
+    }
+    ifs.close();
+}
+
+void energy_resolution_plot(TString input_Folder = "./output/", TString key = "0129", Int_t iBoard = 0, Int_t iCh = 0){
     TString input_Filepath = Form("%ss4_calib.txt",input_Folder.Data());
-    ifstream ifs(input_Filepath);
+    std::ifstream ifs(input_Filepath);
     double energy, ch, sigma_ch, sigma_gaus, sigma_gaus_energy;
+
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e);
 
     TCanvas* canvas = new TCanvas();
     TGraph* graph = new TGraph;
     int index_data = 0;
     Double_t R; //energy resolution
     while(ifs >> energy >> ch >> sigma_ch >> sigma_gaus){
-        sigma_gaus_energy = sigma_gaus*51.4; //energy error in keV
-        R = sigma_gaus_energy*2*sqrt(2*log(2))/(51.4*ch-1.297);
+        sigma_gaus_energy = sigma_gaus*p1[iBoard][iCh]; //energy error in keV
+        R = sigma_gaus_energy*2*sqrt(2*log(2))/(p1[iBoard][iCh]*ch);
         graph->SetPoint(index_data, energy, R*100);
-        cout << index_data << endl;
+        std::cout << index_data << std::endl;
         index_data++;
     }
     ifs.close();
