@@ -3,7 +3,7 @@
 #!/bin/bash
 
 # .datファイルが格納されているフォルダー
-DAT_FOLDER="../../../sotuken/0123/s4"
+DAT_FOLDER="${1:-../data/20241226/sato_NaI_m_2}"
 
 # ROOTスクリプトのパス
 ROOT_SCRIPT="binary2tree_kashima.C"
@@ -12,7 +12,7 @@ ROOT_SCRIPT="binary2tree_kashima.C"
 ROOT_DEST_FOLDER="${DAT_FOLDER}/ROOT_FILES"
 echo "Root destination folder: $ROOT_DEST_FOLDER"
 
-# ROOT_DEST_FOLDERが存在しない場合は作成1       
+# ROOT_DEST_FOLDERが存在しない場合は作成
 mkdir -p "$ROOT_DEST_FOLDER"
 
 # ターゲットディレクトリに書き込み権限を与える
@@ -44,8 +44,3 @@ find "$DAT_FOLDER" -type f -name "*.dat" | parallel -j 8 '
 '
 
 echo "All files processed and moved."
-
-
-# 動作させる時は
-# chmod +x bin2tree_kashima4.sh
-# ./bin2tree_kashima4.sh

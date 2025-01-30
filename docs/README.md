@@ -6,6 +6,8 @@
 - `.L hoge.C` (hoge.Cというスクリプトの読み込み。hoge.C内に記述された関数を全て読み込む。)
 - `hoge("../data.txt")` (hoge.C内のhoge(TString filepath){...}という関数を使う。)<br>
 とすれば引数を渡せます。
+![image](https://github.com/user-attachments/assets/aba87ef7-dd0d-4658-a161-443dcd91624f)
+
 ## root hoge.Cのタイプ
 単独のスクリプトを使うとき、`root hoge.C`とするときの挙動は、「勝手にhoge.C内のhoge関数が読み込まれる」です。
 ## DRS4Anaについて
@@ -48,6 +50,8 @@ timing calibrationで取得される、各セルごとの時間幅などを出�
 - 2Dヒストグラムの縦軸と横軸のそれぞのシンチレーターの種類を"NaI"か"GSO"かで選び、adcSumの時間幅を決める。
     - NaIなら、trig-50からtrig+600
     - GSOなら、trig-50からtrig+180
+![fH2Energy_PMTs_demo_long_run_dat_root](https://github.com/user-attachments/assets/abc2c787-5815-4c42-8132-91f5fd8992f7)
+
 ### `PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 600)`
 上に準ずる。
 ### `SumChargeIntegral(Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t Vcut, Double_t xmin, Double_t xmax)`
@@ -63,6 +67,8 @@ GSO結晶で撮ったエネルギースペクトルのピークサーチ用コ�
 - 引数`adcTimeRange`とは、trigからどれくらい後までchargeIntegralするかの時間幅
 ### `time_divided_spectrum(Int_t divOfTime = 10)`
 イベント数を分割して、chargeIntegralのスペクトルを重ね書きする。ゲインの時間変化などの解析に用いる。`time_divided_adcSum(Int_t divOfTime = 10)`はchargeIntegralに係数を付けてないバージョン。これ片方要らんなぁ...
+![timeDiv_demo_long_run2_dat_root](https://github.com/user-attachments/assets/7f1a3e44-f0c3-488d-91a8-aa8d32b2c6d0)
+
 ### `Print_discriCell(Int_t iBoard = 0, Int_t iCh = 0)`
 ツリーのfDsicriCellに記録されたセルを吐き出してデバッグを行うコード。fDiscriCellとは、波形が3回連続で-0.020 Vを下回ったタイミングをトリガータイミングとしたセル番号。
 ### `:NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Int_t numPeaks = 10, Double_t fitRange = 2.0, Double_t adcTimeRange = 600.0)`

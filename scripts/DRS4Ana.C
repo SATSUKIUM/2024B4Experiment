@@ -48,6 +48,8 @@ Please read the macro for the detail.
 
 #include <fstream>
 
+#include <TApplication.h>
+
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
     gStyle->SetOptStat(0);
@@ -124,9 +126,7 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
         line_index++;
-        if(line_index == 8){
-            break;
-        }
+        
     }
     ifs.close();
 }
@@ -1047,6 +1047,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     else{
         std::cout << "key is invalid" << std::endl;
     }
+    Double_t energy_buf;
 
     for (Long64_t jentry = 0; jentry < nentries; jentry++){
         fChain->GetEntry(jentry);
@@ -1055,6 +1056,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
 
         if (chargeIntegral > -9999.9)
         {
+            energy_buf = p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral);
             counter++;
             fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral));
         }
@@ -2294,6 +2296,199 @@ Double_t DRS4Ana::peak_divided(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin 
     while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
         filename_figure = Form("%s:ch%d_peak_divided_%d.pdf", rootFile.Data(), iCh, index);
+        index++;
+    }
+
+    c1->SaveAs(folderPath + '/' + filename_figure);
+
+    return (Double_t)counter;
+}
+
+
+Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", Int_t iBoard, Int_t iCh, Double_t adcMin = 0, Double_t adcMax = 100){
+    Int_t append_Option = 1; //1 for not to overwrite the output.
+    Int_t timecut_Option = 1; //1 to restrict the time range for better energy resolution
+    Double_t adcTimeRange;
+    if(key_crystal == "NaI"){
+        adcTimeRange = 600.0;
+    }
+    else if(key_crystal == "GSO"){
+        adcTimeRange = 180.0;
+    }
+    else{
+        printf("\tkey invalid\n");
+    }
+
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    Double_t timeCut_begin, timeCut_end;
+
+    if(timecut_Option == 1){
+        fChain->GetEntry(0);
+        timeCut_begin = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] - 50.0;
+        timeCut_end = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] + adcTimeRange;
+    }
+
+    if (fH1ChargeIntegral != NULL)
+    {
+        delete fH1ChargeIntegral;
+    }
+
+    std::cout << "================================================================" << std::endl << "semi-auto peak fitting" << std::endl << "\tiBoard : " << iBoard << std::endl << "\tiCh : " << iCh << std::endl << "\tadcMin : " << adcMin << std::endl << "\tadcMax : " << adcMax << std::endl << std::endl;
+    std::cout << "\tFit information\n" << "\t\ttimeCut_begin = " << timeCut_begin << " (first event)\n" << "\t\ttimeCut_end = " << timeCut_end << " (first event)\n"  << std::endl;
+    std::cout << "================================================================" << std::endl;
+
+    //canvasの宣言など...
+    TCanvas *c1 = new TCanvas("c1", "Canvas", 1600, 1200);
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s:ch%d Charge Integral [%.1f,%.1f]", fRootFile.Data(), iCh, fChargeIntegralTmin, fChargeIntegralTmax), 500, adcMin, adcMax);
+    fH1ChargeIntegral->SetXTitle("Voltage sum [V]");
+    fH1ChargeIntegral->SetYTitle(Form("[counts] per %.2f V", (adcMax-adcMin)/500));
+    gPad->SetGrid();
+
+    //chargeIntegralの計算
+    Double_t chargeIntegral;
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    {
+        fChain->GetEntry(jentry);
+        timeCut_begin = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] - 50;//トリガー時刻から-50 ns遡ってsum
+        timeCut_end = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]] + adcTimeRange;//トリガー時刻から+adcTimeRange nsまでsum
+        chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, timeCut_begin, timeCut_end);
+        
+        if (chargeIntegral > -9999.9)
+        {
+            counter++;
+            fH1ChargeIntegral->Fill(-chargeIntegral);
+        }
+    }
+    fH1ChargeIntegral->Draw();
+    c1->Update();
+    gPad->WaitPrimitive();  // ここでグラフが表示されたまま一時停止
+
+    Int_t flag_std_input = 1;
+    Int_t fitIndex;
+    std::vector<TF1*> fits;
+    std::vector<Double_t> means, sigmas_mean, sigmas_gauss, intercepts, slopes;
+    while(flag_std_input == 1){
+        Double_t fitLowerBound, fitUpperBound, peakHight, sigma_set;
+        std::cout << "fitLowerBound = ";
+        std::cin >> fitLowerBound;
+        std::cout << std::endl;
+        std::cout << "fitUpperBound = ";
+        std::cin >>fitUpperBound;
+        std::cout << std::endl;
+        std::cout << "peakHight = ";
+        std::cin >> peakHight;
+        std::cout << std::endl;
+        std::cout << "set sigma : ";
+        std::cin >> sigma_set;
+        if(fitLowerBound == 0 && fitUpperBound == 0){
+            break;
+        }
+        Double_t peakPosition = (fitLowerBound + fitUpperBound)/2.0;
+        Double_t fitRange = fitUpperBound - fitLowerBound;
+        TF1* gaussian_plus_linear = new TF1(Form("gaussian_plus_linear_%d", fitIndex), "gaus+pol1(3)", fitLowerBound, fitUpperBound);
+        /*
+            [0]*exp(-0.5*((x-[1])/[2])**2) + [3] + [4]*x
+        */
+        gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -1.0);
+        TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
+        Int_t checking = fit_result->Status();
+        if(checking != 0){}
+        else{
+            fits.push_back(gaussian_plus_linear);
+            means.push_back(gaussian_plus_linear->GetParameter(1));
+            // sigmas.push_back((gaussian->GetParameter(2))/sqrt(2*M_PI*(gaussian->GetParameter(0))*(gaussian->GetParameter(2))));//σ/√N
+            sigmas_mean.push_back(gaussian_plus_linear->GetParError(1));//σ_mean
+            sigmas_gauss.push_back(gaussian_plus_linear->GetParameter(2));//σ
+            intercepts.push_back(gaussian_plus_linear->GetParameter(3));//切片
+            slopes.push_back(gaussian_plus_linear->GetParameter(4));//傾き
+        }
+        
+        //ガウシアン、直線、その和を個々でプロットする
+        TF1* gauss = new TF1("gauss", "gaus", fitLowerBound, fitUpperBound);
+        gauss->SetParameters(
+            gaussian_plus_linear->GetParameter(0), gaussian_plus_linear->GetParameter(1), gaussian_plus_linear->GetParameter(2)
+        );
+        gauss->SetLineColor(kOrange);
+        gauss->SetLineStyle(1);
+        gauss->Draw("LSAME");
+        
+        TF1* linear = new TF1("linear", "pol1", fitLowerBound, fitUpperBound);
+        linear->SetParameters(
+            gaussian_plus_linear->GetParameter(3), // 切片
+            gaussian_plus_linear->GetParameter(4)  // 傾き
+        );
+        linear->SetLineColor(kGreen);
+        linear->SetLineStyle(1);
+        linear->Draw("LSAME");
+        c1->Update();
+
+        fitIndex++;
+        gPad->WaitPrimitive();  // ここでグラフが表示されたまま一時停止
+    }
+
+    c1->Update();
+
+    //結果の図やフィッティングパラメータを保存する。フィッティングパラメータは"./output/GSO_peaksearch_data.txt"に追記して保存する。図は"./figure/"にYYYYMMDDというフォルダを作ってその中に保存する。
+    TString filename_figure;
+    TString rootFile = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')); //.rootファイルのフルパスからファイル名だけを抜き出した
+    rootFile.ReplaceAll(".", "_"); //.dat.rootのドットを"_"に変えた
+
+    std::ofstream ofs;
+    if(append_Option == 1){
+        ofs.open("./output/semi-auto_fitting_data.txt", std::ios::app);
+    }
+    else{
+        ofs.open(Form("./output/%s_data.txt",rootFile.Data()));
+    }
+    
+    auto mean_temp = means.begin();
+    auto sigma_mean_temp = sigmas_mean.begin();
+    auto sigma_gaus_temp = sigmas_gauss.begin();
+
+    if(append_Option == 1){
+        ofs << std::endl << "================================================================" << std::endl << ".rootfile || filepath : " << fRootFile.Data() << std::endl;
+        auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+        std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+        std::tm local_tm = *std::localtime(&now_c);
+
+        ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    }
+    ofs << "means, sigmas of means, sigmas of gaussian" << std::endl << std::endl;
+    while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gauss.end()){
+        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << std::endl;
+        ++mean_temp;
+        ++sigma_mean_temp;
+        ++sigma_gaus_temp;
+    }
+    ofs << std::endl << "numPeak : " << fitIndex << std::endl; // ピークの数
+    ofs.close();
+    
+
+    //図を保存するフォルダのための日付
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm); // "YYYYMMDD"形式で日付を取得
+    //YYYYMMDDフォルダのパス
+    TString folderPath = TString::Format("./figure/%s", date);
+    //フォルダが存在しない場合は作成
+    if (gSystem->AccessPathName(folderPath)) {
+        if (gSystem->mkdir(folderPath, true) != 0) {
+            std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+            return -1;
+        }
+    }
+
+    filename_figure = Form("%s:ch%d_semi_auto_fitting_%s.pdf", rootFile.Data(), iCh, key_crystal.Data());
+
+    // 既にファイルが存在するか確認
+    Int_t index = 1;
+    while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
+        // ファイルが存在する場合、ファイル名にインデックスを追加
+        filename_figure = Form("%s:ch%d_NaI_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
         index++;
     }
 

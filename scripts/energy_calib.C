@@ -31,7 +31,6 @@ void energy_calib(TString input_Folder = "./output/"){
     gStyle->SetOptFit();
 
     double_t energy, ch, sigma_ch, sigma_gaus;
-
     Int_t index_data = 0;
     while(ifs >> energy >> ch >> sigma_ch >> sigma_gaus){
         graph->SetPoint(index_data, ch, energy);
