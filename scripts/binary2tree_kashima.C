@@ -521,7 +521,8 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                     }
                     DEBUG_PRINT(3, "bd%d ch%d cell%d:, v=%f, sum=%f\n", iBoard, chID, icell, waveform[iBoard][chID][icell], adcSum[iBoard][chID]);
                 }
-                pedestal[iBoard][chID] = pedestal[iBoard][chID]/30.0;
+                pedestal[iBoard][chID] = pedestal[iBoard][chID]/30.0; // pedestal: average voltage of first 30 cells
+                adcSum[iBoard][chID] += -pedestal[iBoard][chID]*1024.0; // adcSum - dcoffset
                 DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
             }
         }
