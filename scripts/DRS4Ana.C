@@ -107,7 +107,10 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
     while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index % 4 == line_index){
+        if(line_index == 8){
+            break;
+        }
+        if(line_index < 4){
             p0[0][line_index] = p0_buf;
             p0e[0][line_index] = p0e_buf;
             p1[0][line_index] = p1_buf;
@@ -115,18 +118,16 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
             std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
-        else if((line_index-4) % 4 == line_index){
-            p0[1][line_index] = p0_buf;
-            p0e[1][line_index] = p0e_buf;
-            p1[1][line_index] = p1_buf;
-            p1e[1][line_index] = p1e_buf;
+        else{
+            p0[1][line_index-4] = p0_buf;
+            p0e[1][line_index-4] = p0e_buf;
+            p1[1][line_index-4] = p1_buf;
+            p1e[1][line_index-4] = p1e_buf;
             std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
             std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
         line_index++;
-        if(line_index == 8){
-            break;
-        }
+        
     }
     ifs.close();
 }
@@ -1029,11 +1030,13 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e);
 
-    for(Int_t ib=0; ib<2; ib++){
-        for(Int_t ic=0; ic<4; ic++){
-            printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
-        }
-    }
+    // for(Int_t ib=0; ib<2; ib++){
+    //     for(Int_t ic=0; ic<4; ic++){
+    //         printf("\t%f %f %f %f\n", p0[ib][ic], p0e[ib][ic], p1[ib][ic], p1e[ib][ic]);
+    //     }
+    // }
+
+    // printf("\t%f %f %f %f\n", p0[0][0], p1[0][0], p0e[0][0], p1e[0][0]);
    
     Double_t discriTime;
     Double_t adcSum_timerange;
@@ -1046,6 +1049,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     else{
         std::cout << "key is invalid" << std::endl;
     }
+    Double_t energy_buf;
 
     for (Long64_t jentry = 0; jentry < nentries; jentry++){
         fChain->GetEntry(jentry);
@@ -1054,10 +1058,16 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
 
         if (chargeIntegral > -9999.9)
         {
+            energy_buf = p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral);
             counter++;
-            fH1ChargeIntegral->Fill(p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral));
+            fH1ChargeIntegral->Fill(energy_buf);
+            // fH1ChargeIntegral->Fill(-chargeIntegral);
+            // std::cout<<energy_buf<<std::endl;
+            // printf("\t%f %f %f %f\n", p0[iBoard+flag_SlaveOnly][iCh], p1[iBoard+flag_SlaveOnly][iCh], p0e[iBoard+flag_SlaveOnly][iCh], p1e[iBoard+flag_SlaveOnly][iCh]);
         }
     }
+
+    
     
     fH1ChargeIntegral->Draw();
 
