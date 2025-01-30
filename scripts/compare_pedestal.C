@@ -34,6 +34,8 @@ void compare_pedestal(TString filename1, TString filename2, Int_t iCh_1, Int_t i
     TTree *tree2 = (TTree*)file2->Get("treeDRS4BoardEvent");
 
     TCanvas *c1 = new TCanvas("name", "title", 1200, 800);
+    gStyle->SetOptStat(0);
+    gPad->SetGrid();
 
     tree1->Draw(Form("pedestal[0][%d]>>hist1(500,-0.01,0.02)", iCh_1));
     TH1F *hist1 = (TH1F*)gPad->GetPrimitive("hist1");
@@ -45,6 +47,11 @@ void compare_pedestal(TString filename1, TString filename2, Int_t iCh_1, Int_t i
 
     hist1->Draw();
     hist2->Draw("LSAME");
+
+    TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.85);
+    leg->AddEntry(hist1, "File 1", "l");
+    leg->AddEntry(hist2, "File 2", "l");
+    leg->Draw();
 
 
 }
