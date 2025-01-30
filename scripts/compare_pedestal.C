@@ -49,8 +49,8 @@ void compare_pedestal(TString filename1, TString filename2, Int_t iCh_1, Int_t i
     hist2->Draw("LSAME");
 
     TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.85);
-    leg->AddEntry(hist1, "File 1", "l");
-    leg->AddEntry(hist2, "File 2", "l");
+    leg->AddEntry(hist1, Form("%s", filename1.Data()), "l");
+    leg->AddEntry(hist2, Form("%s", filename2.Data()), "l");
     leg->Draw();
 
 
