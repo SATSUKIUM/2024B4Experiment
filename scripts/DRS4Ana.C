@@ -107,9 +107,6 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
     while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index == 8){
-            break;
-        }
         if(line_index < 4){
             p0[0][line_index] = p0_buf;
             p0e[0][line_index] = p0e_buf;
@@ -125,6 +122,9 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             p1e[1][line_index-4] = p1e_buf;
             std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
             std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
+        }
+        if(line_index == 8){
+            break;
         }
         line_index++;
         
@@ -1929,13 +1929,7 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
 
     std::vector<TFitResultPtr> fitresults;
 
-    double chi2 = gaussian_plus_linear -> GetChisquare();  // χ²
-    int ndof = gaussian_plus_linear -> GetNDF();           // 自由度
-    double chi2_ndof = (ndof > 0) ? chi2 / ndof : 0; // 0除算回避
-    double prob = TMath::Prob(chi2, ndof);
-
-    chi2_ndof_vec.push_back(chi2_ndof);
-    prob_vec.push_back(prob);
+   
 
 
 
@@ -1958,6 +1952,14 @@ for (int i = 0; i < foundPeaks; ++i) {
          50.0,                                                                    // 一次関数の切片 [3]
          -5.0                                                                    // 一次関数の傾き [4]
      );
+
+    double chi2 = gaussian_plus_linear -> GetChisquare();  // χ²
+    int ndof = gaussian_plus_linear -> GetNDF();           // 自由度
+    double chi2_ndof = (ndof > 0) ? chi2 / ndof : 0; // 0除算回避
+    double prob = TMath::Prob(chi2, ndof);
+
+    chi2_ndof_vec.push_back(chi2_ndof);
+    prob_vec.push_back(prob);
 
     // フィッティング
     TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); // オプション "RS+" を使用
