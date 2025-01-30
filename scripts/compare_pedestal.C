@@ -35,11 +35,14 @@ void compare_pedestal(TString filename1, TString filename2){
 
     TCanvas *c1 = new TCanvas("name", "title", 1200, 800);
     
-    tree1->Draw("pedestal[0][0]>>hist1(500,-0.02,0.02)");
+    Int_t iCh_1, iCh_2;
+    iCh_1 = 1;
+    iCh_1 = 1;
+    tree1->Draw(Form("pedestal[0][%d]>>hist1(500,-0.01,0.02)", iCh_1));
     TH1F *hist1 = (TH1F*)gPad->GetPrimitive("hist1");
     hist1->SetLineColor(kRed);
 
-    tree2->Draw("pedestal[0][0]>>hist2(500,-0.02,0.02)");
+    tree2->Draw(Form("pedestal[0][%d]>>hist2(500,-0.01,0.02)",iCh_2));
     TH1F *hist2 = (TH1F*)gPad->GetPrimitive("hist2");
     hist2->SetLineColor(kBlue);
 
