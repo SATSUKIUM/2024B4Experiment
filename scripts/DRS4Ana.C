@@ -2312,7 +2312,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
     std::vector<TF1*> fits;
     std::vector<Double_t> means, sigmas_mean, sigmas_gauss, intercepts, slopes;
     while(flag_std_input == 1){
-        Double_t fitLowerBound, fitUpperBound, peakHight;
+        Double_t fitLowerBound, fitUpperBound, peakHight, sigma_set;
         std::cout << "fitLowerBound = ";
         std::cin >> fitLowerBound;
         std::cout << std::endl;
@@ -2322,6 +2322,8 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
         std::cout << "peakHight = ";
         std::cin >> peakHight;
         std::cout << std::endl;
+        std::cout << "set sigma : ";
+        std::cin >> sigma_set;
         if(fitLowerBound == 0 && fitUpperBound == 0){
             break;
         }
@@ -2331,7 +2333,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
         /*
             [0]*exp(-0.5*((x-[1])/[2])**2) + [3] + [4]*x
         */
-        gaussian_plus_linear->SetParameters(peakHight, peakPosition, 5.0, 1000.0, -1.0);
+        gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -1.0);
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
         Int_t checking = fit_result->Status();
         if(checking != 0){}
