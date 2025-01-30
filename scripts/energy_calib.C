@@ -19,7 +19,7 @@ PMTのエネルギー較正用の直線フィッティング
 #include <TSystem.h>
 
 void energy_calib(TString input_Folder = "./output/"){
-    TString input_Filepath = Form("%ss4_calib.txt",input_Folder.Data());
+    TString input_Filepath = Form("%sm1_calib.txt",input_Folder.Data());
     std::ifstream ifs(input_Filepath);
 
     TCanvas* canvas = new TCanvas("canvas", Form("%s", input_Filepath.Data()));

@@ -14,7 +14,7 @@
 #include <ctime> //時刻情報
 
 using namespace std;
-void energy_resolution_plot(TString input_Folder = "./output/"){
+void energy_resolution(TString input_Folder = "./output/"){
     TString input_Filepath = Form("%ss4_calib.txt",input_Folder.Data());
     ifstream ifs(input_Filepath);
     double energy, ch, sigma_ch, sigma_gaus, sigma_gaus_energy;
@@ -42,6 +42,7 @@ void energy_resolution_plot(TString input_Folder = "./output/"){
     fitFunc->SetParameter(0,300);
     graph->Fit(fitFunc);
     std::cout << "Fitting parameter [0]/sqrt(x) : " << fitFunc->GetParameter(0) << std::endl;
+    graph->GetXaxis()->SetLimits(0,1300);
 
     fitFunc->Draw("same");
     // graph->Draw("ap"); //axisとpointを描画する
@@ -56,6 +57,6 @@ void energy_resolution_plot(TString input_Folder = "./output/"){
         filename_figure = Form("energy_res_%d.pdf", index);
         index++;
     }
-     canvas->SaveAs("./figure/" + filename_figure);
+     //canvas->SaveAs("./figure/" + filename_figure);
 
 }
