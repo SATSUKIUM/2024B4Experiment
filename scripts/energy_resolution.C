@@ -15,37 +15,8 @@
 #include <TSystem.h>
 
 
-void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]){
-    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
-    TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
-    std::ifstream ifs(calb_data_filepath);
-    Int_t line_index = 0;
-    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index % 4 == line_index){
-            p0[0][line_index] = p0_buf;
-            p0e[0][line_index] = p0e_buf;
-            p1[0][line_index] = p1_buf;
-            p1e[0][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
-        }
-        else if((line_index-4) % 4 == line_index){
-            p0[1][line_index] = p0_buf;
-            p0e[1][line_index] = p0e_buf;
-            p1[1][line_index] = p1_buf;
-            p1e[1][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
-        }
-        line_index++;
-        if(line_index == 8){
-            break;
-        }
-    }
-    ifs.close();
-}
-
-void energy_resolution_plot(TString input_Folder = "./output/", TString key = "0129", Int_t iBoard = 0, Int_t iCh = 0){
+using namespace std;
+void energy_resolution(TString input_Folder = "./output/"){
     TString input_Filepath = Form("%ss4_calib.txt",input_Folder.Data());
     std::ifstream ifs(input_Filepath);
     double energy, ch, sigma_ch, sigma_gaus, sigma_gaus_energy;
@@ -76,6 +47,7 @@ void energy_resolution_plot(TString input_Folder = "./output/", TString key = "0
     fitFunc->SetParameter(0,300);
     graph->Fit(fitFunc);
     std::cout << "Fitting parameter [0]/sqrt(x) : " << fitFunc->GetParameter(0) << std::endl;
+    graph->GetXaxis()->SetLimits(0,1300);
 
     fitFunc->Draw("same");
     // graph->Draw("ap"); //axisとpointを描画する
@@ -90,6 +62,6 @@ void energy_resolution_plot(TString input_Folder = "./output/", TString key = "0
         filename_figure = Form("energy_res_%d.pdf", index);
         index++;
     }
-     canvas->SaveAs("./figure/" + filename_figure);
+     //canvas->SaveAs("./figure/" + filename_figure);
 
 }
