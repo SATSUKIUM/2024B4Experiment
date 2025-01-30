@@ -51,7 +51,7 @@ void compare_pedestal(TString filename1, TString filename2, Int_t iCh_1, Int_t i
     TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.85);
     leg->AddEntry(hist1, Form("%s", filename1.Data()), "l");
     leg->AddEntry(hist2, Form("%s", filename2.Data()), "l");
-    leg->SetTextSize(0.05);
+    leg->SetTextSize(0.02);
     leg->Draw();
 
 
