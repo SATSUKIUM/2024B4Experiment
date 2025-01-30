@@ -1701,8 +1701,8 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::vector<Double_t> intercept;
     std::vector<Double_t> slope;
 
-    std::vector<Double_t> chi2_ndof_vec; //
-    std::vector<Double_t> prob_vec; //
+    std::vector<Double_t> chi2_ndof_vec; 
+    std::vector<Double_t> prob_vec;
 
     std::vector<TFitResultPtr> fitresults;
 
@@ -1922,7 +1922,21 @@ Double_t DRS4Ana::GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     std::vector<Double_t> sigmas_gaus;
     std::vector<Double_t> intercept;
     std::vector<Double_t> slope;
+    
+    std::vector<Double_t> chi2_ndof_vec; 
+    std::vector<Double_t> prob_vec;
+
+
     std::vector<TFitResultPtr> fitresults;
+
+    double chi2 = gaussian_plus_linear -> GetChisquare();  // χ²
+    int ndof = gaussian_plus_linear -> GetNDF();           // 自由度
+    double chi2_ndof = (ndof > 0) ? chi2 / ndof : 0; // 0除算回避
+    double prob = TMath::Prob(chi2, ndof);
+
+    chi2_ndof_vec.push_back(chi2_ndof);
+    prob_vec.push_back(prob);
+
 
 
 for (int i = 0; i < foundPeaks; ++i) {
@@ -2011,6 +2025,9 @@ for (int i = 0; i < foundPeaks; ++i) {
     auto intercept_temp = intercept.begin();
     auto slope_temp = slope.begin();
 
+    auto chi2_ndof_temp = chi2_ndof_vec.begin();
+    auto prob_temp = prob_vec.begin();
+
 
 
     if(append_Option == 1){
@@ -2022,14 +2039,16 @@ for (int i = 0; i < foundPeaks; ++i) {
         ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
 
     }
-    ofs << "means, sigmas of means, sigmas of gaussian, intercept ,slope" << std::endl << std::endl;
+    ofs << "means, sigmas of means, sigmas of gaussian, intercept ,slope, chi2_ndof, prob" << std::endl << std::endl;
     while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end() && intercept_temp != intercept.end() && slope_temp != slope.end()){
-        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << " " << *intercept_temp << " " << " " << *slope_temp <<  std::endl;
+        ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << " " << *intercept_temp << " " << " " << *slope_temp << " " << *chi2_ndof_temp << " " << *prob_temp << std::endl;
         ++mean_temp; //peak[1]
         ++sigma_mean_temp; //sigma_m 
         ++sigma_gaus_temp; //sigma[2]
         ++intercept_temp; //切片[3]
         ++slope_temp; //傾き[4]
+        ++chi2_ndof_temp; 
+        ++prob_temp;
     }
     ofs << std::endl << "numPeak : " << numPeaks << std::endl; // ピークの数
     ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
@@ -2415,7 +2434,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
         gauss->SetParameters(
             gaussian_plus_linear->GetParameter(0), gaussian_plus_linear->GetParameter(1), gaussian_plus_linear->GetParameter(2)
         );
-        gauss->SetLineColor(kOrange);
+        gauss->SetLineColor(kOrange-3);
         gauss->SetLineStyle(1);
         gauss->Draw("LSAME");
         
