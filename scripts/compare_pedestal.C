@@ -26,7 +26,7 @@
 #include <TApplication.h>
 #include <TFile.h>
 
-void compare_pedestal(TString filename1, TString filename2){
+void compare_pedestal(TString filename1, TString filename2, Int_t iCh_1, Int_t iCh_2){
     TFile *file1 = new TFile(filename1);
     TFile *file2 = new TFile(filename2);
 
@@ -34,10 +34,7 @@ void compare_pedestal(TString filename1, TString filename2){
     TTree *tree2 = (TTree*)file2->Get("treeDRS4BoardEvent");
 
     TCanvas *c1 = new TCanvas("name", "title", 1200, 800);
-    
-    Int_t iCh_1, iCh_2;
-    iCh_1 = 1;
-    iCh_1 = 1;
+
     tree1->Draw(Form("pedestal[0][%d]>>hist1(500,-0.01,0.02)", iCh_1));
     TH1F *hist1 = (TH1F*)gPad->GetPrimitive("hist1");
     hist1->SetLineColor(kRed);
