@@ -107,7 +107,9 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
     while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        //if(line_index % 4 == line_index){
+        if(line_index == 8){
+            break;
+        }
         if(line_index < 4){
             p0[0][line_index] = p0_buf;
             p0e[0][line_index] = p0e_buf;
@@ -116,7 +118,6 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
             std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
-        //else if((line_index-4) % 4 == line_index){
         else if(line_index < 8){
             p0[1][line_index-4] = p0_buf;
             p0e[1][line_index-4] = p0e_buf;
@@ -1817,7 +1818,6 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
     ofs << "spec_sigma : " << spec_sigma << std::endl; // ピークの太さ
     ofs << "spec_thr : " << spec_thr << std::endl; // 最大ピークに対する高さの割合
     ofs << "fitrange : " << fitRange << std::endl; // ピーク中心からの範囲
-    ofs << "spec sigma : " << spec_sigma << std::endl; //ピークサーチの幅
 
     ofs.close();
     
