@@ -19,6 +19,23 @@ PMTのエネルギー較正用の直線フィッティング
 #include <filesystem>
 #include <TSystem.h>
 
+TString Makedir_Date(){
+    //YYYYMMDDのフォルダを作る関数。呼び出せば勝手にYYYYMMDDのフォルダができる。
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[9];
+    strftime(date, sizeof(date), "%Y%m%d", ltm);
+    TString folderPath = TString::Format("./figure/%s", date);
+
+    if(gSystem->AccessPathName(folderPath)){
+        if(gSystem->mkdir(folderPath, true) != 0){
+                std::cerr << "フォルダの作成に失敗しました: " << folderPath << std::endl;
+                return -1;
+        }
+    }
+    return (folderPath);
+}
+
 void energy_calib(TString input_Folder = "./output/"){
     TString input_Filepath = Form("%sdata.txt",input_Folder.Data());
     std::ifstream ifs(input_Filepath);
@@ -61,13 +78,14 @@ void energy_calib(TString input_Folder = "./output/"){
     std::cout << Form("================================================================\nFitting parameter for %s\n\t%f %f %f %f\n\tPlease copy and paste to scripts/cfg/key/data.txt\n", input_Filepath.Data(), func->GetParameter(0), func->GetParError(0), func->GetParameter(1), func->GetParError(1)) << std::endl;
     
     TString filename_figure = "energy_calib.pdf";
+    TString YYYYMMDD_folder = Makedir_Date();
     // 既にファイルが存在するか確認
     Int_t index = 1;
-    while (gSystem->AccessPathName("./figure/" + filename_figure) == 0) {
+    while (gSystem->AccessPathName(YYYYMMDD_folder + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
         filename_figure = Form("energy_calib_%d.pdf", index);
         index++;
     }
 
-    //canvas->SaveAs("./figure/" + filename_figure);
+    canvas->SaveAs(YYYYMMDD_folder + "/"+ filename_figure);
 }
