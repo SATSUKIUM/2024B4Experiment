@@ -58,7 +58,7 @@ void energy_calib(TString input_Folder = "./output/"){
     // フィット情報（統計ボックス）の位置を左上に移動
     gStyle->SetStatX(0.5);  // X座標（左寄せ）
     gStyle->SetStatY(0.9);  // Y座標（上寄せ）
-    std::cout << Form("================================================================\nFitting parameter for %s\n\t%f %f %f %f", input_Filepath.Data(), func->GetParameter(0), func->GetParError(0), func->GetParameter(1), func->GetParError(1)) << std::endl;
+    std::cout << Form("================================================================\nFitting parameter for %s\n\t%f %f %f %f\n\tPlease copy and paste to scripts/cfg/key/data.txt\n", input_Filepath.Data(), func->GetParameter(0), func->GetParError(0), func->GetParameter(1), func->GetParError(1)) << std::endl;
     
     TString filename_figure = "energy_calib.pdf";
     // 既にファイルが存在するか確認
