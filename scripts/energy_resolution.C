@@ -14,37 +14,6 @@
 #include <ctime> //時刻情報
 #include <TSystem.h>
 
-void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]){
-    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
-    TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
-    std::ifstream ifs(calb_data_filepath);
-    Int_t line_index = 0;
-    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index % 4 == line_index){
-            p0[0][line_index] = p0_buf;
-            p0e[0][line_index] = p0e_buf;
-            p1[0][line_index] = p1_buf;
-            p1e[0][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
-        }
-        else if((line_index-4) % 4 == line_index){
-            p0[1][line_index] = p0_buf;
-            p0e[1][line_index] = p0e_buf;
-            p1[1][line_index] = p1_buf;
-            p1e[1][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf", p0_buf, p1_buf, p0e_buf, p1e_buf);
-        }
-        line_index++;
-        if(line_index == 8){
-            break;
-        }
-    }
-    ifs.close();
-}
-
-
 
 using namespace std;
 void energy_resolution(TString input_Folder = "./output/"){
