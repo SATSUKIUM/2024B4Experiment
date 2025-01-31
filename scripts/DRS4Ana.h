@@ -125,6 +125,7 @@ public:
     virtual Double_t peak_divided(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Double_t fitXmin = 0.0, Double_t fitXmax = 0.0, Double_t adcTimeRange = 180.0);
     virtual void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]);
     virtual Double_t semi_automated_spectrum_fitting(TString key_crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 100);
+    virtual Double_t Plot_waveform_8ch(TString key);
 
 
 
@@ -143,6 +144,7 @@ public:
     TH1F *fH1SumChargeIntegral = NULL;
     TH1F *fH1TriggerTime = NULL;
     TH1F *fH1Energy_PMTs = NULL;
+    
 
 private:
     Double_t fTimeBinWidthInNanoSec;
