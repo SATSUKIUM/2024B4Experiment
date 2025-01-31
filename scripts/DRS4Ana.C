@@ -2581,3 +2581,53 @@ Double_t DRS4Ana::Plot_waveform_8ch(){
 
     return (Double_t)counter;
 }
+
+Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
+    Double_t nentries = fChain->GetEntriesFast();
+    Double_t counter = 0.0;
+
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
+    c1->Divide(2,4);
+    TH1D* hists[2][4];
+    gPad->SetLogz();
+    gPad->SetGrid();
+    gStyle->SetOptStat(0);
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            hists[iBoard][iCh] = new TH1D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 256, fWaveformXmin, fWaveformXmax);
+        }
+    }
+    for(Int_t jentry=0; jentry<nentries; jentry++){
+        fChain->GetEntry(jentry);
+        for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                for(Int_t iCell=0; iCell<1024; iCell++){
+                    hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]]);
+                }
+            }
+        }
+        if(static_cast<Int_t>(counter) % 5000 == 0){
+            printf("\tfilled points %d...", static_cast<Int_t>(counter));
+        }
+        counter++;
+    }
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            c1->cd(iBoard*4+iCh+1);
+            hists[iBoard][iCh]->Draw();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+    TString folderPath = Makedir_Date();
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    filename_figure += "_allCH_triggertime.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+
+    return (Double_t)counter;
+}
