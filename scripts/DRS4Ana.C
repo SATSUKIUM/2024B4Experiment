@@ -2530,3 +2530,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
 
     return (Double_t)counter;
 }
+
+Double_t DRS4Ana::Plot_waveform_8ch(){
+    return 0.0;
+}
