@@ -2531,7 +2531,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::Plot_waveform_8ch(TString key="0130"){
+Double_t DRS4Ana::Plot_waveform_8ch(){
     Double_t nentries = fChain->GetEntriesFast();
     Double_t counter = 0.0;
 
@@ -2569,5 +2569,15 @@ Double_t DRS4Ana::Plot_waveform_8ch(TString key="0130"){
             gStyle->SetOptStat(0);
         }
     }
-    return(Double_t) counter;
+
+    TString folderPath = Makedir_Date();
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    filename_figure += "_allCH_waveforms.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+
+    return (Double_t)counter;
 }
