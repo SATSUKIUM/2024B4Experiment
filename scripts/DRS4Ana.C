@@ -1175,7 +1175,7 @@ Double_t DRS4Ana::PlotSumEnergy(TString key = "0120", TString key_Crystal1 = "Na
             energy_buf1 = p0[iBoard1][iCh1] + p1[iBoard1][iCh1]*(-chargeIntegral1);
             energy_buf2 = p0[iBoard2][iCh2] + p1[iBoard2][iCh2]*(-chargeIntegral2);
 
-            if (energy_buf1 < 450.0){
+            if (energy_buf1 < 450.0 && energy_buf2 > 100.0){
                 Double_t sumEnergy = energy_buf1 + energy_buf2;
                 fH1Energy_PMTs->Fill(sumEnergy);
 
