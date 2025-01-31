@@ -2531,6 +2531,37 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
     return (Double_t)counter;
 }
 
-Double_t DRS4Ana::Plot_waveform_8ch(){
+Double_t DRS4Ana::Plot_waveform_8ch(TString key="0130"){
+    Double_t nentries = fChain->GetEntriesFast();
+    Double_t counter = 0.0;
+
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
+    c1->Divide(2,4);
+    TH2D* hists[2][4];
+    gPad->SetLogz();
+    gPad->SetGrid();
+    gStyle->SetOptStat(0);
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            hists[iBoard][iCh] = new TH2D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 500, 0, 1500, 500, -0.55, 0.05);
+        }
+    }
+    for(Int_t jentry=0; jentry<nentries; jentry++){
+        fChain->GetEntry(jentry);
+        for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                for(Int_t iCell=0; iCell<1024; iCell++){
+                    hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);
+                }
+            }
+        }
+        counter++;
+    }
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            c1->cd(iBoard*4+iCh+1);
+            hists[iBoard][iCh]->Draw();
+        }
+    }
     return 0.0;
 }
