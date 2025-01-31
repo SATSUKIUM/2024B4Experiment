@@ -1180,6 +1180,8 @@ Double_t DRS4Ana::PlotSumEnergy(TString key = "0120", TString key_Crystal1 = "Na
         }
     }
 
+    fH1Energy_PMTs->Draw();
+
     
 
     // ピークに対するフィッティング
