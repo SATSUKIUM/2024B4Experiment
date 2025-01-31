@@ -2555,13 +2555,19 @@ Double_t DRS4Ana::Plot_waveform_8ch(TString key="0130"){
                 }
             }
         }
+        if(static_cast<Int_t>(counter) % 5000 == 0){
+            printf("\tfilled points %d...", static_cast<Int_t>(counter));
+        }
         counter++;
     }
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
             c1->cd(iBoard*4+iCh+1);
             hists[iBoard][iCh]->Draw();
+            gPad->SetLogz();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
         }
     }
-    return 0.0;
+    return(Double_t) counter;
 }
