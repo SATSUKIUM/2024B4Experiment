@@ -1120,7 +1120,7 @@ Double_t DRS4Ana::PlotSumEnergy(TString key = "0120", TString key_Crystal1 = "Na
 
     fH1Energy_PMTs = new TH1F("fH1Energy_PMTs", Form("%s:Board%dCh%d+Board%dCh%d SumEnergy", fRootFile.Data(), iBoard1+1, iCh1+1, iBoard2+1, iCh2+1), histDiv, xmin, xmax);
     fH1Energy_PMTs->SetXTitle("Sum of Energy [keV]");
-    fH1Energy_PMTs->SetYTitle("counts per %f keV", (xmax-xmin)/histDiv);
+    fH1Energy_PMTs->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
