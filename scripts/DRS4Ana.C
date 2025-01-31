@@ -1169,14 +1169,19 @@ Double_t DRS4Ana::PlotSumEnergy(TString key = "0120", TString key_Crystal1 = "Na
         // Charge Integralが有効な場合のみ足し合わせる
         if (chargeIntegral1 > -9999.9 && chargeIntegral2 > -9999.9)
         {
-            counter++;
+            
 
             // チャンネルに応じたエネルギーへ変換
             energy_buf1 = p0[iBoard1][iCh1] + p1[iBoard1][iCh1]*(-chargeIntegral1);
             energy_buf2 = p0[iBoard2][iCh2] + p1[iBoard2][iCh2]*(-chargeIntegral2);
 
-            Double_t sumEnergy = energy_buf1 + energy_buf2;
-            fH1Energy_PMTs->Fill(sumEnergy);
+            if (energy_buf1 < 450.0){
+                Double_t sumEnergy = energy_buf1 + energy_buf2;
+                fH1Energy_PMTs->Fill(sumEnergy);
+
+                counter++;
+            }
+            
         }
     }
 
