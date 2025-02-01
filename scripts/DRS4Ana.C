@@ -2421,9 +2421,9 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
         /*
             [0]*exp(-0.5*((x-[1])/[2])**2) + [3] + [4]*x
         */
-        gaussian_plus_linear->SetParLimits(0,0.1*peakHight,10*peakHight);
+        gaussian_plus_linear->SetParLimits(0,0.1*peakHight,5*peakHight);
         gaussian_plus_linear->SetParLimits(1,fitLowerBound,fitUpperBound);
-        gaussian_plus_linear->SetParLimits(2,0.1*sigma_set,10*sigma_set);
+        gaussian_plus_linear->SetParLimits(2,0.1*sigma_set,5*sigma_set);
         gaussian_plus_linear->SetParLimits(4,-1e4,1);
         gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -1.0);
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
