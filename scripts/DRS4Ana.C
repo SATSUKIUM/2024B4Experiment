@@ -925,18 +925,20 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key
     }
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
+        
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
         DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        if(DiscriTime_x < 1400 && DiscriTime_y < 1400){
+            x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+            y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
 
-        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
-        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+            x_energy = p0[x_iBoard][x_iCh] + p1[x_iBoard][x_iCh]*x_charge_buf;
+            y_energy = p0[y_iBoard][y_iCh] + p1[y_iBoard][y_iCh]*y_charge_buf;
 
-        x_energy = p0[x_iBoard][x_iCh] + p1[x_iBoard][x_iCh]*x_charge_buf;
-        y_energy = p0[y_iBoard][y_iCh] + p1[y_iBoard][y_iCh]*y_charge_buf;
-
-        fH2Energy_PMTs->Fill(x_energy, y_energy);
-        fH1EnergySpectra[0]->Fill(x_energy);
-        fH1EnergySpectra[1]->Fill(y_energy);
+            fH2Energy_PMTs->Fill(x_energy, y_energy);
+            fH1EnergySpectra[0]->Fill(x_energy);
+            fH1EnergySpectra[1]->Fill(y_energy);
+        }
 
         if(Entry % 500 == 0){
             printf("\tPoint plot : %d\n", Entry);
