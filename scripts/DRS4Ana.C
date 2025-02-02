@@ -2552,12 +2552,18 @@ Double_t DRS4Ana::Plot_waveform_8ch(){
             hists[iBoard][iCh] = new TH2D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 500, 0, 1500, 500, -0.55, 0.05);
         }
     }
+    Double_t discriTime;
+    Int_t counters[2][4];
     for(Int_t jentry=0; jentry<nentries; jentry++){
         fChain->GetEntry(jentry);
         for(Int_t iBoard=0; iBoard<2; iBoard++){
             for(Int_t iCh=0; iCh<4; iCh++){
                 for(Int_t iCell=0; iCell<1024; iCell++){
-                    hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);
+                    discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+                    if(100 < discriTime && discriTime < 1400){
+                        hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);
+                        counters[iBoard][iCh]++;
+                    } 
                 }
             }
         }
@@ -2585,6 +2591,11 @@ Double_t DRS4Ana::Plot_waveform_8ch(){
     IfFile_duplication(folderPath, filename_figure);
     c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
 
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            printf("\tcounter[%d][%d] : %d\n", iBoard, iCh, counters[iBoard][iCh]);
+        }
+    }
     return (Double_t)counter;
 }
 
