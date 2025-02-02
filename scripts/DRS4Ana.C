@@ -965,8 +965,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
 
-    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/')) + "_fH2Energy_PMTs.pdf";
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
+    filename_figure += "_fH2Energy_PMTs.pdf";
     printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
 
     IfFile_duplication(folderPath, filename_figure);
