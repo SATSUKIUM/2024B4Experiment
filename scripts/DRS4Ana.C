@@ -2559,7 +2559,7 @@ Double_t DRS4Ana::Plot_waveform_8ch(){
         for(Int_t iBoard=0; iBoard<2; iBoard++){
             for(Int_t iCh=0; iCh<4; iCh++){
                 discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-                if(discriTime < 100){
+                if(discriTime > 1400){
                 // if(100 < discriTime && discriTime < 1400){
                     for(Int_t iCell=0; iCell<1024; iCell++){
                         hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);
