@@ -2560,7 +2560,7 @@ Double_t DRS4Ana::Plot_waveform_8ch(){
             }
         }
         if(static_cast<Int_t>(counter) % 5000 == 0){
-            printf("\tfilled points %d...", static_cast<Int_t>(counter));
+            printf("\tfilled points %d...\n", static_cast<Int_t>(counter));
         }
         counter++;
     }
