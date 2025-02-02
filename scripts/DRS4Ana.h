@@ -127,6 +127,8 @@ public:
     virtual Double_t semi_automated_spectrum_fitting(TString key_crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 100);
     virtual Double_t Plot_waveform_8ch();
     virtual Double_t Plot_TriggerTimeDist_8ch();
+    virtual Double_t PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 1, Int_t iCh2 = 0, Double_t xmax = 1000);
+
 
 
     TH2F *fH2Waveform = NULL;

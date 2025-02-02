@@ -2631,3 +2631,177 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
 
     return (Double_t)counter;
 }
+
+
+Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
+{
+    gStyle->SetOptStat(1); // 統計ボックス表示の有無 1が表示 0が非表示
+
+    // 前のキャンバスが存在する場合、削除する
+    TCanvas* existingCanvas = (TCanvas*)gROOT->FindObject("c1");
+    if (existingCanvas)
+    {
+        existingCanvas->Close(); // キャンバスを閉じる
+        delete existingCanvas;  // メモリ解放
+        existingCanvas = nullptr;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", Form("%s:Board%dCh%d+Board%dCh%d SumEnergy", fRootFile.Data(), iBoard1, iCh1+1, iBoard2, iCh2+1), 800, 600);
+
+    if (fH1Energy_PMTs != NULL)
+    {
+        delete fH1Energy_PMTs;
+    }
+
+    Int_t histDiv = 100;
+    Double_t Vcut = 20.0;
+    Double_t xmin = 0.0;
+
+    Int_t S1_BoardID = 0;
+    Int_t S1_ChID = 0;
+    Int_t A1_BoardID = 0;
+    Int_t A1_ChID = 2;
+
+    fH1Energy_PMTs = new TH1F("fH1Energy_PMTs", Form("%s:Board%dCh%d+Board%dCh%d SumEnergy w/ cutting", fRootFile.Data(), iBoard1+1, iCh1+1, iBoard2+1, iCh2+1), histDiv, xmin, xmax);
+    fH1Energy_PMTs->SetXTitle("Sum of Energy [keV]");
+    fH1Energy_PMTs->SetYTitle(Form("counts per %.1f keV", (xmax-xmin)/histDiv));
+
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    //　エネルギーへの変換に必要なパラメータを取得
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+
+    Double_t discriTime1, discriTime2, discriTime_S1, discriTime_A1;
+    Double_t adcSum_timerange1, adcSum_timerange2;
+
+    //　結晶に応じた積分範囲を指定
+    if(iBoard1 == 0){
+        if(iCh1 == 1){
+            adcSum_timerange1 = 180; // master ch2 crystal is GSO
+        }
+        else if(iCh1 == 0 || iCh1 == 2 || iCh1 == 3){
+            adcSum_timerange1 = 600; // master ch1,3,4 crystals are NaI
+        }
+        else{
+            std::cout << "1st crystal is not found" << std::endl;
+        }
+    }
+    else if(iBoard1 == 1){
+        adcSum_timerange1 = 180; // slave all ch crystals are GSO
+    }
+    else{
+        std::cout << "1st crystal is not found" << std::endl;
+    }
+
+    if(iBoard2 == 0){
+        if(iCh2 == 1){
+            adcSum_timerange2 = 180; // master ch2 crystal is GSO
+        }
+        else if(iCh2 == 0 || iCh2 == 2 || iCh2 == 3){
+            adcSum_timerange2 = 600; // master ch1,3,4 crystals are NaI
+        }
+        else{
+            std::cout << "2nd crystal is not found" << std::endl;
+        }
+    }
+    else if(iBoard2 == 1){
+        adcSum_timerange2 = 180; // slave all ch crystals are GSO
+    }
+    else{
+        std::cout << "2nd crystal is not found" << std::endl;
+    }
+
+    Double_t energy_buf1, energy_buf2, energy_buf_S1, energy_buf_A1;
+    Double_t lower_limit_buf1, lower_limit_buf2, lower_limit_buf_S1, lower_limit_buf_A1, lower_limit_buf_S1A1;
+    Double_t upper_limit_buf1, upper_limit_buf2, upper_limit_buf_S1, upper_limit_buf_A1, upper_limit_buf_S1A1;
+    Double_t lower_limit_discri, upper_limit_discri;
+
+    upper_limit_buf1 = 450.0;
+    upper_limit_buf_S1 = 300.0;
+    upper_limit_discri = 200.0;
+    upper_limit_buf_S1A1 = 600.0;
+
+    lower_limit_buf2 = 100.0;
+    lower_limit_buf_S1 = 200.0;
+    lower_limit_discri = 100.0;
+    
+    // lower_limit_buf_S1A1 = 400.0;
+    // upper_limit_buf_S1A1 = 600.0;
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    {
+        fChain->GetEntry(jentry);
+
+        discriTime1 = fTime[iBoard1][iCh1][fDiscriCell[iBoard1][iCh1]];
+        discriTime2 = fTime[iBoard2][iCh2][fDiscriCell[iBoard2][iCh2]];
+        discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
+        discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
+
+        // 各チャンネルの Charge Integral を取得
+        Double_t chargeIntegral1 = GetChargeIntegral(iBoard1 , iCh1, Vcut, discriTime1 - 50, discriTime1 + adcSum_timerange1);
+        Double_t chargeIntegral2 = GetChargeIntegral(iBoard2 , iCh2, Vcut, discriTime2 - 50, discriTime2 + adcSum_timerange2);
+        Double_t chargeIntegral_S1 = GetChargeIntegral(S1_BoardID , S1_ChID, Vcut, discriTime_S1 - 50, discriTime_S1 + 600);
+        Double_t chargeIntegral_A1 = GetChargeIntegral(A1_BoardID , A1_ChID, Vcut, discriTime_A1 - 50, discriTime_A1 + 600);
+
+        // Charge Integralが有効な場合のみ足し合わせる
+        if (chargeIntegral1 > -9999.9 && chargeIntegral2 > -9999.9)
+        {
+            // チャンネルに応じたエネルギーへ変換
+            energy_buf1 = p0[iBoard1][iCh1] + p1[iBoard1][iCh1]*(-chargeIntegral1);
+            energy_buf2 = p0[iBoard2][iCh2] + p1[iBoard2][iCh2]*(-chargeIntegral2);
+            energy_buf_S1 = p0[S1_BoardID][S1_ChID] + p1[S1_BoardID][S1_ChID]*(-chargeIntegral_S1);
+            energy_buf_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
+
+            Double_t energy_buf_S1A1 = energy_buf_S1 + energy_buf_A1;
+
+            if (energy_buf1 < upper_limit_buf1 && // kill over 511keV events
+
+                energy_buf2 > lower_limit_buf2 && // kill dark
+
+                energy_buf_S1 > lower_limit_buf_S1 && 
+                energy_buf_S1 < upper_limit_buf_S1 &&
+
+                energy_buf_S1A1 < upper_limit_buf_S1A1 &&
+
+                discriTime1 > lower_limit_discri && 
+                discriTime1 < upper_limit_discri && 
+
+                discriTime2 > lower_limit_discri && 
+                discriTime2 < upper_limit_discri && 
+
+                discriTime_S1 > lower_limit_discri && 
+                discriTime_S1 < upper_limit_discri && 
+
+                discriTime_A1 > lower_limit_discri && 
+                discriTime_A1 < upper_limit_discri)
+            {   
+                Double_t sumEnergy = energy_buf1 + energy_buf2;
+                fH1Energy_PMTs->Fill(sumEnergy);
+
+                counter++;
+            }
+            
+        }
+    }
+
+    fH1Energy_PMTs->Draw();
+
+    
+
+    // ピークに対するフィッティング
+    // TF1 *fitFunc1 = new TF1("fitFunc1", "gaus", 500, 520); // 第2ピークに対する範囲
+    // fH1SumChargeIntegral->Fit(fitFunc1, "R");
+ 
+
+    // fH1SumChargeIntegral->Draw();
+    // fitFunc1->Draw("same");
+
+    // TString name;
+    // name = Form("EnergyHist_with_cutting_Board%dch%d+Board%dch%d.pdf",iBoard1+1, iCh1+1, iBoard2+1, iCh2+1);
+    // c1->SaveAs(name);
+
+
+    return nentries;
+}
