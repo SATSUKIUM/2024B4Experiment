@@ -81,7 +81,7 @@ void energy_calib(TString input_Folder = "./output/"){
     TString YYYYMMDD_folder = Makedir_Date();
     // 既にファイルが存在するか確認
     Int_t index = 1;
-    while (gSystem->AccessPathName(YYYYMMDD_folder + filename_figure) == 0) {
+    while (gSystem->AccessPathName(YYYYMMDD_folder + "/" + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
         filename_figure = Form("energy_calib_%d.pdf", index);
         index++;
