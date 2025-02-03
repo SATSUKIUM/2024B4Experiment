@@ -2740,11 +2740,12 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting
     Double_t upper_limit_buf1, upper_limit_buf2, upper_limit_buf_S1, upper_limit_buf_A1, upper_limit_buf_S1A1;
     Double_t lower_limit_discri, upper_limit_discri;
 
-    upper_limit_buf1 = 450.0;
+    upper_limit_buf1 = 350.0;
     upper_limit_buf_S1 = 300.0;
     upper_limit_discri = 200.0;
     upper_limit_buf_S1A1 = 600.0;
 
+    lower_limit_buf1 = 100.0;
     lower_limit_buf2 = 100.0;
     lower_limit_buf_S1 = 200.0;
     lower_limit_discri = 100.0;
@@ -2803,7 +2804,9 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting
             }
             }
             else if(cutting_option == 2){
-                if (energy_buf1 < upper_limit_buf1 && // kill over 511keV events
+                if (
+                energy_buf1 > lower_limit_buf1 && 
+                energy_buf1 < upper_limit_buf1 &&
 
                 energy_buf2 > lower_limit_buf2 && // kill dark
 
