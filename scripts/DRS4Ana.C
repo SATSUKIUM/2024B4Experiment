@@ -248,7 +248,7 @@ Double_t DRS4Ana::GetPedestal(Int_t iBoard, Int_t iCh, Double_t Vcut)
     }
 
     Double_t pedestalV = 0.0;
-    Int_t counter = 0;
+    Double_t counter = 0;
     for (Int_t i = 0; i < 1024; i++)
     {
         if (fTime[iBoard][iCh][i] >= fPedestalTmin && fTime[iBoard][iCh][i] <= fPedestalTmax)
@@ -258,8 +258,8 @@ Double_t DRS4Ana::GetPedestal(Int_t iBoard, Int_t iCh, Double_t Vcut)
         }
     }
     // std::cout << pedestalV/counter << std::endl;
-    return 0;
-    // return pedestalV / counter;
+    // return 0;
+    return pedestalV / counter;
 }
 
 Double_t DRS4Ana::GetPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
