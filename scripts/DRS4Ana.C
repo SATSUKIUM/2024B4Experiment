@@ -756,7 +756,7 @@ void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_maste
     }
 }
 
-Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10){
+Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10){
     Long64_t nentries = fChain->GetEntriesFast();
     std::cout << "nentries: " << nentries << std::endl;
 
@@ -768,7 +768,7 @@ Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0
     fH2Overlay_Waves = new TH2F();
 
     //ビンなどは適宜変える
-    fChain->Draw(Form("waveform[0][0]:%f*Iteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.55, 0.05)",fTimeBinWidthInNanoSec, fWaveformXmax), "", "colz", nentries, 0); //Draw(expression, selection, option, nentries, nfirstentry)
+    fChain->Draw(Form("waveform[%d][%d]:%f*Iteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.55, 0.05)",iBoard, iCh, fTimeBinWidthInNanoSec, fWaveformXmax), "", "colz", nentries, 0); //Draw(expression, selection, option, nentries, nfirstentry)
 
     TH2F* hist = (TH2F*)gROOT->FindObject("fH2Overlay_Waves");
     if(hist){
@@ -789,6 +789,8 @@ Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0
     Long64_t counter = 0;
     return counter;
 }
+
+
 Double_t DRS4Ana::GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10, Double_t trigger_voltage = -0.025){
     Long64_t nentries = fChain->GetEntriesFast();
     // std::cout << "nentries: " << nentries << std::endl;
@@ -2650,7 +2652,7 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1
         existingCanvas = nullptr;
     }
 
-    TCanvas *c1 = new TCanvas("c1", Form("%s:Board%dCh%d+Board%dCh%d SumEnergy", fRootFile.Data(), iBoard1, iCh1+1, iBoard2, iCh2+1), 800, 600);
+    TCanvas *c1 = new TCanvas("c1", Form("%s:Board%dCh%d+Board%dCh%d SumEnergy", fRootFile.Data(), iBoard1+1, iCh1+1, iBoard2+1, iCh2+1), 800, 600);
 
     if (fH1Energy_PMTs != NULL)
     {
