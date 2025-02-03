@@ -258,8 +258,8 @@ Double_t DRS4Ana::GetPedestal(Int_t iBoard, Int_t iCh, Double_t Vcut)
         }
     }
     // std::cout << pedestalV/counter << std::endl;
-    // return 0;
-    return pedestalV / counter;
+    return 0;
+    // return pedestalV / counter;
 }
 
 Double_t DRS4Ana::GetPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
@@ -2431,7 +2431,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
         gaussian_plus_linear->SetParLimits(1,fitLowerBound,fitUpperBound);
         gaussian_plus_linear->SetParLimits(2,0.1*sigma_set,5*sigma_set);
         gaussian_plus_linear->SetParLimits(4,-1e4,1);
-        gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -1.0);
+        gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -0.01);
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
         Int_t checking = fit_result->Status();
         if(checking != 0){}
@@ -2528,7 +2528,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
     Int_t index = 1;
     while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
-        filename_figure = Form("%s:ch%d_NaI_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        filename_figure = Form("%s:ch%d_semi_auto_fitting_%s_%d.pdf", rootFile.Data(), iCh, key_crystal.Data(),index);
         index++;
     }
 
