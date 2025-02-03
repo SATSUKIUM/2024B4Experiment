@@ -2651,8 +2651,12 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
 }
 
 
-Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
+Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
 {
+    // cutting_option == 0 カットなし
+    // cutting_option == 1 トリガー時間カット
+    // cutting_option == 2 エネルギーカット
+
     gStyle->SetOptStat(1); // 統計ボックス表示の有無 1が表示 0が非表示
 
     // 前のキャンバスが存在する場合、削除する
@@ -2773,8 +2777,33 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1
             energy_buf_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
 
             Double_t energy_buf_S1A1 = energy_buf_S1 + energy_buf_A1;
+            Double_t sumEnergy = energy_buf1 + energy_buf2;
 
-            if (energy_buf1 < upper_limit_buf1 && // kill over 511keV events
+            if (cutting_option == 0){
+                fH1Energy_PMTs->Fill(sumEnergy);
+                counter++;
+            }
+
+            else if(cutting_option == 1){
+                if (
+                discriTime1 > lower_limit_discri && 
+                discriTime1 < upper_limit_discri && 
+
+                discriTime2 > lower_limit_discri && 
+                discriTime2 < upper_limit_discri && 
+
+                discriTime_S1 > lower_limit_discri && 
+                discriTime_S1 < upper_limit_discri && 
+
+                discriTime_A1 > lower_limit_discri && 
+                discriTime_A1 < upper_limit_discri)
+                {
+                fH1Energy_PMTs->Fill(sumEnergy);
+                counter++;
+            }
+            }
+            else if(cutting_option == 2){
+                if (energy_buf1 < upper_limit_buf1 && // kill over 511keV events
 
                 energy_buf2 > lower_limit_buf2 && // kill dark
 
@@ -2794,17 +2823,18 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1
 
                 discriTime_A1 > lower_limit_discri && 
                 discriTime_A1 < upper_limit_discri)
-            {   
-                Double_t sumEnergy = energy_buf1 + energy_buf2;
+                {
                 fH1Energy_PMTs->Fill(sumEnergy);
-
                 counter++;
             }
+            }
+            
             
         }
     }
 
     fH1Energy_PMTs->Draw();
+    std::cout << counter << std::endl;
 
     
 
