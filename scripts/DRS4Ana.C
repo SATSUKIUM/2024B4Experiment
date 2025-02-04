@@ -114,7 +114,7 @@ Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
     return index;
 }
 
-void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]){
+void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4], Double_t p0_res[2][4], Double_t p0e_res[2][4]){
     Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
     TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
     std::ifstream ifs(calb_data_filepath);
@@ -143,29 +143,21 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
         line_index++;
         
     }
-    ifs.close();
-}
-
-void DRS4Ana::Load_EnergyResData(TString key, Double_t p0[2][4], Double_t p0e[2][4]){
-    Double_t p0_buf, p0e_buf;
-    TString calb_data_filepath = Form("./cfg/energy_res/%s/data.txt", key.Data());
-    std::ifstream ifs(calb_data_filepath);
-    Int_t line_index = 0;
-    while(ifs >> p0_buf >> p0e_buf){
-        if(line_index == 8){
-            break;
+    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
+        if(line_index < 8){
+            continue;
         }
-        if(line_index < 4){
-            p0[0][line_index] = p0_buf;
-            p0e[0][line_index] = p0e_buf;
+        if(line_index < 12){
+            p0_res[0][line_index] = p0_buf;
+            p0e_res[0][line_index] = p0e_buf;
             std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf", p0_buf);
+            std::cout << Form("\t\t%lf %lf %lf %lf (last 2 are dummy)", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
-        else if(line_index < 8){
-            p0[1][line_index-4] = p0_buf;
-            p0e[1][line_index] = p0e_buf;
+        else if(line_index < 16){
+            p0_res[1][line_index-4] = p0_buf;
+            p0e_res[1][line_index-4] = p0e_buf;
             std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf", p0_buf, p0e_buf);
+            std::cout << Form("\t\t%lf %lf %lf %lf (last 2 are dummy)", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
         line_index++;
     }
