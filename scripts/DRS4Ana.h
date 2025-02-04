@@ -176,7 +176,7 @@ private:
 DRS4Ana::DRS4Ana() : fChain(globalChain_Event)
 {
     for(Int_t it=0; it<fRootFile_pars.size(); it++){
-        TString fRootFile_element = fRootFile_pars[it];
+        TString fRootFile_element = TString(fRootFile_pars[it]);
         fRootFile += fRootFile_element;
         fRootFile += "_";
     }
