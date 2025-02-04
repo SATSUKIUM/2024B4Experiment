@@ -32,7 +32,7 @@ Please read the macro for the detail.
 
 #define NUM_OF_BOARDS 2
 
-extern std::vector<Char_t> fRootFile_pars;
+extern std::vector<TString> fRootFile_pars;
 
 class DRS4Ana
 {
