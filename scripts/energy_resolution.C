@@ -52,7 +52,7 @@ void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Dou
 // energy resolution plot
 void energy_resolution(TString input_Folder = "./output/", TString key = "0204", Int_t iBoard = 0, Int_t iCh= 0){
 
-    TString input_Filepath = Form("%s_calib.txt", input_Folder.Data());
+    TString input_Filepath = Form("%s.txt", input_Folder.Data());
     std::ifstream ifs(input_Filepath);
     double energy, ch, sigma_ch, sigma_gaus, sigma_gaus_energy;
 
