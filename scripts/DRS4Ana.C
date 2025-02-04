@@ -2904,16 +2904,22 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 600);
-    canvas->Divide(3,1);
+    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 1200);
+    canvas->Divide(2,2);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
-    TH1D *fH1EnergySpectra[2];
+    Double_t minEnergy, maxEnergy;
+    Int_t nBins = 200;
+    minEnergy = 0.0;
+    maxEnergy = 600.0;
+    TH1D *fH1EnergySpectra[3];
     fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", x_iBoard, x_iCh, key_Crystal_x.Data()), 500, 0, 600);
     fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), 500, 0, 600);
     fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per 1.2 keV", x_iBoard, x_iCh, key_Crystal_x.Data()));
     fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per 1.2 keV", y_iBoard, y_iCh, key_Crystal_y.Data()));
+    fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 500, 0, 600);
+    fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per 1.2 keV", x_iBoard, x_iCh, y_iBoard, y_iCh));
 
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
@@ -2924,13 +2930,21 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
 
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
+    Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
+    x_p0_buf = p0[x_iBoard][x_iCh];
+    x_p1_buf = p1[x_iBoard][x_iCh];
+    y_p0_buf = p0[y_iBoard][y_iCh];
+    y_p1_buf = p1[y_iBoard][y_iCh];
     Double_t DiscriTime_x, DiscriTime_y;
     Double_t adcSum_timerange_x, adcSum_timerange_y;
+    Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
+    Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+    Double_t distance_from_511_line, x_distance_btwn_2points, y_distance_btwn_2points;
     if(key_Crystal_x == "NaI"){
         adcSum_timerange_x = 600;
     }
@@ -2958,12 +2972,21 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
             x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
             y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
 
-            x_energy = p0[x_iBoard][x_iCh] + p1[x_iBoard][x_iCh]*x_charge_buf;
-            y_energy = p0[y_iBoard][y_iCh] + p1[y_iBoard][y_iCh]*y_charge_buf;
-
-            fH2Energy_PMTs->Fill(x_energy, y_energy);
-            fH1EnergySpectra[0]->Fill(x_energy);
-            fH1EnergySpectra[1]->Fill(y_energy);
+            x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
+            y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
+            x_error = x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2)));
+            x_error = y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2)));
+            distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
+            x_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - (511.0-y_energy), 2.0) + pow((511.0-x_energy+y_energy)/2.0 - y_energy, 2.0);
+            y_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
+            
+            if((pow(x_error,2.0) < (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) < (distance_from_511_line + y_distance_btwn_2points))){
+                fH2Energy_PMTs->Fill(x_energy, y_energy);
+                fH1EnergySpectra[0]->Fill(x_energy);
+                fH1EnergySpectra[1]->Fill(y_energy);
+                fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                counter++;
+            }
         }
 
         if(Entry % 500 == 0){
@@ -2973,14 +2996,21 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
     }
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    fH1EnergySpectra[0]->Draw();
+    gPad->SetGrid();
+    fH1EnergySpectra[1]->Draw();
     canvas->cd(3);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    fH1EnergySpectra[1]->Draw();
+    gPad->SetGrid();
+    fH1EnergySpectra[0]->Draw();
+    canvas->cd(4);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+    fH1EnergySpectra[2]->Draw();
 
     canvas->cd(1);
     TLine *line = new TLine(0, 511, 511,0);
