@@ -21,6 +21,11 @@ $ root[] a.PlotChargeIntegral()
 Please read the macro for the detail.
 ======================================================================================================*/
 
+TChain *globalChain_Event = new TChain("treeDRS4BoardEvent");
+TChain *globalChain_Info = new TChain("treeDRS4BoardInfo");
+
+std::vector<Char_t> fRootFile_pars;
+
 #define DRS4Ana_cxx
 #include "DRS4Ana.h"
 #include <TH2.h>
@@ -49,6 +54,14 @@ Please read the macro for the detail.
 #include <fstream>
 
 #include <TApplication.h>
+
+void addGlobalChain(const Char_t *fRootFile_par){
+    if(globalChain_Event && globalChain_Info){
+        globalChain_Event->Add(fRootFile_par);
+        globalChain_Info->Add(fRootFile_par);
+        fRootFile_pars.push_back(*fRootFile_par);
+    }
+}
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
