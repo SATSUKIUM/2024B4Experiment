@@ -931,8 +931,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
 
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
@@ -1068,8 +1068,8 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
     fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
-    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
 
     // for(Int_t ib=0; ib<2; ib++){
     //     for(Int_t ic=0; ic<4; ic++){
@@ -1164,9 +1164,8 @@ Double_t DRS4Ana::PlotSumEnergy(TString key = "0120", TString key_Crystal1 = "Na
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    //　エネルギーへの変換に必要なパラメータを取得
-    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
 
     Double_t discriTime1, discriTime2;
     Double_t adcSum_timerange1, adcSum_timerange2;
