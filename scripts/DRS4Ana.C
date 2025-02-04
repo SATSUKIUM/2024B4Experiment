@@ -2744,8 +2744,8 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", 
     Load_EnergycalbData(key_energy_calib, p0, p0e, p1, p1e);
 
     // エネルギー分解能の1/sqrt(E)フィッティングパラメータ取得
-    Double_t p0_energy_res[2][4];
-    Load_EnergyResData(key_energy_resolution, p0_energy_res);
+    Double_t p0_energy_res[2][4], p0e_energy_res[2][4];
+    Load_EnergyResData(key_energy_resolution, p0_energy_res, p0e_energy_res);
 
     Double_t discriTime1, discriTime2, discriTime_S1, discriTime_A1;
     Double_t adcSum_timerange1, adcSum_timerange2;
