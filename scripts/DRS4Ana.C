@@ -2691,7 +2691,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
 }
 
 
-Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", TString key_energy_resolution = "0204", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
+Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
 {
     // cutting_option == 0 カットなし
     // cutting_option == 1 トリガー時間カット
