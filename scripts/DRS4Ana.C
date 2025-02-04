@@ -1,6 +1,6 @@
 /*
-DRS4Ana version 0.2
-お求めやすい価格と手頃な量になって再登場
+DRS4Ana version 0.3
+TChainで複数のRunを解析できるようにした
  */
 /*======================================================================================================
  Name:           DRS4Ana.C
@@ -24,7 +24,7 @@ Please read the macro for the detail.
 TChain *globalChain_Event = new TChain("treeDRS4BoardEvent");
 TChain *globalChain_Info = new TChain("treeDRS4BoardInfo");
 
-std::vector<Char_t> fRootFile_pars;
+std::vector<TString> fRootFile_pars;
 
 #define DRS4Ana_cxx
 #include "DRS4Ana.h"
@@ -55,11 +55,11 @@ std::vector<Char_t> fRootFile_pars;
 
 #include <TApplication.h>
 
-void addGlobalChain(const Char_t *fRootFile_par){
+void addGlobalChain(const TString fRootFile_par){
     if(globalChain_Event && globalChain_Info){
         globalChain_Event->Add(fRootFile_par);
         globalChain_Info->Add(fRootFile_par);
-        fRootFile_pars.push_back(*fRootFile_par);
+        fRootFile_pars.push_back(fRootFile_par);
     }
 }
 
@@ -275,23 +275,23 @@ Double_t DRS4Ana::GetPedestal(Int_t iBoard, Int_t iCh, Double_t Vcut)
     return pedestalV / counter;
 }
 
-Double_t DRS4Ana::GetPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
-{
-    Long64_t nentries = fChain->GetEntriesFast();
-    Long64_t counter = 0;
-    Double_t pedMean = 0.0;
-    for (Long64_t jentry = 0; jentry < nentries; jentry++)
-    {
-        fChain->GetEntry(jentry);
-        Double_t ped = GetPedestal(iBoard, iCh, Vcut);
-        if (ped > -9999.9)
-        {
-            counter++;
-            pedMean += ped;
-        }
-    }
-    return pedMean / counter;
-}
+// Double_t DRS4Ana::GetPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
+// {
+//     Long64_t nentries = fChain->GetEntriesFast();
+//     Long64_t counter = 0;
+//     Double_t pedMean = 0.0;
+//     for (Long64_t jentry = 0; jentry < nentries; jentry++)
+//     {
+//         fChain->GetEntry(jentry);
+//         Double_t ped = GetPedestal(iBoard, iCh, Vcut);
+//         if (ped > -9999.9)
+//         {
+//             counter++;
+//             pedMean += ped;
+//         }
+//     }
+//     return pedMean / counter;
+// }
 
 Double_t DRS4Ana::PlotPedestalMean(Int_t iBoard, Int_t iCh, Double_t Vcut)
 {
@@ -769,7 +769,7 @@ void DRS4Ana::Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_maste
     }
 }
 
-Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10){
+Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10){
     Long64_t nentries = fChain->GetEntriesFast();
     std::cout << "nentries: " << nentries << std::endl;
 
@@ -781,7 +781,7 @@ Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0
     fH2Overlay_Waves = new TH2F();
 
     //ビンなどは適宜変える
-    fChain->Draw(Form("waveform[0][0]:%f*Iteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.55, 0.05)",fTimeBinWidthInNanoSec, fWaveformXmax), "", "colz", nentries, 0); //Draw(expression, selection, option, nentries, nfirstentry)
+    fChain->Draw(Form("waveform[%d][%d]:%f*Iteration$>>fH2Overlay_Waves(300, 0, %f, 300, -0.55, 0.05)",iBoard, iCh, fTimeBinWidthInNanoSec, fWaveformXmax), "", "colz", nentries, 0); //Draw(expression, selection, option, nentries, nfirstentry)
 
     TH2F* hist = (TH2F*)gROOT->FindObject("fH2Overlay_Waves");
     if(hist){
@@ -802,6 +802,8 @@ Double_t DRS4Ana::Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0
     Long64_t counter = 0;
     return counter;
 }
+
+
 Double_t DRS4Ana::GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10, Double_t trigger_voltage = -0.025){
     Long64_t nentries = fChain->GetEntriesFast();
     // std::cout << "nentries: " << nentries << std::endl;
@@ -1751,8 +1753,8 @@ Double_t DRS4Ana::NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMi
      );
         
         
-        TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
-        Int_t checking = fit_result->Status();
+    TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //オプションは好きに。TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
+    Int_t checking = fit_result->Status();
 
 
     double chi2 = gaussian_plus_linear -> GetChisquare();  // χ²
@@ -1980,18 +1982,20 @@ for (int i = 0; i < foundPeaks; ++i) {
          -5.0                                                                    // 一次関数の傾き [4]
      );
 
+    // フィッティング
+    TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); // オプション "RS+" を使用
+    std::cout << "debug" << std::endl;
+    Int_t checking = fit_result->Status();
+
+
+
     double chi2 = gaussian_plus_linear -> GetChisquare();  // χ²
     int ndof = gaussian_plus_linear -> GetNDF();           // 自由度
     double chi2_ndof = (ndof > 0) ? chi2 / ndof : 0; // 0除算回避
     double prob = TMath::Prob(chi2, ndof);
 
-    chi2_ndof_vec.push_back(chi2_ndof);
-    prob_vec.push_back(prob);
 
-    // フィッティング
-    TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); // オプション "RS+" を使用
-    std::cout << "debug" << std::endl;
-    Int_t checking = fit_result->Status();
+
 
     if (checking != 0) {
         // フィッティングが失敗した場合の処理（必要に応じて記述）
@@ -2004,8 +2008,12 @@ for (int i = 0; i < foundPeaks; ++i) {
         sigmas_gaus.push_back(gaussian_plus_linear->GetParameter(2));     // ガウス幅
         intercept.push_back(gaussian_plus_linear->GetParameter(3));       // 切片
         slope.push_back(gaussian_plus_linear->GetParameter(4));           // 傾き
+        chi2_ndof_vec.push_back(chi2_ndof);
+        prob_vec.push_back(prob);
     }
 
+
+       
 
 
     // 各成分を個別にプロットする
@@ -2068,6 +2076,7 @@ for (int i = 0; i < foundPeaks; ++i) {
         ofs << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
 
     }
+
     ofs << "means, sigmas of means, sigmas of gaussian, intercept ,slope, chi2_ndof, prob" << std::endl << std::endl;
     while(mean_temp != means.end() && sigma_mean_temp != sigmas_mean.end() && sigma_gaus_temp != sigmas_gaus.end() && intercept_temp != intercept.end() && slope_temp != slope.end()){
         ofs << *mean_temp << " " << *sigma_mean_temp << " " << *sigma_gaus_temp << " " << *intercept_temp << " " << " " << *slope_temp << " " << *chi2_ndof_temp << " " << *prob_temp << std::endl;
@@ -2681,7 +2690,7 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting
         existingCanvas = nullptr;
     }
 
-    TCanvas *c1 = new TCanvas("c1", Form("%s:Board%dCh%d+Board%dCh%d SumEnergy", fRootFile.Data(), iBoard1, iCh1+1, iBoard2, iCh2+1), 800, 600);
+    TCanvas *c1 = new TCanvas("c1", Form("%s:Board%dCh%d+Board%dCh%d SumEnergy", fRootFile.Data(), iBoard1+1, iCh1+1, iBoard2+1, iCh2+1), 800, 600);
 
     if (fH1Energy_PMTs != NULL)
     {
