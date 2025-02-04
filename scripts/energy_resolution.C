@@ -1,18 +1,3 @@
-/*
-エネルギーとエネルギー分解能の関係のプロット、および、1/√Eでのフィッティングをするマクロ
-*/
-#include <iostream>
-#include <fstream>
-#include <TGraph.h>
-#include <TGraphErrors.h> 
-#include <TStyle.h> 
-#include <TString.h>
-#include <TCanvas.h>
-#include <TF1.h>
-#include <iomanip>
-#include <chrono>
-#include <ctime> //時刻情報
-#include <TSystem.h>
 
 
 // Eを較正後になおすためのデータ読み込み
@@ -62,17 +47,25 @@ void energy_resolution(TString input_Folder = "./output/", TString key = "0204",
     TGraph* graph = new TGraph;
     int index_data = 0;
     Double_t R; // energy resolution
-    Double_t max_energy = 0;
     Double_t max_R = 0;
+    Double_t energy_calib;
+    Double_t max_energy_calib = 0;
 
     while(ifs >> energy >> ch >> sigma_ch >> sigma_gaus){
         std::cout << "Energy: " << energy << ", Ch: " << ch << ", Sigma_ch: " << sigma_ch << ", Sigma_gaus: " << sigma_gaus << std::endl;
+        
         sigma_gaus_energy = sigma_gaus * p1[iBoard][iCh]; // energy error in keV
-        R = sigma_gaus_energy * 2 * sqrt(2 * log(2)) / (p1[iBoard][iCh] * ch + p0[iBoard][iCh]);
-        graph->SetPoint(index_data, energy, R * 100);
+        energy_calib = p1[iBoard][iCh] * ch + p0[iBoard][iCh];
+        //energy_calib = p1_buf * ch + p0_buf;
+        R = sigma_gaus_energy * 2 * sqrt(2 * log(2)) / energy_calib;
+        
+        graph->SetPoint(index_data, energy_calib, R * 100);
 
-        if(energy > max_energy){
-            max_energy = energy;
+        std::cout << p0[iBoard][iCh] << " " << p1[iBoard][iCh] << std::endl;
+        std::cout << R*100 << " " << energy_calib << std::endl;
+
+        if(energy_calib > max_energy_calib){
+            max_energy_calib = energy_calib;
         }
         if(R > max_R){
             max_R = R;
@@ -84,7 +77,7 @@ void energy_resolution(TString input_Folder = "./output/", TString key = "0204",
     graph->SetTitle(Form("energy calibration from %s;Energy [keV];energy resolution [%%]", input_Filepath.Data()));
     
     
-    graph->GetXaxis()->SetLimits(0.0, max_energy*1.1);
+    graph->GetXaxis()->SetLimits(0.0, max_energy_calib*1.1);
     graph->GetYaxis()->SetRangeUser(0.0, max_R * 200);
 
     graph->SetMarkerStyle(20);
@@ -102,35 +95,35 @@ void energy_resolution(TString input_Folder = "./output/", TString key = "0204",
     canvas->Update();
 
     // data.txtにフィットパラメータを追加
-    TString data_filepath = Form("./cfg/%s/data.txt", key.Data());
-    std::ifstream ifs_data(data_filepath);
-    std::ofstream ofs_data;
-    std::vector<std::string> lines;
-    std::string line;
+    // TString data_filepath = Form("./cfg/%s/data.txt", key.Data());
+    // std::ifstream ifs_data(data_filepath);
+    // std::ofstream ofs_data;
+    // std::vector<std::string> lines;
+    // std::string line;
 
     // data.txt の内容を読み込んで行ごとに保存
-    while (std::getline(ifs_data, line)) {
-        lines.push_back(line);
-    }
-    ifs_data.close();
+    // while (std::getline(ifs_data, line)) {
+    //     lines.push_back(line);
+    // }
+    // ifs_data.close();
 
-    // iBoard と iCh に対応する行を更新
-    int line_to_update = iBoard * 4 + iCh; // iBoard と iCh の位置を計算
-    if (line_to_update < lines.size()) {
-        // 既存の行にフィットパラメータを追加
-        lines[line_to_update] += Form(" %f", fitFunc->GetParameter(0)); // フィットパラメータを追加
-    } else {
-        std::cerr << "Error: Line to update is out of bounds." << std::endl;
-    }
+    // // iBoard と iCh に対応する行を更新
+    // int line_to_update = iBoard * 4 + iCh; // iBoard と iCh の位置を計算
+    // if (line_to_update < lines.size()) {
+    //     // 既存の行にフィットパラメータを追加
+    //     lines[line_to_update] += Form(" %f", fitFunc->GetParameter(0)); // フィットパラメータを追加
+    // } else {
+    //     std::cerr << "Error: Line to update is out of bounds." << std::endl;
+    // }
 
-    // data.txt に更新内容を書き込む
-    ofs_data.open(data_filepath, std::ios::trunc); // 上書きモードで開く
-    for (const auto& l : lines) {
-        ofs_data << l << "\n";
-    }
-    ofs_data.close();
+    // // data.txt に更新内容を書き込む
+    // ofs_data.open(data_filepath, std::ios::trunc); // 上書きモードで開く
+    // for (const auto& l : lines) {
+    //     //ofs_data << l << "\n";
+    // }
+    // ofs_data.close();
 
-    std::cout << "Fit parameter added to data.txt at line: " << line_to_update << std::endl;
+    // std::cout << "Fit parameter added to data.txt at line: " << line_to_update << std::endl;
 
     // 保存ファイル名を決定
     TString filename_figure = "energy_res.pdf";
