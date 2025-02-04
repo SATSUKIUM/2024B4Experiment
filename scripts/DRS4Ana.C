@@ -2898,3 +2898,108 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", 
 
     return nentries;
 }
+
+
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 600);
+    canvas->Divide(3,1);
+    if(fH2Energy_PMTs != NULL){
+        delete fH2Energy_PMTs;
+    }
+    TH1D *fH1EnergySpectra[2];
+    fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", x_iBoard, x_iCh, key_Crystal_x.Data()), 500, 0, 600);
+    fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), 500, 0, 600);
+    fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per 1.2 keV", x_iBoard, x_iCh, key_Crystal_x.Data()));
+    fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per 1.2 keV", y_iBoard, y_iCh, key_Crystal_y.Data()));
+
+    fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
+    fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
+    canvas->cd(1);
+    fH2Energy_PMTs->Draw();
+
+    gPad->SetGrid();
+    gPad->SetLogz();
+    gStyle->SetOptStat(0);
+
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+
+    Double_t x_energy, y_energy, x_error, y_error;
+    Double_t x_charge_buf, y_charge_buf;
+    Double_t DiscriTime_x, DiscriTime_y;
+    Double_t adcSum_timerange_x, adcSum_timerange_y;
+    if(key_Crystal_x == "NaI"){
+        adcSum_timerange_x = 600;
+    }
+    else if(key_Crystal_x == "GSO"){
+        adcSum_timerange_x = 180;
+    }
+    else{
+        printf("\t\nx axis || type of crystal is invalid\n");
+    }
+    if(key_Crystal_y == "NaI"){
+        adcSum_timerange_y = 600;
+    }
+    else if(key_Crystal_y == "GSO"){
+        adcSum_timerange_y = 180;
+    }
+    else{
+        printf("\t\ny axis || type of crystal is invalid\n");
+    }
+    for(Int_t Entry=0; Entry<nentries; Entry++){
+        fChain->GetEntry(Entry);
+
+        DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        if(100 < DiscriTime_y && DiscriTime_y < 1400){
+            x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+            y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+
+            x_energy = p0[x_iBoard][x_iCh] + p1[x_iBoard][x_iCh]*x_charge_buf;
+            y_energy = p0[y_iBoard][y_iCh] + p1[y_iBoard][y_iCh]*y_charge_buf;
+
+            fH2Energy_PMTs->Fill(x_energy, y_energy);
+            fH1EnergySpectra[0]->Fill(x_energy);
+            fH1EnergySpectra[1]->Fill(y_energy);
+        }
+
+        if(Entry % 500 == 0){
+            printf("\tPoint plot : %d\n", Entry);
+        }
+        counter++;
+    }
+    canvas->cd(1);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
+    fH2Energy_PMTs->Draw();
+    canvas->cd(2);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    fH1EnergySpectra[0]->Draw();
+    canvas->cd(3);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    fH1EnergySpectra[1]->Draw();
+
+    canvas->cd(1);
+    TLine *line = new TLine(0, 511, 511,0);
+    line->SetLineColor(kBlack);
+    line->SetLineWidth(2);
+    line->Draw("SAME");
+
+    canvas->Update();
+
+    //保存用のディレクトリを作る
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    filename_figure += "_fH2Energy_PMTs.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    
+    return counter;
+}
