@@ -93,7 +93,7 @@ public:
     virtual Double_t GetMinVoltage(Int_t iBoard = 0, Int_t iCh = 0);
     virtual Double_t GetMaxVoltage(Int_t iBoard = 0, Int_t iCh = 0);
     virtual Double_t GetPedestal(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
-    virtual Double_t GetPedestalMean(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
+    //virtual Double_t GetPedestalMean(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
     virtual Double_t PlotPedestalMean(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0);
     virtual Double_t GetChargeIntegral(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t TcutMin = 0, Double_t TcutMax = 1000);
     virtual Double_t PlotChargeIntegral(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 0.0, Double_t xmin = 0.0, Double_t xmax = 5000.0);
@@ -109,7 +109,7 @@ public:
     virtual void Plot_wave_two_boards(Int_t iCh_master = 0, Int_t iCh_slave = 0, Int_t EventID = 0, Int_t canvas_index = 0);
     virtual void Plot_waves_two_boards(Int_t event_num_initial = 0, Int_t iCh_master = 0, Int_t iCh_slave = 0);
     
-    virtual Double_t Overlay_PlotWaves_discri(Int_t iCh = 0, Double_t threshold = 0.10);
+    virtual Double_t Overlay_PlotWaves_discri(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10);
     virtual Double_t GetTriggerTiming(Int_t iBoard = 0, Int_t iCh = 0, Double_t threshold = 0.10, Double_t trigger_voltage = -0.025);
     virtual Double_t Output_MaxVoltage(Int_t how_many_boards = 1, Int_t iCh = 0);
     virtual Double_t Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
