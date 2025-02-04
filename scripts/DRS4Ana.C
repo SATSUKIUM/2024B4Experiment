@@ -21,6 +21,11 @@ $ root[] a.PlotChargeIntegral()
 Please read the macro for the detail.
 ======================================================================================================*/
 
+TChain *globalChain_Event = new TChain("treeDRS4BoardEvent");
+TChain *globalChain_Info = new TChain("treeDRS4BoardInfo");
+
+std::vector<Char_t> fRootFile_pars;
+
 #define DRS4Ana_cxx
 #include "DRS4Ana.h"
 #include <TH2.h>
@@ -49,6 +54,14 @@ Please read the macro for the detail.
 #include <fstream>
 
 #include <TApplication.h>
+
+void addGlobalChain(const Char_t *fRootFile_par){
+    if(globalChain_Event && globalChain_Info){
+        globalChain_Event->Add(fRootFile_par);
+        globalChain_Info->Add(fRootFile_par);
+        fRootFile_pars.push_back(*fRootFile_par);
+    }
+}
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
@@ -2431,7 +2444,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
         gaussian_plus_linear->SetParLimits(1,fitLowerBound,fitUpperBound);
         gaussian_plus_linear->SetParLimits(2,0.1*sigma_set,5*sigma_set);
         gaussian_plus_linear->SetParLimits(4,-1e4,1);
-        gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -1.0);
+        gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -0.01);
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
         Int_t checking = fit_result->Status();
         if(checking != 0){}
@@ -2528,7 +2541,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
     Int_t index = 1;
     while (gSystem->AccessPathName(folderPath + '/' + filename_figure) == 0) {
         // ファイルが存在する場合、ファイル名にインデックスを追加
-        filename_figure = Form("%s:ch%d_NaI_peaksearch_%d.pdf", rootFile.Data(), iCh, index);
+        filename_figure = Form("%s:ch%d_semi_auto_fitting_%s_%d.pdf", rootFile.Data(), iCh, key_crystal.Data(),index);
         index++;
     }
 
@@ -2559,13 +2572,12 @@ Double_t DRS4Ana::Plot_waveform_8ch(){
         for(Int_t iBoard=0; iBoard<2; iBoard++){
             for(Int_t iCh=0; iCh<4; iCh++){
                 discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-                if(discriTime > 1400){
-                // if(100 < discriTime && discriTime < 1400){
+                if(100 < discriTime && discriTime < 1400){
                     for(Int_t iCell=0; iCell<1024; iCell++){
                         hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);
                         
                     }
-                    counters[iBoard][iCh]++;
+                    counters[iBoard][iCh] += 1;
                 }
             }
         }
@@ -2652,8 +2664,12 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
 }
 
 
-Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
+Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
 {
+    // cutting_option == 0 カットなし
+    // cutting_option == 1 トリガー時間カット
+    // cutting_option == 2 エネルギーカット
+
     gStyle->SetOptStat(1); // 統計ボックス表示の有無 1が表示 0が非表示
 
     // 前のキャンバスが存在する場合、削除する
@@ -2737,11 +2753,12 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1
     Double_t upper_limit_buf1, upper_limit_buf2, upper_limit_buf_S1, upper_limit_buf_A1, upper_limit_buf_S1A1;
     Double_t lower_limit_discri, upper_limit_discri;
 
-    upper_limit_buf1 = 450.0;
+    upper_limit_buf1 = 350.0;
     upper_limit_buf_S1 = 300.0;
     upper_limit_discri = 200.0;
     upper_limit_buf_S1A1 = 600.0;
 
+    lower_limit_buf1 = 100.0;
     lower_limit_buf2 = 100.0;
     lower_limit_buf_S1 = 200.0;
     lower_limit_discri = 100.0;
@@ -2774,8 +2791,35 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1
             energy_buf_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
 
             Double_t energy_buf_S1A1 = energy_buf_S1 + energy_buf_A1;
+            Double_t sumEnergy = energy_buf1 + energy_buf2;
 
-            if (energy_buf1 < upper_limit_buf1 && // kill over 511keV events
+            if (cutting_option == 0){
+                fH1Energy_PMTs->Fill(sumEnergy);
+                counter++;
+            }
+
+            else if(cutting_option == 1){
+                if (
+                discriTime1 > lower_limit_discri && 
+                discriTime1 < upper_limit_discri && 
+
+                discriTime2 > lower_limit_discri && 
+                discriTime2 < upper_limit_discri && 
+
+                discriTime_S1 > lower_limit_discri && 
+                discriTime_S1 < upper_limit_discri && 
+
+                discriTime_A1 > lower_limit_discri && 
+                discriTime_A1 < upper_limit_discri)
+                {
+                fH1Energy_PMTs->Fill(sumEnergy);
+                counter++;
+            }
+            }
+            else if(cutting_option == 2){
+                if (
+                energy_buf1 > lower_limit_buf1 && 
+                energy_buf1 < upper_limit_buf1 &&
 
                 energy_buf2 > lower_limit_buf2 && // kill dark
 
@@ -2795,17 +2839,18 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1
 
                 discriTime_A1 > lower_limit_discri && 
                 discriTime_A1 < upper_limit_discri)
-            {   
-                Double_t sumEnergy = energy_buf1 + energy_buf2;
+                {
                 fH1Energy_PMTs->Fill(sumEnergy);
-
                 counter++;
             }
+            }
+            
             
         }
     }
 
     fH1Energy_PMTs->Draw();
+    std::cout << counter << std::endl;
 
     
 

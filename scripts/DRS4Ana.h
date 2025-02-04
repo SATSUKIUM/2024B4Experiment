@@ -32,10 +32,12 @@ Please read the macro for the detail.
 
 #define NUM_OF_BOARDS 2
 
+extern std::vector<Char_t> fRootFile_pars;
+
 class DRS4Ana
 {
 public:
-    TTree *fChain;  //! pointer to the analyzed TTree or TChain
+    TChain *fChain;  //! pointer to the analyzed TTree or TChain
     Int_t fCurrent; //! current Tree number in a TChain
 
     // Fixed size dimensions of array or collections stored in the TTree if any.
@@ -62,13 +64,13 @@ public:
     TBranch *b_time;               //!
     TBranch *b_adcSum;             //!
 
-    DRS4Ana(const Char_t *fRootFile_par = "../data/run00010_22Na_1.65kV_MS.dat.root");
+    DRS4Ana();
     virtual ~DRS4Ana();
     virtual Int_t Cut(Long64_t entry);
     virtual Int_t GetEntry(Long64_t entry);
     virtual Long64_t LoadTree(Long64_t entry);
-    virtual void Init(TTree *tree_Event);
-    virtual Int_t Init_BoardInfo(TTree *tree_Info);
+    virtual void Init(TChain *tree_Event);
+    virtual Int_t Init_BoardInfo(TChain *tree_Info);
     virtual Bool_t Notify();
     virtual void Show(Long64_t entry = -1);
     virtual void PlotADCSum(Int_t iBoard = 0, Int_t iCh = 0);
@@ -127,7 +129,7 @@ public:
     virtual Double_t semi_automated_spectrum_fitting(TString key_crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 100);
     virtual Double_t Plot_waveform_8ch();
     virtual Double_t Plot_TriggerTimeDist_8ch();
-    virtual Double_t PlotSumEnergy_with_cutting(TString key = "0120", Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 1, Int_t iCh2 = 0, Double_t xmax = 1000);
+    virtual Double_t PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting_option = 0, Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 1, Int_t iCh2 = 0, Double_t xmax = 1000);
 
 
 
@@ -171,24 +173,25 @@ private:
 #endif
 
 #ifdef DRS4Ana_cxx
-DRS4Ana::DRS4Ana(const Char_t *fRootFile_par) : fChain(0)
+DRS4Ana::DRS4Ana() : fChain(globalChain_Event)
 {
-
-    fRootFile.Form("%s", fRootFile_par);
-    TFile *f = (TFile *)gROOT->GetListOfFiles()->FindObject(fRootFile);
-    if (!f || !f->IsOpen())
-    {
-        f = new TFile(fRootFile);
+    for(Int_t it=0; it<fRootFile_pars.size(); it++){
+        TString fRootFile_element = fRootFile_pars[it];
+        fRootFile += fRootFile_element;
+        fRootFile += "_";
     }
-    TTree *tree_Event, *tree_Info;
-    f->GetObject("treeDRS4BoardEvent", tree_Event);
-    f->GetObject("treeDRS4BoardInfo", tree_Info);
+    // TFile *f = globalChain_Event->GetFile();
+    // if (!f || !f->IsOpen())
+    // {
+    //     f = new TFile(fRootFile);
+    // }
 
     //ボード情報の初期化
-    fNumOfBoards=Init_BoardInfo(tree_Info);
+    fNumOfBoards=Init_BoardInfo(globalChain_Info);
+    printf("\tconstructor || fNumOfBoards %d\n", fNumOfBoards);
 
     //イベント情報の初期化
-    Init(tree_Event);
+    Init(globalChain_Event);
     
 }
 
@@ -222,7 +225,7 @@ Long64_t DRS4Ana::LoadTree(Long64_t entry)
     return centry;
 }
 
-Int_t DRS4Ana::Init_BoardInfo(TTree *tree_Info){
+Int_t DRS4Ana::Init_BoardInfo(TChain *tree_Info){
     if(!tree_Info){
         return -1;
     }
@@ -233,14 +236,14 @@ Int_t DRS4Ana::Init_BoardInfo(TTree *tree_Info){
 
     printf("\n\tDRS4Ana.h->Init_BoardInfo->fNumOfBoards = %d\n", fNumOfBoards);
     if(fNumOfBoards == 1){
-        printf("\t\tiBoard 0 | searialNumber %d", fSerialNumber[0]);
+        printf("\t\tiBoard 0 | searialNumber %d\n", fSerialNumber[0]);
     }
     else if(fNumOfBoards == 2){
-        printf("\t\tiBoard 0 | searialNumber %d\n\t\tiBoard 1 | serialNumber %d", fSerialNumber[0], fSerialNumber[1]);
+        printf("\t\tiBoard 0 | searialNumber %d\n\t\tiBoard 1 | serialNumber %d\n", fSerialNumber[0], fSerialNumber[1]);
     }
     return(fNumOfBoards);
 }
-void DRS4Ana::Init(TTree *tree_Event)
+void DRS4Ana::Init(TChain *tree_Event)
 {
     // The Init() function is called when the selector needs to initialize
     // a new tree or chain. Typically here the branch addresses and branch
@@ -252,9 +255,11 @@ void DRS4Ana::Init(TTree *tree_Event)
 
     // Set branch addresses and branch pointers
     printf("\n\tInit start\n");
+    printf("\tentries : %lld", fChain->GetEntries());
     if (!tree_Event)
         return;
     fChain = tree_Event;
+    printf("\tentries : %lld", fChain->GetEntries());
     fCurrent = -1;
     fChain->SetMakeClass(1);
 
@@ -265,9 +270,11 @@ void DRS4Ana::Init(TTree *tree_Event)
     fChain->SetBranchAddress("time", fTime, &b_time);
     fChain->SetBranchAddress("adcSum", fAdcSum, &b_adcSum);
     fChain->SetBranchAddress("discriCell", fDiscriCell);
+    printf("\tbranch address set\n");
 
     Notify();
-    fChain->GetEntry(1);
+    fChain->GetEntry(0);
+    printf("\tGetEntry(0)\n");
     
     fTimeBinWidthInNanoSec = fTime[0][0][1023]/1024.0; //original fTime[0][0][1]
     fWaveformXmin = fTime[0][0][0];
@@ -282,6 +289,8 @@ void DRS4Ana::Init(TTree *tree_Event)
     fPedestalTmax = fTime[0][0][1023] / 40.0;
     fChargeIntegralTmin = fTime[0][0][0];
     fChargeIntegralTmax = fTime[0][0][1023];
+
+    printf("\tparameters sets\n");
 
     // fSignalPolarity = 1; // positive signal
     fSignalPolarity = -1; // negative signal
