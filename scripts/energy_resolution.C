@@ -1,4 +1,20 @@
+#include <iostream>
+#include <fstream>
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TAxis.h>
+#include <TStyle.h> //gStyleのところ
+#include <TString.h>
+#include <TCanvas.h>
+#include <TF1.h>
 
+#include <iomanip>
+#include <chrono>
+#include <ctime> //時刻情報
+
+#include <fstream>
+#include <filesystem>
+#include <TSystem.h>
 
 // Eを較正後になおすためのデータ読み込み
 void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]){
