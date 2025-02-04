@@ -126,10 +126,11 @@ public:
     virtual Double_t NaI_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 250.0, Int_t numPeaks = 10, Double_t fitRange = 3.0, Double_t spec_sigma = 5.0);
     virtual Double_t peak_divided(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 150.0, Double_t fitXmin = 0.0, Double_t fitXmax = 0.0, Double_t adcTimeRange = 180.0);
     virtual void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]);
+    virtual void Load_EnergyResData(TString key, Double_t p0[2][4]);
     virtual Double_t semi_automated_spectrum_fitting(TString key_crystal = "NaI", Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 100);
     virtual Double_t Plot_waveform_8ch();
     virtual Double_t Plot_TriggerTimeDist_8ch();
-    virtual Double_t PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting_option = 0, Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 1, Int_t iCh2 = 0, Double_t xmax = 1000);
+    virtual Double_t PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", TString key_energy_resolution = "0204", Int_t cutting_option = 0, Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 1, Int_t iCh2 = 0, Double_t xmax = 1000);
 
 
 

@@ -146,6 +146,30 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     ifs.close();
 }
 
+void DRS4Ana::Load_EnergyResData(TString key, Double_t p0[2][4]){
+    Double_t p0_buf;
+    TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
+    std::ifstream ifs(calb_data_filepath);
+    Int_t line_index = 0;
+    while(ifs >> p0_buf){
+        if(line_index == 8){
+            break;
+        }
+        if(line_index < 4){
+            p0[0][line_index] = p0_buf;
+            std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+            std::cout << Form("\t\t%lf", p0_buf);
+        }
+        else if(line_index < 8){
+            p0[1][line_index-4] = p0_buf;
+            std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+            std::cout << Form("\t\t%lf", p0_buf);
+        }
+        line_index++;
+    }
+    ifs.close();
+}
+
 void DRS4Ana::PlotWave(Int_t iBoard, Int_t iCh, Int_t EventID)
 {
     gStyle->SetOptStat(0);
@@ -2673,7 +2697,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
 }
 
 
-Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
+Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", TString key_energy_resolution = "0204", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
 {
     // cutting_option == 0 カットなし
     // cutting_option == 1 トリガー時間カット
@@ -2715,7 +2739,7 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting
 
     //　エネルギーへの変換に必要なパラメータを取得
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    Load_EnergycalbData(key_energy_calib, p0, p0e, p1, p1e);
 
     Double_t discriTime1, discriTime2, discriTime_S1, discriTime_A1;
     Double_t adcSum_timerange1, adcSum_timerange2;
