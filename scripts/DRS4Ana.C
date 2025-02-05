@@ -2951,7 +2951,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
     Double_t adcSum_timerange_x, adcSum_timerange_y;
     Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
     Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
-    printf("\n\n\ty_p0_res_buf %f\n\n", y_p0_res_buf);
     Double_t distance_from_511_line, x_distance_btwn_2points, y_distance_btwn_2points;
     if(key_Crystal_x == "NaI"){
         adcSum_timerange_x = 600;
@@ -2984,11 +2983,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
             y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
             x_error = x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2)));
             x_error = y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2)));
-            printf("\tx_error and y_error %f %f\n", x_error, y_error);
+            printf("\ty_energy %f\n", y_energy);
+            // printf("\tx_error and y_error %f %f\n", x_error, y_error);
             distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
             x_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - (511.0-y_energy), 2.0) + pow((511.0-x_energy+y_energy)/2.0 - y_energy, 2.0);
             y_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
-            printf("\tdistance %f %f %f\n", distance_from_511_line, x_distance_btwn_2points, y_distance_btwn_2points);
+            // printf("\tdistance %f %f %f\n", distance_from_511_line, x_distance_btwn_2points, y_distance_btwn_2points);
             
             if((pow(x_error,2.0) > (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) > (distance_from_511_line + y_distance_btwn_2points))){
                 fH2Energy_PMTs->Fill(x_energy, y_energy);
