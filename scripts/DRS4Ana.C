@@ -2951,6 +2951,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
     Double_t adcSum_timerange_x, adcSum_timerange_y;
     Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
     Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+    printf("\n\n\ty_p0_res_buf %f\n\n", y_p0_res_buf);
     Double_t distance_from_511_line, x_distance_btwn_2points, y_distance_btwn_2points;
     if(key_Crystal_x == "NaI"){
         adcSum_timerange_x = 600;
