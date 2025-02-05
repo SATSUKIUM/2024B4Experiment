@@ -145,8 +145,8 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     }
     while(ifs >> p0_res_buf >> p0e_res_buf){
         if(line_index < 8){
-            continue;
             line_index++;
+            continue;
         }
         if(line_index == 16){
             break;
