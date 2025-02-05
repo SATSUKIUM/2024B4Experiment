@@ -3005,8 +3005,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
                     Double_t energy_error_A1 = 3 * 0.01 * p0_res[A1_BoardID][A1_ChID]*sqrt(energy_A1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
 
                     distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
-                    x_distance_btwn_2points = pow((511.0+energy_error_S1-energy_error_A1)/2.0 - (511.0-energy_error_A1), 2.0) + pow((511.0-energy_error_S1+energy_error_A1)/2.0 - energy_error_A1, 2.0);
-                    y_distance_btwn_2points = pow((511.0+energy_error_S1-energy_error_A1)/2.0 - energy_error_S1, 2.0) + pow((511.0-energy_error_S1+energy_error_A1)/2.0 - (511.0-energy_error_S1), 2.0);
+                    x_distance_btwn_2points = pow((511.0+energy_S1-energy_A1)/2.0 - (511.0-energy_A1), 2.0) + pow((511.0-energy_S1+energy_A1)/2.0 - energy_A1, 2.0);
+                    y_distance_btwn_2points = pow((511.0+energy_S1-energy_A1)/2.0 - energy_S1, 2.0) + pow((511.0-energy_S1+energy_A1)/2.0 - (511.0-energy_S1), 2.0);
 
                     if((pow(energy_error_S1,2.0) > (distance_from_511_line + x_distance_btwn_2points)) && (pow(energy_error_A1,2.0) > (distance_from_511_line + y_distance_btwn_2points))){
                         fH2Energy_PMTs->Fill(x_energy, y_energy);
