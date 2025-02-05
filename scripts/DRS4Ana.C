@@ -142,6 +142,7 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             break;
         }
     }
+    printf("\tline_index %d",line_index);
     Double_t dummy1,dummy2;
     while(ifs >> p0_res_buf >> p0e_res_buf >> dummy1 >> dummy2){
         if(line_index < 8){
@@ -155,12 +156,14 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             p0_res[0][line_index-8] = p0_res_buf;
             p0e_res[0][line_index-8] = p0e_res_buf;
             std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+            printf("\tline_index %d",line_index);
             std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
         }
         else if(line_index < 16){
             p0_res[1][line_index-12] = p0_res_buf;
             p0e_res[1][line_index-12] = p0e_res_buf;
             std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+            printf("\tline_index %d",line_index);
             std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
         }
         line_index++;
