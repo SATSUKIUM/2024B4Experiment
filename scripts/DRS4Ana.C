@@ -138,12 +138,11 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
         line_index++;
-        if(line_index == 7){
-            line_index++;
+        if(line_index == 8){
             break;
         }
     }
-    printf("\tline_index %d",line_index);
+    printf("\tline_index %d\n",line_index);
     Double_t dummy1,dummy2;
     while(ifs >> p0_res_buf >> p0e_res_buf >> dummy1 >> dummy2){
         if(line_index < 8){
