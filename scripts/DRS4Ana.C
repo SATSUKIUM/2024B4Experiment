@@ -114,7 +114,7 @@ Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
     return index;
 }
 
-void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]){
+void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4], Double_t p0_res[2][4], Double_t p0e_res[2][4]){
     Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
     TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
     std::ifstream ifs(calb_data_filepath);
@@ -142,6 +142,24 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
         
         line_index++;
         
+    }
+    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
+        if(line_index < 8){
+            continue;
+        }
+        if(line_index < 12){
+            p0_res[0][line_index] = p0_buf;
+            p0e_res[0][line_index] = p0e_buf;
+            std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+            std::cout << Form("\t\t%lf %lf %lf %lf (last 2 are dummy)", p0_buf, p1_buf, p0e_buf, p1e_buf);
+        }
+        else if(line_index < 16){
+            p0_res[1][line_index-4] = p0_buf;
+            p0e_res[1][line_index-4] = p0e_buf;
+            std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+            std::cout << Form("\t\t%lf %lf %lf %lf (last 2 are dummy)", p0_buf, p1_buf, p0e_buf, p1e_buf);
+        }
+        line_index++;
     }
     ifs.close();
 }
@@ -913,8 +931,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
 
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
@@ -1050,8 +1068,8 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     fH1ChargeIntegral->SetXTitle("Energy [keV]");
     fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
 
-    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
 
     // for(Int_t ib=0; ib<2; ib++){
     //     for(Int_t ic=0; ic<4; ic++){
@@ -1146,9 +1164,8 @@ Double_t DRS4Ana::PlotSumEnergy(TString key = "0120", TString key_Crystal1 = "Na
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    //　エネルギーへの変換に必要なパラメータを取得
-    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
 
     Double_t discriTime1, discriTime2;
     Double_t adcSum_timerange1, adcSum_timerange2;
@@ -2452,6 +2469,7 @@ Double_t DRS4Ana::semi_automated_spectrum_fitting(TString key_crystal = "NaI", I
         gaussian_plus_linear->SetParLimits(0,0.1*peakHight,5*peakHight);
         gaussian_plus_linear->SetParLimits(1,fitLowerBound,fitUpperBound);
         gaussian_plus_linear->SetParLimits(2,0.1*sigma_set,5*sigma_set);
+        gaussian_plus_linear->SetParLimits(3,0,1e8);
         gaussian_plus_linear->SetParLimits(4,-1e4,1);
         gaussian_plus_linear->SetParameters(peakHight, peakPosition, sigma_set, 1000.0, -0.01);
         TFitResultPtr fit_result = fH1ChargeIntegral->Fit(gaussian_plus_linear, "RS+"); //TFitResultPtrはフィッティングの結果を保持する型。あとでフィッティングの可否判定に使う。
@@ -2673,7 +2691,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
 }
 
 
-Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
+Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", Int_t cutting_option, Int_t iBoard1, Int_t iCh1, Int_t iBoard2, Int_t iCh2, Double_t xmax)
 {
     // cutting_option == 0 カットなし
     // cutting_option == 1 トリガー時間カット
@@ -2715,7 +2733,9 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting
 
     //　エネルギーへの変換に必要なパラメータを取得
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4];
-    Load_EnergycalbData(key, p0, p0e, p1, p1e);
+    // エネルギー分解能の1/sqrt(E)フィッティングパラメータ取得
+    Double_t p0_res[2][4], p0e_res[2][4];
+    Load_EnergycalbData(key_energy_calib, p0, p0e, p1, p1e, p0_res, p0e_res);
 
     Double_t discriTime1, discriTime2, discriTime_S1, discriTime_A1;
     Double_t adcSum_timerange1, adcSum_timerange2;
@@ -2877,4 +2897,139 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key = "0120", Int_t cutting
 
 
     return nentries;
+}
+
+
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 1200);
+    canvas->Divide(2,2);
+    if(fH2Energy_PMTs != NULL){
+        delete fH2Energy_PMTs;
+    }
+    Double_t minEnergy, maxEnergy;
+    Int_t nBins = 200;
+    minEnergy = 0.0;
+    maxEnergy = 600.0;
+    TH1D *fH1EnergySpectra[3];
+    fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", x_iBoard, x_iCh, key_Crystal_x.Data()), 500, 0, 600);
+    fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), 500, 0, 600);
+    fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per 1.2 keV", x_iBoard, x_iCh, key_Crystal_x.Data()));
+    fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per 1.2 keV", y_iBoard, y_iCh, key_Crystal_y.Data()));
+    fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 500, 0, 600);
+    fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per 1.2 keV", x_iBoard, x_iCh, y_iBoard, y_iCh));
+
+    fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
+    fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
+    canvas->cd(1);
+    fH2Energy_PMTs->Draw();
+
+    gPad->SetGrid();
+    gPad->SetLogz();
+    gStyle->SetOptStat(0);
+
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
+
+    Double_t x_energy, y_energy, x_error, y_error;
+    Double_t x_charge_buf, y_charge_buf;
+    Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
+    x_p0_buf = p0[x_iBoard][x_iCh];
+    x_p1_buf = p1[x_iBoard][x_iCh];
+    y_p0_buf = p0[y_iBoard][y_iCh];
+    y_p1_buf = p1[y_iBoard][y_iCh];
+    Double_t DiscriTime_x, DiscriTime_y;
+    Double_t adcSum_timerange_x, adcSum_timerange_y;
+    Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
+    Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+    Double_t distance_from_511_line, x_distance_btwn_2points, y_distance_btwn_2points;
+    if(key_Crystal_x == "NaI"){
+        adcSum_timerange_x = 600;
+    }
+    else if(key_Crystal_x == "GSO"){
+        adcSum_timerange_x = 180;
+    }
+    else{
+        printf("\t\nx axis || type of crystal is invalid\n");
+    }
+    if(key_Crystal_y == "NaI"){
+        adcSum_timerange_y = 600;
+    }
+    else if(key_Crystal_y == "GSO"){
+        adcSum_timerange_y = 180;
+    }
+    else{
+        printf("\t\ny axis || type of crystal is invalid\n");
+    }
+    for(Int_t Entry=0; Entry<nentries; Entry++){
+        fChain->GetEntry(Entry);
+
+        DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        if(100 < DiscriTime_y && DiscriTime_y < 1400){
+            x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+            y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+
+            x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
+            y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
+            x_error = x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2)));
+            x_error = y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2)));
+            distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
+            x_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - (511.0-y_energy), 2.0) + pow((511.0-x_energy+y_energy)/2.0 - y_energy, 2.0);
+            y_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
+            
+            if((pow(x_error,2.0) < (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) < (distance_from_511_line + y_distance_btwn_2points))){
+                fH2Energy_PMTs->Fill(x_energy, y_energy);
+                fH1EnergySpectra[0]->Fill(x_energy);
+                fH1EnergySpectra[1]->Fill(y_energy);
+                fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                counter++;
+            }
+        }
+
+        if(Entry % 500 == 0){
+            printf("\tPoint plot : %d\n", Entry);
+        }
+        counter++;
+    }
+    canvas->cd(1);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
+    fH2Energy_PMTs->Draw();
+    canvas->cd(2);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+    fH1EnergySpectra[1]->Draw();
+    canvas->cd(3);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+    fH1EnergySpectra[0]->Draw();
+    canvas->cd(4);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+    fH1EnergySpectra[2]->Draw();
+
+    canvas->cd(1);
+    TLine *line = new TLine(0, 511, 511,0);
+    line->SetLineColor(kBlack);
+    line->SetLineWidth(2);
+    line->Draw("SAME");
+
+    canvas->Update();
+
+    //保存用のディレクトリを作る
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    filename_figure += "_fH2Energy_PMTs.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    
+    return counter;
 }

@@ -1,4 +1,20 @@
+#include <iostream>
+#include <fstream>
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TAxis.h>
+#include <TStyle.h> //gStyleのところ
+#include <TString.h>
+#include <TCanvas.h>
+#include <TF1.h>
 
+#include <iomanip>
+#include <chrono>
+#include <ctime> //時刻情報
+
+#include <fstream>
+#include <filesystem>
+#include <TSystem.h>
 
 // Eを較正後になおすためのデータ読み込み
 void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4]){
@@ -36,7 +52,7 @@ void Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Dou
 // energy resolution plot
 void energy_resolution(TString input_Folder = "./output/", TString key = "0204", Int_t iBoard = 0, Int_t iCh= 0){
 
-    TString input_Filepath = Form("%s_calib.txt", input_Folder.Data());
+    TString input_Filepath = Form("%sdata.txt", input_Folder.Data());
     std::ifstream ifs(input_Filepath);
     double energy, ch, sigma_ch, sigma_gaus, sigma_gaus_energy;
 
@@ -87,7 +103,7 @@ void energy_resolution(TString input_Folder = "./output/", TString key = "0204",
     TF1 *fitFunc = new TF1("fitFunc", "[0]/sqrt(x)", 0, 1300);
     fitFunc->SetParameter(0, 300);  // 初期値
     graph->Fit(fitFunc);
-    //std::cout << "Fitting parameter [0]/sqrt(x) : " << fitFunc->GetParameter(0) << std::endl;
+    std::cout << Form("\tFitting parameter [0]/sqrt(x) :%f %f\n\t\tp0 and its error\n", fitFunc->GetParameter(0), fitFunc->GetParError(0));
 
     //graph->GetXaxis()->SetLimits(0, 1300);
     fitFunc->Draw("same");
