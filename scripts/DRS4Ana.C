@@ -2940,6 +2940,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
 
+    Int_t S1_BoardID = 0;
+    Int_t S1_ChID = 0;
+    Int_t A1_BoardID = 0;
+    Int_t A1_ChID = 2;
+    Double_t discriTime_S1, discriTime_A1;
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
     Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
@@ -2990,11 +2995,26 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
             
             if((pow(x_error,2.0) > (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) > (distance_from_511_line + y_distance_btwn_2points))){
                 if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
-                    fH2Energy_PMTs->Fill(x_energy, y_energy);
-                fH1EnergySpectra[0]->Fill(x_energy);
-                fH1EnergySpectra[1]->Fill(y_energy);
-                fH1EnergySpectra[2]->Fill(x_energy+y_energy);
-                counter++;
+                    Double_t chargeIntegral_S1 = GetChargeIntegral(S1_BoardID , S1_ChID, 20.0, discriTime_S1 - 50, discriTime_S1 + 600);
+                    Double_t chargeIntegral_A1 = GetChargeIntegral(A1_BoardID , A1_ChID, 20.0, discriTime_A1 - 50, discriTime_A1 + 600);
+
+                    Double_t energy_S1 = p0[S1_BoardID][S1_ChID] + p1[S1_BoardID][S1_ChID]*(-chargeIntegral_S1);
+                    Double_t energy_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
+
+                    Double_t energy_error_S1 = 3 * 0.01 * p0_res[S1_BoardID][S1_ChID]*sqrt(energy_S1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+                    Double_t energy_error_A1 = 3 * 0.01 * p0_res[A1_BoardID][A1_ChID]*sqrt(energy_A1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+
+                    distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
+                    x_distance_btwn_2points = pow((511.0+energy_error_S1-energy_error_A1)/2.0 - (511.0-energy_error_A1), 2.0) + pow((511.0-energy_error_S1+energy_error_A1)/2.0 - energy_error_A1, 2.0);
+                    y_distance_btwn_2points = pow((511.0+energy_error_S1-energy_error_A1)/2.0 - energy_error_S1, 2.0) + pow((511.0-energy_error_S1+energy_error_A1)/2.0 - (511.0-energy_error_S1), 2.0);
+
+                    if((pow(energy_error_S1,2.0) > (distance_from_511_line + x_distance_btwn_2points)) && (pow(energy_error_A1,2.0) > (distance_from_511_line + y_distance_btwn_2points))){
+                        fH2Energy_PMTs->Fill(x_energy, y_energy);
+                        fH1EnergySpectra[0]->Fill(x_energy);
+                        fH1EnergySpectra[1]->Fill(y_energy);
+                        fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                        counter++;
+                    }
                 }
             }
         }
