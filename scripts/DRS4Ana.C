@@ -2994,14 +2994,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
                 fH1EnergySpectra[1]->Fill(y_energy);
                 fH1EnergySpectra[2]->Fill(x_energy+y_energy);
                 counter++;
-                printf("\tpoint plot\n");
             }
         }
 
         if(Entry % 500 == 0){
-            printf("\tPoint plot : %d\n", Entry);
+            printf("\tPoint processed : %d\n", Entry);
         }
-        counter++;
     }
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
