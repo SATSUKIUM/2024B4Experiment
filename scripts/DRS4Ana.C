@@ -2995,6 +2995,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
             
             if((pow(x_error,2.0) > (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) > (distance_from_511_line + y_distance_btwn_2points))){
                 if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
+                    discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
+                    discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
                     Double_t chargeIntegral_S1 = GetChargeIntegral(S1_BoardID , S1_ChID, 20.0, discriTime_S1 - 50, discriTime_S1 + 600);
                     Double_t chargeIntegral_A1 = GetChargeIntegral(A1_BoardID , A1_ChID, 20.0, discriTime_A1 - 50, discriTime_A1 + 600);
 
@@ -3019,7 +3021,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
             }
         }
 
-        if(Entry % 500 == 0){
+        if(Entry % 5000 == 0){
             printf("\tPoint processed : %d\n", Entry);
         }
     }
