@@ -147,6 +147,9 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
         if(line_index < 8){
             continue;
         }
+        if(line_index == 16){
+            break;
+        }
         if(line_index < 12){
             p0_res[0][line_index-8] = p0_res_buf;
             p0e_res[0][line_index-8] = p0e_res_buf;
@@ -2980,7 +2983,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
             x_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - (511.0-y_energy), 2.0) + pow((511.0-x_energy+y_energy)/2.0 - y_energy, 2.0);
             y_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
-            if((pow(x_error,2.0) < (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) < (distance_from_511_line + y_distance_btwn_2points))){
+            if((pow(x_error,2.0) > (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) > (distance_from_511_line + y_distance_btwn_2points))){
                 fH2Energy_PMTs->Fill(x_energy, y_energy);
                 fH1EnergySpectra[0]->Fill(x_energy);
                 fH1EnergySpectra[1]->Fill(y_energy);
