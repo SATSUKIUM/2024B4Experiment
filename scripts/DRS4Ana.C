@@ -2982,8 +2982,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
 
             x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
             y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
-            x_error = x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2)));
-            y_error = y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2)));
+            x_error = 0.01 * x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+            y_error = 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
             distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
             x_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - (511.0-y_energy), 2.0) + pow((511.0-x_energy+y_energy)/2.0 - y_energy, 2.0);
             y_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
