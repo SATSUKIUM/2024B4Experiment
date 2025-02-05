@@ -70,7 +70,7 @@ void listChains(const TString key = "456"){
         addGlobalChain(fRootFile_par);
         printf("%s\n", fRootFile_par.Data());
     }
-    ifs.close()
+    ifs.close();
 }
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
