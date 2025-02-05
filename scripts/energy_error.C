@@ -86,10 +86,8 @@ void energy_error(TString input_Folder = "./output/", TString key = "0204", Int_
     Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
 
     TCanvas* canvas = new TCanvas();
-    TGraph* graph = new TGraph;
+    TGraph *graph = new TGraph;
     int index_data = 0;
-    Double_t R; // energy resolution
-    Double_t max_R = 0;
     Double_t energy_calib;
     Double_t max_energy_calib = 0;
 
@@ -97,73 +95,31 @@ void energy_error(TString input_Folder = "./output/", TString key = "0204", Int_
         std::cout << "Energy: " << energy << ", Ch: " << ch << ", Sigma_ch: " << sigma_ch << ", Sigma_gaus: " << sigma_gaus << std::endl;
         
         sigma_gaus_energy = sigma_gaus * p1[iBoard][iCh]; // energy error in keV
+        graph->SetPoint(index_data, energy, sigma_gaus_energy);
         energy_calib = p1[iBoard][iCh] * ch + p0[iBoard][iCh];
-        //energy_calib = p1_buf * ch + p0_buf;
-        R = sigma_gaus_energy * 2 * sqrt(2 * log(2)) / energy_calib;
-        
-        // graph->SetPoint(index_data, energy_calib, R * 100);
 
         std::cout << p0[iBoard][iCh] << " " << p1[iBoard][iCh] << std::endl;
-        std::cout << R*100 << " " << energy_calib << std::endl;
 
         if(energy_calib > max_energy_calib){
             max_energy_calib = energy_calib;
         }
-        if(R > max_R){
-            max_R = R;
-        }
         index_data++;
     }
     ifs.close();
-
-    graph->SetTitle(Form("energy calibration from %s;Energy [keV];energy error [keV]", input_Filepath.Data()));
-    
-    
+    graph->SetTitle(Form("energy error from %s;Energy [keV];energy error [keV]", input_Filepath.Data()));
     graph->GetXaxis()->SetLimits(0.0, max_energy_calib*1.1);
-    graph->GetYaxis()->SetRangeUser(0.0, max_energy_calib*1.1);
-
+    graph->GetYaxis()->SetRangeUser(0.0, 50);
     graph->SetMarkerStyle(20);
     graph->Draw("ap");
 
-    // 1/√Eでフィッティング
-    TF1 *energy_error = new TF1("energy_error", "[0]*sqrt(x)", 0, 1300);
-    energy_error->SetParameter(0, p0_res[iBoard][iCh]/(2.0*sqrt(2.0*log(2.0))));  // 初期値
+    TF1 *energy_error = new TF1("energy_error", "[0]*sqrt(x)", 0, 600);
+    energy_error->SetParameter(0, 0.01*p0_res[iBoard][iCh]/(2.0*sqrt(2.0*log(2.0))));  // 初期値
+    energy_error->SetLineColor(kBlue);
+    energy_error->SetLineWidth(2);
 
-    //graph->GetXaxis()->SetLimits(0, 1300);
     energy_error->Draw("same");
-    gStyle->SetOptFit();
     canvas->Update();
 
-    // data.txtにフィットパラメータを追加
-    // TString data_filepath = Form("./cfg/%s/data.txt", key.Data());
-    // std::ifstream ifs_data(data_filepath);
-    // std::ofstream ofs_data;
-    // std::vector<std::string> lines;
-    // std::string line;
-
-    // data.txt の内容を読み込んで行ごとに保存
-    // while (std::getline(ifs_data, line)) {
-    //     lines.push_back(line);
-    // }
-    // ifs_data.close();
-
-    // // iBoard と iCh に対応する行を更新
-    // int line_to_update = iBoard * 4 + iCh; // iBoard と iCh の位置を計算
-    // if (line_to_update < lines.size()) {
-    //     // 既存の行にフィットパラメータを追加
-    //     lines[line_to_update] += Form(" %f", fitFunc->GetParameter(0)); // フィットパラメータを追加
-    // } else {
-    //     std::cerr << "Error: Line to update is out of bounds." << std::endl;
-    // }
-
-    // // data.txt に更新内容を書き込む
-    // ofs_data.open(data_filepath, std::ios::trunc); // 上書きモードで開く
-    // for (const auto& l : lines) {
-    //     //ofs_data << l << "\n";
-    // }
-    // ofs_data.close();
-
-    // std::cout << "Fit parameter added to data.txt at line: " << line_to_update << std::endl;
 
     // 保存ファイル名を決定
     TString filename_figure = "energy_error.pdf";
