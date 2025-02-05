@@ -68,9 +68,11 @@ void listChains(const TString key = "456"){
     TString fRootFile_par;
     while(ifs >> fRootFile_par){
         addGlobalChain(fRootFile_par);
-        printf("%s\n", fRootFile_par.Data());
+        printf("%s add to globalChain\n", fRootFile_par.Data());
     }
     ifs.close();
+    printf("globalChain : %d TTrees\n", globalChain_Event->GetNtrees());
+    globalChain_Event->GetListOfFiles()->Print();
 }
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
@@ -3160,7 +3162,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
             y_error = 2 * 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
             distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
             
-            if(pow(x_error,2.0)+pow(y_error,2.0) > distance_from_511_line){
+            if(pow(y_error,2.0) > 2*distance_from_511_line){
                 if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
                     discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
                     discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
@@ -3175,7 +3177,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
                     distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
 
-                    if(pow(energy_error_S1,2.0)+pow(energy_error_A1,2.0) > distance_from_511_line){
+                    if(pow(energy_error_A1,2.0) > 2*distance_from_511_line){
                         fH2Energy_PMTs->Fill(x_energy, y_energy);
                         fH1EnergySpectra[0]->Fill(x_energy);
                         fH1EnergySpectra[1]->Fill(y_energy);
