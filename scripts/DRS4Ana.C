@@ -3217,5 +3217,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     IfFile_duplication(folderPath, filename_figure);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
     
+    printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
     return counter;
 }
