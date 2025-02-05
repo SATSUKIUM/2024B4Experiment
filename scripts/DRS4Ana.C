@@ -62,6 +62,15 @@ void addGlobalChain(const TString fRootFile_par){
         fRootFile_pars.push_back(fRootFile_par);
     }
 }
+void listChains(const TString key = "456"){
+    TString key_path = "./cfg/chains/" + key + "data.txt";
+    std::ifstream ifs(key_path);
+    TString fRootFile_par;
+    while(ifs >> fRootFile_par){
+        addGlobalChain(fRootFile_par);
+        printf("%s\n", fRootFile_par.Data());
+    }
+}
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
 {
