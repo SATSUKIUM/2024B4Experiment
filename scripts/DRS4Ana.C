@@ -2989,11 +2989,13 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
             y_distance_btwn_2points = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
             if((pow(x_error,2.0) > (distance_from_511_line + x_distance_btwn_2points)) && (pow(y_error,2.0) > (distance_from_511_line + y_distance_btwn_2points))){
-                fH2Energy_PMTs->Fill(x_energy, y_energy);
+                if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
+                    fH2Energy_PMTs->Fill(x_energy, y_energy);
                 fH1EnergySpectra[0]->Fill(x_energy);
                 fH1EnergySpectra[1]->Fill(y_energy);
                 fH1EnergySpectra[2]->Fill(x_energy+y_energy);
                 counter++;
+                }
             }
         }
 
