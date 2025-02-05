@@ -115,7 +115,7 @@ Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
 }
 
 void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2][4], Double_t p1[2][4], Double_t p1e[2][4], Double_t p0_res[2][4], Double_t p0e_res[2][4]){
-    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf;
+    Double_t p0_buf, p1_buf, p0e_buf, p1e_buf, p0_res_buf, p0e_res_buf;
     TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
@@ -148,16 +148,16 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             continue;
         }
         if(line_index < 12){
-            p0_res[0][line_index] = p0_buf;
-            p0e_res[0][line_index] = p0e_buf;
+            p0_res[0][line_index-8] = p0_res_buf;
+            p0e_res[0][line_index-8] = p0e_res_buf;
             std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf (last 2 are dummy)", p0_buf, p1_buf, p0e_buf, p1e_buf);
+            std::cout << Form("\t\t%lf %lf (last 2 are dummy)", p0_res_buf, p0e_res_buf);
         }
         else if(line_index < 16){
-            p0_res[1][line_index-4] = p0_buf;
-            p0e_res[1][line_index-4] = p0e_buf;
+            p0_res[1][line_index-12] = p0_res_buf;
+            p0e_res[1][line_index-12] = p0e_res_buf;
             std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf (last 2 are dummy)", p0_buf, p1_buf, p0e_buf, p1e_buf);
+            std::cout << Form("\t\t%lf %lf (last 2 are dummy)", p0_res_buf, p0e_res_buf);
         }
         line_index++;
     }
