@@ -132,7 +132,9 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
     while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        
+        if(line_index == 8){
+            break;
+        }
         if(line_index < 4){
             p0[0][line_index] = p0_buf;
             p0e[0][line_index] = p0e_buf;
@@ -2915,7 +2917,7 @@ Double_t DRS4Ana::PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", 
 }
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut1(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -3189,12 +3191,16 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
           A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
           S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
           A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-            
 
-          if(( 256 - S1_error < S1_energy )&& (S1_energy < 256 + S1_error)){
+          std::cout << "p0_res[0][0]: " << p0_res[0][0] << std::endl;
+          std::cout << "S1_energy: " << S1_energy << std::endl;
+          std::cout << "S1_error: " << S1_error << std::endl;
+
+          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error)){
             x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
             y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
 
+          
             x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
             y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
 
@@ -3203,15 +3209,15 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
             x_error = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
             y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
 
-            distance_from_511_line = x_energy + y_energy - 511.0 / sqrt(2.0);
-            x_distance= (511 - x_energy - y_energy);
-            y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
+            //distance_from_511_line = x_energy + y_energy - 511.0 / sqrt(2.0);
+            //x_distance= (511 - x_energy - y_energy);
+            //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
            
-              if(( 256 - x_error < x_energy ) && (x_energy < 256 + x_error) && ( x_energy + y_energy < 512 + y_error ) && ( 100 < y_energy )){
+              if(( 256 - 3* x_error < x_energy ) && (x_energy < 256 + 3 * x_error) && ( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
                   
                   std::cout << "S1_energy: " << S1_energy << std::endl;
-                  std::cout << "x_ernergy: " << x_energy << std::endl;
+                  std::cout << "x_energy: " << x_energy << std::endl;
                   std::cout << "y_energy: " << y_energy << std::endl;
                   std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
 
@@ -3233,6 +3239,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
 
         if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
+            std::cout << "x_charge_buf:" << x_charge_buf  << std::endl;
+            std::cout << "x_energy:" << x_energy << std::endl;
+            std::cout << "x_error:" << x_error << std::endl;
+
         }
         allcounter++;
 
