@@ -40,6 +40,8 @@ std::vector<TString> fRootFile_pars;
 #include <TGraphErrors.h>
 #include <TLine.h>
 #include <TPad.h>
+#include <TColor.h>
+
 
 #include <fstream>
 #include <filesystem>
@@ -3101,7 +3103,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
         delete fH2Energy_PMTs;
     }
     Double_t minEnergy, maxEnergy;
-    Int_t nBins = 200;
+    Int_t nBins = 100;
     minEnergy = 0.0;
     maxEnergy = 600.0;
 
@@ -3143,15 +3145,15 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
 
     TH1D *fH1EnergySpectra[3];
 
-    fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI", x_iBoard, x_iCh), 500, 0, 600);
-    fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI;energy [keV]; count per 1.2 keV", x_iBoard, x_iCh));
+    fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI", x_iBoard, x_iCh), nBins, minEnergy, maxEnergy);
+    fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, (maxEnergy-minEnergy)/nBins));
     
-    fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), 500, 0, 600);
-    fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per 1.2 keV", y_iBoard, y_iCh, key_Crystal_y.Data()));
+    fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), nBins, minEnergy, maxEnergy);
+    fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", y_iBoard, y_iCh, key_Crystal_y.Data(), (maxEnergy-minEnergy)/nBins));
     
     
-    fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 500, 0, 600);
-    fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per 1.2 keV", x_iBoard, x_iCh, y_iBoard, y_iCh));
+    fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 100, 0, 600);
+    fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh,(maxEnergy-minEnergy)/nBins));
    
     // THStack *hs = new THStack("hs", "Stacked Energy Spectra;Energy [keV];Counts");
 
@@ -3192,10 +3194,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
           S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
           A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
 
-          std::cout << "p0_res[0][0]: " << p0_res[0][0] << std::endl;
-          std::cout << "S1_energy: " << S1_energy << std::endl;
-          std::cout << "S1_error: " << S1_error << std::endl;
-
+        
           if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error)){
             x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
             y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
@@ -3214,7 +3213,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
            
-              if(( 256 - 3* x_error < x_energy ) && (x_energy < 256 + 3 * x_error) && ( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
+              if(( 256 - 3 * x_error < x_energy ) && (x_energy < 256 + 3 * x_error) && ( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
                   
                   std::cout << "S1_energy: " << S1_energy << std::endl;
                   std::cout << "x_energy: " << x_energy << std::endl;
@@ -3239,10 +3238,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
 
         if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
-            std::cout << "x_charge_buf:" << x_charge_buf  << std::endl;
-            std::cout << "x_energy:" << x_energy << std::endl;
-            std::cout << "x_error:" << x_error << std::endl;
-
         }
         allcounter++;
 
@@ -3255,6 +3250,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
+    gStyle->SetPalette(kRainBow);
+    gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
     TLine *line = new TLine(0, 511, 511,0);
