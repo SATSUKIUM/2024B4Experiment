@@ -137,7 +137,7 @@ void Integral(){
     double y_max;
     // double y_center;
 
-    double time = 60 * 60 * 24 * 4;
+    double time = 60 * 60 * 24 * 14;
     // double counts= 0.0;
     cout << "time = " << time << endl;
 
