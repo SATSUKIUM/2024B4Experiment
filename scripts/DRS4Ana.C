@@ -3177,7 +3177,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
                     distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
 
-                    if(pow(energy_error_A1,2.0) > 2*distance_from_511_line){
+                    if((pow(energy_error_A1,2.0) > 2*distance_from_511_line) && (pow(energy_error_S1,2.0) > 2*distance_from_511_line)){
                         fH2Energy_PMTs->Fill(x_energy, y_energy);
                         fH1EnergySpectra[0]->Fill(x_energy);
                         fH1EnergySpectra[1]->Fill(y_energy);
