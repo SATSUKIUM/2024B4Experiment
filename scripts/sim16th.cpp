@@ -80,7 +80,7 @@ double_t GetRate(double theta, double phi, double K){
     double_t delta_phi = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
 
 
-    std::ifstream ifs("../data/sim/GSO_pe.txt"); // 以下、あるエネルギーでの光電吸収に対する減衰係数を取得
+    std::ifstream ifs("./cfg/GSO_pe.txt"); // 以下、あるエネルギーでの光電吸収に対する減衰係数を取得
     if (!ifs.is_open()) {
         std::cerr << "Error: Could not open file." << std::endl;
     }
