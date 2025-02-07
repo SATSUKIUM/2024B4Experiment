@@ -133,50 +133,78 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
     TString calb_data_filepath = Form("./cfg/%s/data.txt", key.Data());
     std::ifstream ifs(calb_data_filepath);
     Int_t line_index = 0;
-    while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
-        if(line_index == 8){
-            break;
-        }
-        if(line_index < 4){
-            p0[0][line_index] = p0_buf;
-            p0e[0][line_index] = p0e_buf;
-            p1[0][line_index] = p1_buf;
-            p1e[0][line_index] = p1e_buf;
-            std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
-        }
-        else if(line_index < 8){
-            p0[1][line_index-4] = p0_buf;
-            p0e[1][line_index-4] = p0e_buf;
-            p1[1][line_index-4] = p1_buf;
-            p1e[1][line_index-4] = p1e_buf;
-            std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
-        }
-        line_index++;
+
+    // while(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf){
+    //     if(line_index == 8){
+    //         break;
+    //     }
+    //     if(line_index < 4){
+    //         p0[0][line_index] = p0_buf;
+    //         p0e[0][line_index] = p0e_buf;
+    //         p1[0][line_index] = p1_buf;
+    //         p1e[0][line_index] = p1e_buf;
+    //         std::cout << Form("\tiBoard : 0, iCh : %d, line_inedex %d \n", line_index % 4, line_index);
+    //         //printf("\tline_index %d\n",line_index);
+    //         //std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
+    //         std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
+    //     }
+    //     else if(line_index < 8){
+    //         p0[1][line_index-4] = p0_buf;
+    //         p0e[1][line_index-4] = p0e_buf;
+    //         p1[1][line_index-4] = p1_buf;
+    //         p1e[1][line_index-4] = p1e_buf;
+    //         std::cout << Form("\tiBoard : 1, iCh : %d, line_index %d\n", line_index % 4, line_index);
+    //         //printf("\tline_index %d\n",line_index);
+    //         //std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
+    //         std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
+    //     }
+    //     line_index++;
       
-    }
-    while(ifs >> p0_res_buf >> p0e_res_buf){
-        if(line_index < 8){
-            line_index++;
-            continue;
-        }
-        if(line_index == 16){
-            break;
-        }
-        if(line_index < 12){
-            p0_res[0][line_index-8] = p0_res_buf;
-            p0e_res[0][line_index-8] = p0e_res_buf;
-            std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
-            printf("\tline_index %d\n",line_index);
-            std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
-        }
-        else if(line_index < 16){
-            p0_res[1][line_index-12] = p0_res_buf;
-            p0e_res[1][line_index-12] = p0e_res_buf;
-            std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
-            printf("\tline_index %d\n",line_index);
-            std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
+    // }
+
+    // while(ifs >> p0_res_buf >> p0e_res_buf){
+    //     if(line_index == 16){
+    //         break;
+    //     }
+    //     if(line_index < 12){
+    //         p0_res[0][line_index-8] = p0_res_buf;
+    //         p0e_res[0][line_index-8] = p0e_res_buf;
+    //         std::cout << Form("\tiBoard : 0, iCh : %d, line_index %d \n", line_index % 4, line_index);
+    //         //std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+    //         //printf("\tline_index %d\n",line_index);
+    //         std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
+    //     }
+    //     else if(line_index < 16){
+    //         p0_res[1][line_index-12] = p0_res_buf;
+    //         p0e_res[1][line_index-12] = p0e_res_buf;
+    //         std::cout << Form("\tiBoard : 1, iCh : %d, line_index %d \n", line_index % 4, line_index);
+    //         //std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
+    //         //printf("\tline_index %d\n",line_index);
+    //         std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
+    //     }
+    //     line_index++;
+    // }
+
+    while (ifs) {
+        if (line_index < 8) {  // calib data
+           if (!(ifs >> p0_buf >> p0e_buf >> p1_buf >> p1e_buf)) break;
+            int Board = line_index / 4;
+            int ch = line_index % 4;
+            p0[Board][ch] = p0_buf;
+            p0e[Board][ch] = p0e_buf;
+            p1[Board][ch] = p1_buf;
+            p1e[Board][ch] = p1e_buf;
+            std::cout << Form("iBoard: %d, iCh: %d, line_index %d\n", Board, ch, line_index);
+            std::cout << Form("\t%lf %lf %lf %lf\n", p0_buf, p0e_buf, p1_buf, p1e_buf);
+        } 
+        else if (line_index < 16) {  // resolution data
+           if (!(ifs >> p0_res_buf >> p0e_res_buf)) break;
+            int Board = (line_index - 8) / 4;
+            int ch = (line_index - 8) % 4;
+            p0_res[Board][ch] = p0_res_buf;
+            p0e_res[Board][ch] = p0e_res_buf;
+            std::cout << Form("iBoard: %d, iCh: %d, line_index %d\n", Board, ch, line_index);
+            std::cout << Form("\t%lf %lf\n", p0_res_buf, p0e_res_buf);
         }
         line_index++;
     }
@@ -3215,10 +3243,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
            
               if(( 256 - 3 * x_error < x_energy ) && (x_energy < 256 + 3 * x_error) && ( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
                   
-                  std::cout << "S1_energy: " << S1_energy << std::endl;
-                  std::cout << "x_energy: " << x_energy << std::endl;
-                  std::cout << "y_energy: " << y_energy << std::endl;
-                  std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
+                  //std::cout << "S1_energy: " << S1_energy << std::endl;
+                  //std::cout << "x_energy: " << x_energy << std::endl;
+                  //std::cout << "y_energy: " << y_energy << std::endl;
+                  //std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
 
                   
                   fH2Energy_PMTs->Fill(x_energy, y_energy);
@@ -3246,7 +3274,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
 
 // 各パッドに描画する
 
-    // Pad1: 2Dヒストグラム
+// Pad1: 2Dヒストグラム
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
@@ -3272,7 +3300,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
     gPad->SetGrid();
     fH1EnergySpectra[0]->Draw();
 
-
+// Pad4: x_energy + y_energy ヒストグラム
     canvas->cd(4);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
@@ -3283,9 +3311,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
     // gPad->RedrawAxis();
     //hs->GetXaxis()->SetRangeUser(0, 600);  // 必要な範囲に設定
     //hs->GetYaxis()->SetRangeUser(0, 4000);
-
-    //fH1EnergySpectra[2]->Draw();
-
    
     canvas->Update();
 
