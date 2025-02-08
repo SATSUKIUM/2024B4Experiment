@@ -3541,7 +3541,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh, (maxEnergy-minEnergy)/nBins));
 
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
-    fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
+    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut by %d sigma;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_GSO , x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
@@ -3659,6 +3659,19 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     curve_lower->SetLineColor(kBlue);
     curve_lower->SetLineWidth(1);
     curve_lower->Draw("SAME");
+
+    TF1 *curve_upper_1sigma = new TF1("error curve", error_curve_upper, 0.0, 511.0, 3);
+    curve_upper_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,1);
+    curve_upper_1sigma->SetLineColor(kBlack);
+    curve_upper_1sigma->SetLineWidth(1);
+    curve_upper_1sigma->SetLineStyle(2);
+    curve_upper_1sigma->Draw("SAME");
+    TF1 *curve_lower_1sigma = new TF1("error curve", error_curve_lower, 0.0, 511.0, 3);
+    curve_lower_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,1);
+    curve_lower_1sigma->SetLineColor(kBlack);
+    curve_lower_1sigma->SetLineWidth(1);
+    curve_lower_1sigma->SetLineStyle(2);
+    curve_lower_1sigma->Draw("SAME");
 
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
