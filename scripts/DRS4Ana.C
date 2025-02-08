@@ -2712,7 +2712,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
             }
         }
         if(static_cast<Int_t>(counter) % 5000 == 0){
-            printf("\tfilled points %d...", static_cast<Int_t>(counter));
+            printf("\tfilled points %d...\n", static_cast<Int_t>(counter));
         }
         counter++;
     }
@@ -3584,11 +3584,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
             x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
             y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
-            x_error = 4 * 0.01 * x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-            y_error = 4 * 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-            distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
+            // x_error = 4 * 0.01 * x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+            // y_error = 4 * 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+            // distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
             
-            if(pow(y_error,2.0) > 2*distance_from_511_line){
+            if(abs(y_energy - (511.0 - x_energy)) < (y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0))))){
                 if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
                     discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
                     discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
@@ -3598,12 +3598,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
                     Double_t energy_S1 = p0[S1_BoardID][S1_ChID] + p1[S1_BoardID][S1_ChID]*(-chargeIntegral_S1);
                     Double_t energy_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
 
-                    Double_t energy_error_S1 = 2 * 0.01 * p0_res[S1_BoardID][S1_ChID]*sqrt(energy_S1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-                    Double_t energy_error_A1 = 2 * 0.01 * p0_res[A1_BoardID][A1_ChID]*sqrt(energy_A1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+                    // Double_t energy_error_S1 = 2 * 0.01 * p0_res[S1_BoardID][S1_ChID]*sqrt(energy_S1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+                    // Double_t energy_error_A1 = 2 * 0.01 * p0_res[A1_BoardID][A1_ChID]*sqrt(energy_A1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
 
-                    distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
+                    // distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
 
-                    if((pow(energy_error_A1,2.0) > 2*distance_from_511_line) && (pow(energy_error_S1,2.0) > 2*distance_from_511_line)){
+                    if(abs(energy_A1 - (511.0 - energy_S1)) < (p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0))))){
                         fH2Energy_PMTs->Fill(x_energy, y_energy);
                         fH1EnergySpectra[0]->Fill(x_energy);
                         fH1EnergySpectra[1]->Fill(y_energy);
@@ -3621,6 +3621,19 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
+    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 600.0, 2);
+    curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf);
+    curve_upper->SetLineColor(kOrange);
+    curve_upper->SetLineWidth(2);
+    curve_upper->Draw("SAME");
+    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 600.0, 2);
+    curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf);
+    curve_lower->SetLineColor(kOrange);
+    curve_lower->SetLineWidth(2);
+    curve_lower->Draw("SAME");
+
+
+
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
     canvas->cd(2);
@@ -3657,4 +3670,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     
     printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
     return counter;
+}
+
+Double_t error_curve_upper(Double_t *x_energy, Double_t *p0_res){
+    return(511.0 - x_energy[0] + (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
+}
+Double_t error_curve_lower(Double_t *x_energy, Double_t *p0_res){
+    return(511.0 - x_energy[0] - (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
 }
