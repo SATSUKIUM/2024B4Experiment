@@ -78,9 +78,11 @@ void listChains(const TString key = "456"){
 }
 
 Double_t error_curve_upper(Double_t *x_energy, Double_t *p0_res){
+    std::cout << 511.0 - x_energy[0] + (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
     return(511.0 - x_energy[0] + (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
 }
 Double_t error_curve_lower(Double_t *x_energy, Double_t *p0_res){
+    std::cout << 511.0 - x_energy[0] - (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
     return(511.0 - x_energy[0] - (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
 }
 
