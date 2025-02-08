@@ -3821,13 +3821,13 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2_1(TString key = "0120", TString k
     //カット範囲の図示
     TF1 *curve_upper_1sigma = new TF1("error curve", error_curve_upper, 0.0, 511.0, 3);
     curve_upper_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,1);
-    curve_upper_1sigma->SetLineColor(kGreen);
+    curve_upper_1sigma->SetLineColor(kBlack);
     curve_upper_1sigma->SetLineWidth(1);
     curve_upper_1sigma->SetLineStyle(2);
     curve_upper_1sigma->Draw("SAME");
     TF1 *curve_lower_1sigma = new TF1("error curve", error_curve_lower, 0.0, 511.0, 3);
     curve_lower_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,1);
-    curve_lower_1sigma->SetLineColor(kGreen);
+    curve_lower_1sigma->SetLineColor(kBlack);
     curve_lower_1sigma->SetLineWidth(1);
     curve_lower_1sigma->SetLineStyle(2);
     curve_lower_1sigma->Draw("SAME");
