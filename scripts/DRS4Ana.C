@@ -77,13 +77,13 @@ void listChains(const TString key = "456"){
     globalChain_Event->GetListOfFiles()->Print();
 }
 
-Double_t error_curve_upper(Double_t *x_energy, Double_t *p0_res){
-    std::cout << 511.0 - x_energy[0] + (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
-    return(511.0 - x_energy[0] + (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
+Double_t error_curve_upper(Double_t* x, Double_t* par){
+    std::cout << 511.0 - x[0] + (par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
+    return(511.0 - x[0] + (par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
 }
-Double_t error_curve_lower(Double_t *x_energy, Double_t *p0_res){
-    std::cout << 511.0 - x_energy[0] - (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
-    return(511.0 - x_energy[0] - (p0_res[0] * sqrt(abs(511.0 - x_energy[0])) / (2.0*sqrt(2.0*log(2.0))) + p0_res[1] * sqrt(abs(x_energy[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
+Double_t error_curve_lower(Double_t* x, Double_t* par){
+    std::cout << 511.0 - x[0] - (par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
+    return(511.0 - x[0] - (par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0))))); //par[0]はyのp0_res、par[1]はxのp0_res
 }
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
@@ -3642,11 +3642,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     curve_lower->SetLineColor(kOrange);
     curve_lower->SetLineWidth(2);
     curve_lower->Draw("SAME");
-    TF1 *sin_func = new TF1("sin_func", "[0]*sin([1]*x)", 0.0, 600.0, 2);
-    sin_func->SetParameters(100,0.01);
-    sin_func->SetLineColor(kOrange);
-    sin_func->SetLineWidth(2);
-    sin_func->Draw("SAME");
+    // TF1 *sin_func = new TF1("sin_func", "[0]*sin([1]*x)", 0.0, 600.0, 2);
+    // sin_func->SetParameters(100,0.01);
+    // sin_func->SetLineColor(kOrange);
+    // sin_func->SetLineWidth(2);
+    // sin_func->Draw("SAME");
 
 
 
