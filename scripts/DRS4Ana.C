@@ -3642,6 +3642,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     curve_lower->SetLineColor(kOrange);
     curve_lower->SetLineWidth(2);
     curve_lower->Draw("SAME");
+    TF1 *sin = new TF1("sin", "[0]*sin([1]*x)", 0.0, 600.0, 2);
+    sin->SetParameters(100,0.01);
+    sin->SetLineColor(kOrange);
+    sin->SetLineWidth(2);
+    sin->Draw("SAME");
 
 
 
