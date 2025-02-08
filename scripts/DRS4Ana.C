@@ -3649,13 +3649,13 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     fH2Energy_PMTs->Draw();
 
     //カット範囲の図示
-    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, nSigma_GSO);
-    curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
+    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, 3);
+    curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf,nSigma_GSO);
     curve_upper->SetLineColor(kBlue);
     curve_upper->SetLineWidth(1);
     curve_upper->Draw("SAME");
-    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, nSigma_GSO);
-    curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
+    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, 3);
+    curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf,nSigma_GSO);
     curve_lower->SetLineColor(kBlue);
     curve_lower->SetLineWidth(1);
     curve_lower->Draw("SAME");
@@ -3808,25 +3808,25 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2_1(TString key = "0120", TString k
     fH2Energy_PMTs->Draw();
 
     //カット範囲の図示
-    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, nSigma);
-    curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
+    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, 3);
+    curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf,nSigma);
     curve_upper->SetLineColor(kBlue);
     curve_upper->SetLineWidth(1);
     curve_upper->Draw("SAME");
-    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, nSigma);
-    curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
+    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, 3);
+    curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf,nSigma);
     curve_lower->SetLineColor(kBlue);
     curve_lower->SetLineWidth(1);
     curve_lower->Draw("SAME");
     //カット範囲の図示
-    TF1 *curve_upper_1sigma = new TF1("error curve", error_curve_upper, 0.0, 511.0, 1);
-    curve_upper_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
+    TF1 *curve_upper_1sigma = new TF1("error curve", error_curve_upper, 0.0, 511.0, 3);
+    curve_upper_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,1);
     curve_upper_1sigma->SetLineColor(kGreen);
     curve_upper_1sigma->SetLineWidth(1);
     curve_upper_1sigma->SetLineStyle(2);
     curve_upper_1sigma->Draw("SAME");
-    TF1 *curve_lower_1sigma = new TF1("error curve", error_curve_lower, 0.0, 511.0, 1);
-    curve_lower_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
+    TF1 *curve_lower_1sigma = new TF1("error curve", error_curve_lower, 0.0, 511.0, 3);
+    curve_lower_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf,1);
     curve_lower_1sigma->SetLineColor(kGreen);
     curve_lower_1sigma->SetLineWidth(1);
     curve_lower_1sigma->SetLineStyle(2);
