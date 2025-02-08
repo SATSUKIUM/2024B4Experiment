@@ -37,6 +37,7 @@ extern std::vector<TString> fRootFile_pars;
 class DRS4Ana
 {
 public:
+    static TString fRootFile;
     TChain *fChain;  //! pointer to the analyzed TTree or TChain
     Int_t fCurrent; //! current Tree number in a TChain
 
@@ -154,6 +155,7 @@ public:
     TH1F *fH1SumChargeIntegral = NULL;
     TH1F *fH1TriggerTime = NULL;
     TH1F *fH1Energy_PMTs = NULL;
+
     
 
 private:
@@ -173,7 +175,6 @@ private:
     Double_t fWaveformYmin;
     Double_t fWaveformYmax;
 
-    TString fRootFile;
 };
 
 #endif
@@ -181,11 +182,6 @@ private:
 #ifdef DRS4Ana_cxx
 DRS4Ana::DRS4Ana() : fChain(globalChain_Event)
 {
-    for(Int_t it=0; it<fRootFile_pars.size(); it++){
-        TString fRootFile_element = TString(fRootFile_pars[it]);
-        fRootFile += fRootFile_element;
-        fRootFile += "_";
-    }
     // TFile *f = globalChain_Event->GetFile();
     // if (!f || !f->IsOpen())
     // {

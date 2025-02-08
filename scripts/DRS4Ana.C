@@ -26,6 +26,8 @@ TChain *globalChain_Info = new TChain("treeDRS4BoardInfo");
 
 std::vector<TString> fRootFile_pars;
 
+
+
 #define DRS4Ana_cxx
 #include "DRS4Ana.h"
 #include <TH2.h>
@@ -62,6 +64,7 @@ void addGlobalChain(const TString fRootFile_par){
         globalChain_Event->Add(fRootFile_par);
         globalChain_Info->Add(fRootFile_par);
         fRootFile_pars.push_back(fRootFile_par);
+        DRS4Ana::fRootFile += fRootFile_par;
     }
 }
 void listChains(const TString key = "456"){
@@ -75,6 +78,11 @@ void listChains(const TString key = "456"){
     ifs.close();
     printf("globalChain : %d TTrees\n", globalChain_Event->GetNtrees());
     globalChain_Event->GetListOfFiles()->Print();
+    for(Int_t it=0; it<fRootFile_pars.size(); it++){
+        TString fRootFile_element = TString(fRootFile_pars[it]);
+        DRS4Ana::fRootFile += fRootFile_element;
+        DRS4Ana::fRootFile += "_";
+    }
 }
 
 Double_t error_curve_upper(Double_t* x, Double_t* par){
@@ -3595,16 +3603,13 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
         DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
         //satoのdiscriCell分布の右の山を消す。
         if(fDiscriCell[y_iBoard][y_iCh]<132){
-            if(150 < DiscriTime_y && DiscriTime_y < 250){
+            // if(150 < DiscriTime_y && DiscriTime_y < 250){
+            if(true){
                 x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
                 y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
-                // y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 150 - 50, 150 + adcSum_timerange_y);
 
                 x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
                 y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
-                // x_error = 4 * 0.01 * x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-                // y_error = 4 * 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-                // distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
                 
                 if(abs(y_energy - (511.0 - x_energy)) < nSigma_GSO*0.01*(y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0))))){
                     if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
@@ -3615,11 +3620,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
                         Double_t energy_S1 = p0[S1_BoardID][S1_ChID] + p1[S1_BoardID][S1_ChID]*(-chargeIntegral_S1);
                         Double_t energy_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
-
-                        // Double_t energy_error_S1 = 2 * 0.01 * p0_res[S1_BoardID][S1_ChID]*sqrt(energy_S1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-                        // Double_t energy_error_A1 = 2 * 0.01 * p0_res[A1_BoardID][A1_ChID]*sqrt(energy_A1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-
-                        // distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
 
                         if((energy_A1 > 50) && (energy_S1 > 50) && (energy_A1< 400) && (energy_S1 < 400)){
                             if(abs(energy_A1 - (511.0 - energy_S1)) < nSigma_sato*0.01*(p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0))))){
