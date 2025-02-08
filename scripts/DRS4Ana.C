@@ -3519,7 +3519,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut1(TString key = "0120", TString key
 }
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_sato = 4, Int_t nSigma_GSO = 4){
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -3606,7 +3606,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
                 // y_error = 4 * 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
                 // distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
                 
-                if(abs(y_energy - (511.0 - x_energy)) < 3*0.01*(y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0))))){
+                if(abs(y_energy - (511.0 - x_energy)) < nSigma_GSO*0.01*(y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0))))){
                     if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
                         discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
                         discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
@@ -3622,7 +3622,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
                         // distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
 
                         if((energy_A1 > 50) && (energy_S1 > 50) && (energy_A1< 400) && (energy_S1 < 400)){
-                            if(abs(energy_A1 - (511.0 - energy_S1)) < 3*0.01*(p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0))))){
+                            if(abs(energy_A1 - (511.0 - energy_S1)) < nSigma_sato*0.01*(p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0))))){
                             fH2Energy_PMTs->Fill(x_energy, y_energy);
                             fH1EnergySpectra[0]->Fill(x_energy);
                             fH1EnergySpectra[1]->Fill(y_energy);
@@ -3649,12 +3649,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     fH2Energy_PMTs->Draw();
 
     //カット範囲の図示
-    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, 3);
+    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, nSigma_GSO);
     curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
     curve_upper->SetLineColor(kBlue);
     curve_upper->SetLineWidth(1);
     curve_upper->Draw("SAME");
-    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, 3);
+    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, nSigma_GSO);
     curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
     curve_lower->SetLineColor(kBlue);
     curve_lower->SetLineWidth(1);
