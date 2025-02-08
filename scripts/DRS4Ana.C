@@ -2744,7 +2744,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
         for(Int_t iCh=0; iCh<4; iCh++){
             c1->cd(iBoard*4+iCh+1);
             hists[iBoard][iCh]->Draw();
-            hists[iBoard][iCh]->Fit("gaus", "", "", 150, 220);
+            hists[iBoard][iCh]->Fit("gaus", "", "", 100, 200);
             gPad->SetGrid();
             gStyle->SetOptStat(0);
         }
