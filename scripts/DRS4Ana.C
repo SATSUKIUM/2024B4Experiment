@@ -79,11 +79,11 @@ void listChains(const TString key = "456"){
 
 Double_t error_curve_upper(Double_t* x, Double_t* par){
     // std::cout << 511.0 - x[0] + 0.01*(par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
-    return(511.0 - x[0] + par[3]*0.01*(par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
+    return(511.0 - x[0] + par[2]*0.01*(par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0))))); //p0_res[0]はyのp0_res、p0_res[1]はxのp0_res
 }
 Double_t error_curve_lower(Double_t* x, Double_t* par){
     // std::cout << 511.0 - x[0] - 0.01*(par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0)))) << std::endl;
-    return(511.0 - x[0] - par[3]*0.01*(par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0))))); //par[0]はyのp0_res、par[1]はxのp0_res
+    return(511.0 - x[0] - par[2]*0.01*(par[0] * sqrt(abs(511.0 - x[0])) / (2.0*sqrt(2.0*log(2.0))) + par[1] * sqrt(abs(x[0])) / (2.0*sqrt(2.0*log(2.0))))); //par[0]はyのp0_res、par[1]はxのp0_res
 }
 
 void DRS4Ana::PlotADCSum(Int_t iBoard, Int_t iCh)
@@ -3593,45 +3593,48 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
         DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
-        if(true){
-        // if(150 < DiscriTime_y && DiscriTime_y < 250){
-            x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
-            // y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
-            y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 150 - 50, 150 + adcSum_timerange_y);
+        //satoのdiscriCell分布の右の山を消す。
+        if(fDiscriCell[y_iBoard][y_iCh]<132){
+            if(150 < DiscriTime_y && DiscriTime_y < 250){
+                x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+                // y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+                y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 150 - 50, 150 + adcSum_timerange_y);
 
-            x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
-            y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
-            // x_error = 4 * 0.01 * x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-            // y_error = 4 * 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-            // distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
-            
-            if(abs(y_energy - (511.0 - x_energy)) < 3*0.01*(y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0))))){
-                if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
-                    discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
-                    discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
-                    Double_t chargeIntegral_S1 = GetChargeIntegral(S1_BoardID , S1_ChID, 20.0, discriTime_S1 - 50, discriTime_S1 + 600);
-                    Double_t chargeIntegral_A1 = GetChargeIntegral(A1_BoardID , A1_ChID, 20.0, discriTime_A1 - 50, discriTime_A1 + 600);
+                x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
+                y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
+                // x_error = 4 * 0.01 * x_p0_res_buf*sqrt(x_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+                // y_error = 4 * 0.01 * y_p0_res_buf*sqrt(y_energy)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+                // distance_from_511_line = pow((x_energy + y_energy - 511.0),2.0) / 2.0;
+                
+                if(abs(y_energy - (511.0 - x_energy)) < 3*0.01*(y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0))))){
+                    if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
+                        discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
+                        discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
+                        Double_t chargeIntegral_S1 = GetChargeIntegral(S1_BoardID , S1_ChID, 20.0, discriTime_S1 - 50, discriTime_S1 + 600);
+                        Double_t chargeIntegral_A1 = GetChargeIntegral(A1_BoardID , A1_ChID, 20.0, discriTime_A1 - 50, discriTime_A1 + 600);
 
-                    Double_t energy_S1 = p0[S1_BoardID][S1_ChID] + p1[S1_BoardID][S1_ChID]*(-chargeIntegral_S1);
-                    Double_t energy_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
+                        Double_t energy_S1 = p0[S1_BoardID][S1_ChID] + p1[S1_BoardID][S1_ChID]*(-chargeIntegral_S1);
+                        Double_t energy_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
 
-                    // Double_t energy_error_S1 = 2 * 0.01 * p0_res[S1_BoardID][S1_ChID]*sqrt(energy_S1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
-                    // Double_t energy_error_A1 = 2 * 0.01 * p0_res[A1_BoardID][A1_ChID]*sqrt(energy_A1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+                        // Double_t energy_error_S1 = 2 * 0.01 * p0_res[S1_BoardID][S1_ChID]*sqrt(energy_S1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
+                        // Double_t energy_error_A1 = 2 * 0.01 * p0_res[A1_BoardID][A1_ChID]*sqrt(energy_A1)/(2*sqrt(2*log(2))); //0.01はenergy resolution (percent)を割合に変えるため。
 
-                    // distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
+                        // distance_from_511_line = pow((energy_S1 + energy_A1 - 511.0),2.0) / 2.0;
 
-                    if((energy_A1 > 50) && (energy_S1 > 50) && (energy_A1< 400) && (energy_S1 < 400)){
-                        if(abs(energy_A1 - (511.0 - energy_S1)) < 3*0.01*(p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0))))){
-                        fH2Energy_PMTs->Fill(x_energy, y_energy);
-                        fH1EnergySpectra[0]->Fill(x_energy);
-                        fH1EnergySpectra[1]->Fill(y_energy);
-                        fH1EnergySpectra[2]->Fill(x_energy+y_energy);
-                        counter++;
+                        if((energy_A1 > 50) && (energy_S1 > 50) && (energy_A1< 400) && (energy_S1 < 400)){
+                            if(abs(energy_A1 - (511.0 - energy_S1)) < 3*0.01*(p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0))))){
+                            fH2Energy_PMTs->Fill(x_energy, y_energy);
+                            fH1EnergySpectra[0]->Fill(x_energy);
+                            fH1EnergySpectra[1]->Fill(y_energy);
+                            fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                            counter++;
+                            }
                         }
                     }
                 }
             }
         }
+        
 
         if(Entry % 5000 == 0){
             printf("\tPoint processed : %d\n", Entry);
@@ -3646,12 +3649,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     fH2Energy_PMTs->Draw();
 
     //カット範囲の図示
-    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, 4);
+    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, 3);
     curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
     curve_upper->SetLineColor(kBlue);
     curve_upper->SetLineWidth(1);
     curve_upper->Draw("SAME");
-    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, 4);
+    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, 3);
     curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf,4);
     curve_lower->SetLineColor(kBlue);
     curve_lower->SetLineWidth(1);
