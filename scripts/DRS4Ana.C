@@ -23,7 +23,7 @@ Please read the macro for the detail.
 
 TChain *globalChain_Event = new TChain("treeDRS4BoardEvent");
 TChain *globalChain_Info = new TChain("treeDRS4BoardInfo");
-TString DRS4Ana::fRootFile = "";
+
 
 std::vector<TString> fRootFile_pars;
 
@@ -31,6 +31,7 @@ std::vector<TString> fRootFile_pars;
 
 #define DRS4Ana_cxx
 #include "DRS4Ana.h"
+TString DRS4Ana::fRootFile = "";
 #include <TH2.h>
 #include <TF1.h>
 #include <TStyle.h>
