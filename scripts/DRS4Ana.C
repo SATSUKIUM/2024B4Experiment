@@ -3582,7 +3582,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     else{
         printf("\t\ny axis || type of crystal is invalid\n");
     }
-    for(Int_t Entry=0; Entry<5000; Entry++){
+    for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
@@ -3630,6 +3630,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
+    gStyle->SetPalette(kInvertedDarkBodyRadiator);
+    gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
     //カット範囲の図示
