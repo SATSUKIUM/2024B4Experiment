@@ -3597,8 +3597,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
         if(fDiscriCell[y_iBoard][y_iCh]<132){
             if(150 < DiscriTime_y && DiscriTime_y < 250){
                 x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
-                // y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
-                y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 150 - 50, 150 + adcSum_timerange_y);
+                y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+                // y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 150 - 50, 150 + adcSum_timerange_y);
 
                 x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
                 y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
