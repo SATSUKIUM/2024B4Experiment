@@ -135,6 +135,8 @@ public:
    
     virtual Double_t Plot_2Dhist_energy_with_cut1(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual Double_t Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
+    virtual Double_t error_curve_upper(Double_t *x_energy, Double_t *p0_res);
+    virtual Double_t error_curve_lower(Double_t *x_energy, Double_t *p0_res);
 
 
 
