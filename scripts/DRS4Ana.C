@@ -2713,12 +2713,14 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
     TCanvas *c1 = new TCanvas("title", "name", 2400, 12000);
     c1->Divide(2,4);
     TH1D* hists[2][4];
+    TF1* fits[2][4];
     gPad->SetLogz();
     gPad->SetGrid();
     gStyle->SetOptStat(0);
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
             hists[iBoard][iCh] = new TH1D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 512, fWaveformXmin, fWaveformXmax);
+            fits[iBoard][iCh] = new TF1("fit%d %d", "gaus", 150, 220);
         }
     }
     Double_t trig_time_buf;
@@ -2742,6 +2744,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
         for(Int_t iCh=0; iCh<4; iCh++){
             c1->cd(iBoard*4+iCh+1);
             hists[iBoard][iCh]->Draw();
+            hists[iBoard][iCh]->Fit("gaus", "", "", 150, 220);
             gPad->SetGrid();
             gStyle->SetOptStat(0);
         }
