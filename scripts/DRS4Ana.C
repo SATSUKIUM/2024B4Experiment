@@ -3630,7 +3630,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-
+    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
+    fH2Energy_PMTs->Draw();
     //カット範囲の図示
     TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 600.0, 2);
     curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf);
@@ -3647,11 +3648,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     // sin_func->SetLineColor(kOrange);
     // sin_func->SetLineWidth(2);
     // sin_func->Draw("SAME");
-
-
-
-    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
-    fH2Energy_PMTs->Draw();
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
