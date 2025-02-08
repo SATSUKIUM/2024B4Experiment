@@ -2700,7 +2700,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
     Double_t nentries = fChain->GetEntriesFast();
     Double_t counter = 0.0;
 
-    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
+    TCanvas *c1 = new TCanvas("title", "name", 2400, 12000);
     c1->Divide(2,4);
     TH1D* hists[2][4];
     gPad->SetLogz();
@@ -2708,7 +2708,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
     gStyle->SetOptStat(0);
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
-            hists[iBoard][iCh] = new TH1D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 256, fWaveformXmin, fWaveformXmax);
+            hists[iBoard][iCh] = new TH1D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 512, fWaveformXmin, fWaveformXmax);
         }
     }
     Double_t trig_time_buf;
@@ -2740,11 +2740,14 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch(){
     TString folderPath = Makedir_Date();
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-    filename_figure += "_allCH_triggertime.pdf";
+    TString filename_figure_pdf = filename_figure + "_allCH_triggertime.pdf";
+    TString filename_figure_png = filename_figure + "_allCH_triggertime.png";
     printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
 
-    IfFile_duplication(folderPath, filename_figure);
-    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    IfFile_duplication(folderPath, filename_figure_pdf);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+    IfFile_duplication(folderPath, filename_figure_png);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
 
     return (Double_t)counter;
 }
