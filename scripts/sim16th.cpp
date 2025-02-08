@@ -220,7 +220,7 @@ void PlotRateIntegral(Double_t days = 1.0, Double_t K = 0.78){
 
 }
 
-//　以降は無視して
+//　sim15th()は無視して
 
 void sim15th() {
 
@@ -285,7 +285,7 @@ void sim15th() {
 }
 
 Double_t Integrand(Double_t fit_par0, Double_t fit_par1, Double_t phi_prime){
-    return fit_par0 - fit_par1 * cos(phi_prime * M_PI / 180);
+    return fit_par0 - fit_par1 * cos(2 * phi_prime * M_PI / 180);
 }
 
 Double_t Integral_over_phi_range(Double_t fit_par0, Double_t fit_par1, Double_t phi){
@@ -293,14 +293,15 @@ Double_t Integral_over_phi_range(Double_t fit_par0, Double_t fit_par1, Double_t 
     Double_t A2_width = 2.0;
     Double_t r_S2_to_A2 = 25.0;
 
-    Double_t delta_phi = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
+    // Double_t delta_phi_rad = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
+    Double_t delta_phi = 0.1;
 
-    Double_t phi_range_rad = 2 * atan((A2_width / 2) / r_S2_to_A2); //　およそ4.6度のラジアン
-    Double_t phi_range = phi_range_rad * 180 / M_PI;
+    // Double_t phi_range_rad = 2 * atan((A2_width / 2) / r_S2_to_A2); //　およそ4.6度のラジアン
+    Double_t phi_range = 2 * atan((A2_width / 2) / r_S2_to_A2) * 180 / M_PI;
 
-    Double_t phi_min = phi - phi_range / 2;
+    Double_t phi_min = phi - (phi_range / 2);
 
-    Double_t l_phi_d = phi_range_rad / delta_phi;
+    Double_t l_phi_d = phi_range / delta_phi;
 
     Int_t l_phi = static_cast<Int_t>(l_phi_d); // 角度の範囲内にある0.1度刻みの点の個数
 
@@ -308,7 +309,7 @@ Double_t Integral_over_phi_range(Double_t fit_par0, Double_t fit_par1, Double_t 
 
     for(Int_t i = 0; i < l_phi; i++){
 
-        Double_t phi_tilde = phi_min + i * l_phi;
+        Double_t phi_tilde = phi_min + i * delta_phi;
         sum += Integrand(fit_par0, fit_par1, phi_tilde) * delta_phi;
 
     }
@@ -316,7 +317,92 @@ Double_t Integral_over_phi_range(Double_t fit_par0, Double_t fit_par1, Double_t 
     return sum;
 }
 
+Double_t Integrand_divisor(Double_t theta_prime){
+
+    Double_t inEnergy = 511e-3;
+    Double_t density_GSO = 6.71; // [g/cm^3]
+    Double_t A2_hight = 2.0;
+
+
+    std::ifstream ifs("./cfg/GSO_pe.txt"); // 以下、あるエネルギーでの光電吸収に対する減衰係数を取得
+    if (!ifs.is_open()) {
+        std::cerr << "Error: Could not open file." << std::endl;
+    }
+
+    vector<Double_t> E_vals, absorb_vals;
+    Double_t E, ab;
+
+    while (ifs >> E >> ab) {
+        E_vals.push_back(E);
+        absorb_vals.push_back(ab);
+    }
+    ifs.close();
+
+    Double_t E_val = inEnergy / (2 - cos(theta_prime * M_PI / 180));
+    Double_t absorb_val = 0.0;
+    Int_t vec_size = E_vals.size();
+    for(Int_t i=0; i<500; i++){
+        if(E_val >= E_vals[i] && E_val <= E_vals[i+1]){
+            if(E_val == E_vals[i]){
+                absorb_val = absorb_vals[i];
+            }
+            else if(E_val == E_vals[i+1]){
+                absorb_val = absorb_vals[i+1];
+            }
+            else{
+                absorb_val = ((absorb_vals[i] * (E_val - E_vals[i+1])) + (absorb_vals[i+1] * (E_vals[i] - E_val))) / (E_vals[i] - E_vals[i+1]);
+            }
+        }
+    }
+
+    return pow(2 - cos(theta_prime * M_PI / 180), -2) * pow(sin(theta_prime * M_PI / 180), 2) * (1 - exp(-1.0 * density_GSO * absorb_val * A2_hight / sin(theta_prime * M_PI / 180)));
+
+}
+
+Double_t Integrand_dividend(Double_t theta_prime){
+
+    Double_t inEnergy = 511e-3;
+    Double_t density_GSO = 6.71; // [g/cm^3]
+    Double_t A2_hight = 2.0;
+
+
+    std::ifstream ifs("./cfg/GSO_pe.txt"); // 以下、あるエネルギーでの光電吸収に対する減衰係数を取得
+    if (!ifs.is_open()) {
+        std::cerr << "Error: Could not open file." << std::endl;
+    }
+
+    vector<Double_t> E_vals, absorb_vals;
+    Double_t E, ab;
+
+    while (ifs >> E >> ab) {
+        E_vals.push_back(E);
+        absorb_vals.push_back(ab);
+    }
+    ifs.close();
+
+    Double_t E_val = inEnergy / (2 - cos(theta_prime * M_PI / 180));
+    Double_t absorb_val = 0.0;
+    Int_t vec_size = E_vals.size();
+    for(Int_t i=0; i<500; i++){
+        if(E_val >= E_vals[i] && E_val <= E_vals[i+1]){
+            if(E_val == E_vals[i]){
+                absorb_val = absorb_vals[i];
+            }
+            else if(E_val == E_vals[i+1]){
+                absorb_val = absorb_vals[i+1];
+            }
+            else{
+                absorb_val = ((absorb_vals[i] * (E_val - E_vals[i+1])) + (absorb_vals[i+1] * (E_vals[i] - E_val))) / (E_vals[i] - E_vals[i+1]);
+            }
+        }
+    }
+
+    return (gamma_factor(90) - 1) * (gamma_factor(theta_prime) - pow(sin(theta_prime * M_PI / 180), 2)) * pow(2 - cos(theta_prime * M_PI / 180), -2) * (1 - exp(-1.0 * density_GSO * absorb_val * A2_hight / sin(theta_prime * M_PI / 180)));
+}
+
 Double_t GetKappa(TString input_Folder = "./cfg/"){
+
+    // gStyle->SetOptStat(1);
 
     TString input_Filepath = Form("%scounts_data.txt",input_Folder.Data());
     std::ifstream ifs(input_Filepath);
@@ -334,9 +420,56 @@ Double_t GetKappa(TString input_Folder = "./cfg/"){
     ifs.close();
 
     TF1* fitfunc = new TF1("fitfunc", "Integral_over_phi_range([0], [1], x)", 0, 180);
-    fitfunc->SetParameters(10.0, 10.0);
-    graph->Fit(fitfunc);
+    fitfunc->SetParameters(100.0, 10.0);
+    graph->Fit(fitfunc, "L");
+    graph->GetXaxis()->SetRangeUser(-10, 190);
     graph->Draw("ap");
+
+    Double_t sum_divisor = 0.0;
+    Double_t sum_dividend = 0.0;
+
+    Double_t A2_length = 12.0;
+    Double_t r_S2_to_A2 = 25.0;
+
+    // Double_t delta_theta_rad = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
+    Double_t delta_theta = 0.1;
+
+    // Double_t theta_min_rad = atan(r_S2_to_A2 / A2_length); // およそ64度のラジアン
+    Double_t theta_min = atan(r_S2_to_A2 / A2_length) * 180 / M_PI;
+
+    Double_t l_theta_d = (90 - theta_min) / delta_theta;
+
+    Int_t l_theta = static_cast<Int_t>(l_theta_d);
+
+    for(int i = 0; i < l_theta; i++){
+
+        Double_t theta_tilde = theta_min + i * delta_theta;
+        sum_dividend += Integrand_dividend(theta_tilde) * delta_theta;
+        sum_divisor += Integrand_divisor(theta_tilde) * delta_theta;
+
+    }
+
+    Double_t p0 = fitfunc->GetParameter(0);
+    Double_t p1 = fitfunc->GetParameter(1);
+    Double_t p0e = fitfunc->GetParError(0);
+    Double_t p1e = fitfunc->GetParError(1);
+
+    Double_t kappa = (p1 / p0) * (sum_dividend / sum_divisor);
+    Double_t kappa_error = (sum_dividend / (sum_divisor * p0)) * sqrt(pow(p1 * p0e / p0 , 2) + pow(p1e, 2));
+
+    cout << "kappa = " << kappa << endl;
+    cout << "kappa_error = " << kappa_error << endl;
+
+    cout << "p0 = " << p0 << endl;
+    cout << "p0e = " << p0e << endl;
+    cout << "p1 = " << p1 << endl;
+    cout << "p1e = " << p1e << endl;
+
+    cout << "sum_dividend = " << sum_dividend << endl;
+    cout << "sum_divisor = " << sum_divisor << endl;
+    cout << "l_theta = " << l_theta << endl;
+    cout << "l_theta_d = " << l_theta_d << endl;
+
 
     return 0;
 }
