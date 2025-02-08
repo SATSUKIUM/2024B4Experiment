@@ -3582,7 +3582,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     else{
         printf("\t\ny axis || type of crystal is invalid\n");
     }
-    for(Int_t Entry=0; Entry<nentries; Entry++){
+    for(Int_t Entry=0; Entry<5000; Entry++){
         fChain->GetEntry(Entry);
 
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
@@ -3642,11 +3642,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     curve_lower->SetLineColor(kOrange);
     curve_lower->SetLineWidth(2);
     curve_lower->Draw("SAME");
-    TF1 *sin = new TF1("sin", "[0]*sin([1]*x)", 0.0, 600.0, 2);
-    sin->SetParameters(100,0.01);
-    sin->SetLineColor(kOrange);
-    sin->SetLineWidth(2);
-    sin->Draw("SAME");
+    TF1 *sin_func = new TF1("sin", "[0]*sin([1]*x)", 0.0, 600.0, 2);
+    sin_func->SetParameters(100,0.01);
+    sin_func->SetLineColor(kOrange);
+    sin_func->SetLineWidth(2);
+    sin_func->Draw("SAME");
 
 
 
