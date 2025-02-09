@@ -140,6 +140,8 @@ Double_t GetRate(Double_t theta, Double_t phi, Double_t K){
 
 void PlotRateIntegral(Double_t days = 1.0, Double_t K = 0.78){
 
+    TRandom3 randGen(0);
+
 
     Double_t A2_length = 12.0;
     Double_t A2_width = 2.0;
@@ -160,7 +162,7 @@ void PlotRateIntegral(Double_t days = 1.0, Double_t K = 0.78){
     Int_t abs_points = 5; // 吸収体の個数
     // int abs_points = 181;
 
-    Double_t x[l_theta], y[l_phi], count_sum[abs_points], y_center[abs_points], count_error[abs_points];
+    Double_t x[l_theta], y[l_phi], y_center[abs_points], count_sum[abs_points], count_error[abs_points], count_measured[abs_points], count_measured_error[abs_points];
 
     Double_t x_min = theta_min_rad * 180 / M_PI; // 度
     Double_t x_max = 90; // 度
@@ -190,33 +192,48 @@ void PlotRateIntegral(Double_t days = 1.0, Double_t K = 0.78){
                 y[n] = y_min + n * delta_phi * 180 / M_PI;
                 count_sum[i] += GetRate(x[m], y[n], K) * days * 24 * 60 * 60;
                 
+
+                
             }
         }
-
+        count_measured[i] = randGen.Gaus(count_sum[i], sqrt(count_sum[i]));
+        count_measured_error[i] = sqrt(count_measured[i]);
         count_error[i] = sqrt(count_sum[i]);
-        cout << Form("phi = %.0f, Counts = %.3f", y_center[i], count_sum[i]) << endl;
+        cout << Form("phi = %.0f, Expected Counts = %.3f +/- %.3f, Measured Counts = %.3f +/- %.3f", y_center[i], count_sum[i], count_error[i], count_measured[i], count_measured_error[i]) << endl;
+        // cout << Form("phi = %.0f, Counts = %.3f", y_center[i], count_sum[i]) << endl;
 
     }
 
-    cout << "l_theta = " << l_theta << endl;
-    cout << "l_phi = " << l_phi << endl;
+    // cout << "l_theta = " << l_theta << endl;
+    // cout << "l_phi = " << l_phi << endl;
 
+    auto legend = new TLegend(0.7, 0.7, 0.9, 0.9);
 
-    // TGraph* graph = new TGraph(abs_points, y_center, count_sum);
-    TGraphErrors* graph = new TGraphErrors(abs_points, y_center, count_sum, 0, count_error);
-    graph->SetTitle(Form("Expected Count of Absorbers (%.0f days, #kappa = %.3f);#phi [degree];Counts", days, K));
-    graph->SetMarkerSize(0.6);
-    graph->SetMarkerStyle(8);
-    graph->GetXaxis()->SetLabelSize(0.04);
-    graph->GetYaxis()->SetLabelSize(0.04);
-    graph->GetXaxis()->SetTitleSize(0.05);
-    graph->GetYaxis()->SetTitleSize(0.05);
-    graph->GetXaxis()->SetTitleOffset(0.9);
-    graph->GetYaxis()->SetTitleOffset(0.9);
-    graph->GetXaxis()->SetRangeUser(-10, 190);
+    TGraphErrors* graph1 = new TGraphErrors(abs_points, y_center, count_sum, 0, count_error);
+    // graph1->SetTitle(Form("Expected Count of Absorbers (%.0f days, #kappa = %.3f);#phi [degree];Counts", days, K));
 
-    graph->Draw("AP");
-    
+    TGraphErrors* graph2 = new TGraphErrors(abs_points, y_center, count_measured, 0, count_measured_error);
+    graph1->SetTitle(Form("Expected Counts and Measured Counts (%.0f days, #kappa = %.3f);#phi [degree];Counts", days, K));
+
+    graph1->SetMarkerSize(0.6);
+    graph1->SetMarkerStyle(8);
+    graph1->GetXaxis()->SetLabelSize(0.04);
+    graph1->GetYaxis()->SetLabelSize(0.04);
+    graph1->GetXaxis()->SetTitleSize(0.05);
+    graph1->GetYaxis()->SetTitleSize(0.05);
+    graph1->GetXaxis()->SetTitleOffset(0.9);
+    graph1->GetYaxis()->SetTitleOffset(0.9);
+    graph1->GetXaxis()->SetRangeUser(-10, 190);
+    graph1->SetMarkerColor(kRed);
+    legend->AddEntry(graph1, "Expected");
+    graph1->Draw("AP");
+
+    graph2->SetMarkerSize(0.6);
+    graph2->SetMarkerStyle(8);
+    graph2->SetMarkerColor(kGreen);
+    legend->AddEntry(graph2, "Measured");
+    graph2->Draw("Psame");
+    legend->Draw();
 
 }
 
@@ -419,7 +436,7 @@ Double_t GetKappa(TString input_Folder = "./cfg/"){
     }
     ifs.close();
 
-    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 500, 1500);
+    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 80, 250); // 範囲変えて
     hh->SetStats(0);
     hh->SetTitle("The number of valid events;#phi[degree];Counts");
     hh->Draw();
