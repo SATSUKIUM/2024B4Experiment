@@ -3633,3 +3633,45 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
     return counter;
 }
+
+void DRS4Ana::PlotTrigger(){
+    TCanvas *c1 = new TCanvas("title","name",1200,6000);
+    c1->Divide(2,4);
+    TH1D* hists[2][4];
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t DiscriTime;
+
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t ich=0; ich<4; ich++){
+                hists[iBoard][ich] = new TH1D(Form("ib%d_ic%d_Trigger", iBoard, ich),Form("Trigger_ib%d_ic%d",iBoard,ich),1101,0,1100);
+                hists[iBoard][ich]->SetXTitle("Voltage [V]");
+                hists[iBoard][ich]->SetYTitle("[counts]");
+
+            }
+    }
+
+    for(Int_t Entry=0; Entry<nentries; Entry++){
+        fChain->GetEntry(Entry);
+        
+        for(Int_t iBoard=0; iBoard<2; iBoard++){
+                for(Int_t ich=0; ich<4; ich++){
+                    DiscriTime= fTime[iBoard][ich][fDiscriCell[iBoard][ich]];
+                    hists[iBoard][ich]->Fill(DiscriTime);
+                }
+        }
+    }
+    
+
+
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t ich=0; ich<4; ich++){
+            c1->cd(iBoard*4+ich+1);
+            hists[iBoard][ich]->Draw();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+    c1->Update();
+    gPad->WaitPrimitive();
+}
