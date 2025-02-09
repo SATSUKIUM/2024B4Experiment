@@ -3601,13 +3601,31 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     else{
         printf("\t\ny axis || type of crystal is invalid\n");
     }
+
+    canvas->cd(1);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+    gStyle->SetPalette(kInvertedDarkBodyRadiator);
+
+    canvas->cd(2);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+
+    canvas->cd(3);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+
+    canvas->cd(4);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
         DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
         //satoのdiscriCell分布の右の山を消す。
-        if(fDiscriCell[y_iBoard][y_iCh]<132){
+        if(fDiscriCell[x_iBoard][x_iCh]<133){
             // if(150 < DiscriTime_y && DiscriTime_y < 250){
             if(true){
                 x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
@@ -3643,13 +3661,19 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
         if(Entry % 5000 == 0){
             printf("\tPoint processed : %d\n", Entry);
+            canvas->cd(1);
+            fH2Energy_PMTs->Draw();
+            canvas->cd(2);
+            fH1EnergySpectra[1]->Draw();
+            canvas->cd(3);
+            fH1EnergySpectra[0]->Draw();
+            canvas->cd(4);
+            fH1EnergySpectra[2]->Draw();
         }
     }
     canvas->cd(1);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
-    gStyle->SetPalette(kInvertedDarkBodyRadiator);
     gPad->Update();
+    gStyle->SetOptStat(1);
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
 
@@ -3679,16 +3703,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     curve_lower_1sigma->Draw("SAME");
 
     canvas->cd(2);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
     fH1EnergySpectra[1]->Draw();
     canvas->cd(3);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
     fH1EnergySpectra[0]->Draw();
     canvas->cd(4);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
     fH1EnergySpectra[2]->Draw();
 
     canvas->cd(1);
