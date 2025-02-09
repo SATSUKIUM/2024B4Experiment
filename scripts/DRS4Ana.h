@@ -37,6 +37,7 @@ extern std::vector<TString> fRootFile_pars;
 class DRS4Ana
 {
 public:
+    static TString fRootFile;
     TChain *fChain;  //! pointer to the analyzed TTree or TChain
     Int_t fCurrent; //! current Tree number in a TChain
 
@@ -135,8 +136,7 @@ public:
    
     virtual Double_t Plot_2Dhist_energy_with_cut1(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual Double_t Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_sato = 4, Int_t nSigma_GSO = 4);
-    // virtual Double_t error_curve_upper(Double_t *x_energy, Double_t *p0_res);
-    // virtual Double_t error_curve_lower(Double_t *x_energy, Double_t *p0_res);
+    virtual Double_t Plot_2Dhist_energy_with_cut2_1(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_GSO = 4);
 
 
 
@@ -155,6 +155,7 @@ public:
     TH1F *fH1SumChargeIntegral = NULL;
     TH1F *fH1TriggerTime = NULL;
     TH1F *fH1Energy_PMTs = NULL;
+
     
 
 private:
@@ -174,7 +175,6 @@ private:
     Double_t fWaveformYmin;
     Double_t fWaveformYmax;
 
-    TString fRootFile;
 };
 
 #endif
@@ -182,11 +182,7 @@ private:
 #ifdef DRS4Ana_cxx
 DRS4Ana::DRS4Ana() : fChain(globalChain_Event)
 {
-    for(Int_t it=0; it<fRootFile_pars.size(); it++){
-        TString fRootFile_element = TString(fRootFile_pars[it]);
-        fRootFile += fRootFile_element;
-        fRootFile += "_";
-    }
+    fRootFile += "FILENAME_";
     // TFile *f = globalChain_Event->GetFile();
     // if (!f || !f->IsOpen())
     // {
