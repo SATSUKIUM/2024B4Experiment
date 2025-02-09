@@ -4265,7 +4265,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut3_t(TString key = "0120", TString k
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
         DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
         //satoのdiscriCell分布の右の山を消す。
-        if(fDiscriCell[0][2]<133)
+        if(fDiscriCell[0][2]>133)
         {
             if(100 < DiscriTime_y && DiscriTime_y < 220)
             {
@@ -4504,14 +4504,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut4(TString key = "0120", TString key
                             {
                                 Int_t flag_other_counter_cut = 0;
                                 Double_t chargeIntegral_another_A2s[3];
-                                Double_t discriTime_other_A2s[3];
+                                // Double_t discriTime_other_A2s[3];
+                                // for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                                // {
+                                //     discriTime_other_A2s[another_iCh] = fTime[y_iBoard][iCh_other_A2s[another_iCh]][fDiscriCell[y_iBoard][iCh_other_A2s[another_iCh]]];
+                                // }
                                 for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
                                 {
-                                    discriTime_other_A2s[another_iCh] = fTime[y_iBoard][iCh_other_A2s[another_iCh]][fDiscriCell[y_iBoard][iCh_other_A2s[another_iCh]]];
-                                }
-                                for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
-                                {
-                                    chargeIntegral_another_A2s[another_iCh] = GetChargeIntegral(y_iBoard, another_iCh, 20, discriTime_other_A2s[another_iCh] - 50.0, discriTime_other_A2s[another_iCh] + 180.0);
+                                    chargeIntegral_another_A2s[another_iCh] = GetChargeIntegral(y_iBoard, iCh_other_A2s[another_iCh], 20, DiscriTime_y - 50.0, DiscriTime_y + 180.0);
                                 }
                                 Double_t energy_other_A2s[3];
                                 for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
@@ -4521,6 +4521,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut4(TString key = "0120", TString key
                                     if(energy_another_buf > 100)
                                     {
                                         flag_other_counter_cut++;
+                                        printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
                                     }
                                 }
                                 if(flag_other_counter_cut == 0)
@@ -4610,6 +4611,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut4(TString key = "0120", TString key
 
     IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    for(Int_t another_iCh=0; another_iCh<3; another_iCh++){
+        printf("\tother GSO counter %d\n", iCh_other_A2s[another_iCh]);
+    }
     
     printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
     return counter;
