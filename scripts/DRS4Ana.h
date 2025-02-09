@@ -137,7 +137,7 @@ public:
     virtual Double_t Plot_2Dhist_energy_with_cut1(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual Double_t Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_sato = 4, Int_t nSigma_GSO = 4);
     virtual Double_t Plot_2Dhist_energy_with_cut2_1(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_GSO = 4);
-
+    virtual void PlotTrigger();
 
 
     TH2F *fH2Waveform = NULL;
@@ -327,3 +327,4 @@ Int_t DRS4Ana::Cut(Long64_t entry)
     return 1;
 }
 #endif // #ifdef DRS4Ana_cxx
+
