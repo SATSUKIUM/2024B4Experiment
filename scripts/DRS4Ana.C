@@ -139,7 +139,7 @@ Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
     Int_t lastDotPos = fileName.Last('.');
     TString filename_buf_before_dot = fileName(0, lastDotPos);
     TString filename_buf_after_dot = fileName(lastDotPos, fileName.Length());
-    TString filename_buf;
+    TString filename_buf = fileName;
     while(gSystem->AccessPathName(folderPath + '/' + filename_buf) == 0){
         filename_buf = filename_buf_before_dot + TString::Format("%d", index) + filename_buf_after_dot;
         index++;
@@ -3739,8 +3739,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
     IfFile_duplication(folderPath, filename_figure_pdf);
-    IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
     
     printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
