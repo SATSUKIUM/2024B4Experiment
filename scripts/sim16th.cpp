@@ -402,7 +402,7 @@ Double_t Integrand_dividend(Double_t theta_prime){
 
 Double_t GetKappa(TString input_Folder = "./cfg/"){
 
-    // gStyle->SetOptStat(1);
+    gStyle->SetOptFit(1111);
 
     TString input_Filepath = Form("%scounts_data.txt",input_Folder.Data());
     std::ifstream ifs(input_Filepath);
@@ -419,11 +419,18 @@ Double_t GetKappa(TString input_Folder = "./cfg/"){
     }
     ifs.close();
 
+    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 500, 1500);
+    hh->SetStats(0);
+    hh->SetTitle("The number of valid events;#phi[degree];Counts");
+    hh->Draw();
+
+
     TF1* fitfunc = new TF1("fitfunc", "Integral_over_phi_range([0], [1], x)", 0, 180);
     fitfunc->SetParameters(100.0, 10.0);
-    graph->Fit(fitfunc, "L");
-    graph->GetXaxis()->SetRangeUser(-10, 190);
-    graph->Draw("ap");
+    graph->Fit(fitfunc);
+    graph->SetMarkerSize(0.6);
+    graph->SetMarkerStyle(8);
+    graph->Draw("Psame");
 
     Double_t sum_divisor = 0.0;
     Double_t sum_dividend = 0.0;
@@ -460,15 +467,15 @@ Double_t GetKappa(TString input_Folder = "./cfg/"){
     cout << "kappa = " << kappa << endl;
     cout << "kappa_error = " << kappa_error << endl;
 
-    cout << "p0 = " << p0 << endl;
-    cout << "p0e = " << p0e << endl;
-    cout << "p1 = " << p1 << endl;
-    cout << "p1e = " << p1e << endl;
+    // cout << "p0 = " << p0 << endl;
+    // cout << "p0e = " << p0e << endl;
+    // cout << "p1 = " << p1 << endl;
+    // cout << "p1e = " << p1e << endl;
 
-    cout << "sum_dividend = " << sum_dividend << endl;
-    cout << "sum_divisor = " << sum_divisor << endl;
-    cout << "l_theta = " << l_theta << endl;
-    cout << "l_theta_d = " << l_theta_d << endl;
+    // cout << "sum_dividend = " << sum_dividend << endl;
+    // cout << "sum_divisor = " << sum_divisor << endl;
+    // cout << "l_theta = " << l_theta << endl;
+    // cout << "l_theta_d = " << l_theta_d << endl;
 
 
     return 0;
