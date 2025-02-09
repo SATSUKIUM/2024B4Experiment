@@ -136,14 +136,16 @@ TString DRS4Ana::Makedir_Date(){
 Int_t DRS4Ana::IfFile_duplication(TString folderPath, TString &fileName){
     //例えば、"./figure/YYYYMMDD"というパスと、hoge.pdfを渡せば、そのディレクトリにhoge.pdfとhoge2.pdfが存在する場合に、渡した"hoge.pdf"を"hoge3.pdf"に変えてくれる関数
     Int_t index =1;
-    while(gSystem->AccessPathName(folderPath + '/' + fileName) == 0){
-        Int_t lastDotPos = fileName.Last('.');
-        TString beforeDot = fileName(0, lastDotPos);
-        TString afterDot = fileName(lastDotPos, fileName.Length());
-        fileName = beforeDot + TString::Format("%d", index) + afterDot;
+    Int_t lastDotPos = fileName.Last('.');
+    TString filename_buf_before_dot = fileName(0, lastDotPos);
+    TString filename_buf_after_dot = fileName(lastDotPos, fileName.Length());
+    TString filename_buf;
+    while(gSystem->AccessPathName(folderPath + '/' + filename_buf) == 0){
+        filename_buf = filename_buf_before_dot + TString::Format("%d", index) + filename_buf_after_dot;
         index++;
-        std::cout << Form("\tfilename : %s exists, rename...", fileName.Data()) << std::endl;
+        std::cout << Form("\tfilename : %s exists, rename...", filename_buf.Data()) << std::endl;
     }
+    fileName = filename_buf;
     return index;
 }
 
@@ -3536,8 +3538,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 1200);
-    canvas->Divide(2,2);
+    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 2000);
+    canvas->Divide(2,3);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
@@ -3553,13 +3555,17 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", nBins, minEnergy, maxEnergy);
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh, (maxEnergy-minEnergy)/nBins));
 
-    fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
+    fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut by %d sigma;Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_GSO , x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
+    TH1F* fH1TriggerTimes[2];
+    fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
+    fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
+
     gPad->SetGrid();
-    gPad->SetLogz();
+    // gPad->SetLogz();
     gStyle->SetOptStat(0);
 
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
@@ -3605,7 +3611,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-    gStyle->SetPalette(kInvertedDarkBodyRadiator);
+    gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
@@ -3619,17 +3625,25 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
+    canvas->cd(5);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+
+    canvas->cd(6);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
         DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
         DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
         //satoのdiscriCell分布の右の山を消す。
-        if(fDiscriCell[x_iBoard][x_iCh]<133){
+        if(fDiscriCell[0][2]<133){
             // if(150 < DiscriTime_y && DiscriTime_y < 250){
             if(true){
                 x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
-                y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+                y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, 153 - 50, 153 + adcSum_timerange_y);
 
                 x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
                 y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
@@ -3650,6 +3664,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
                             fH1EnergySpectra[0]->Fill(x_energy);
                             fH1EnergySpectra[1]->Fill(y_energy);
                             fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                            fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
+                            fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
                             counter++;
                             }
                         }
@@ -3661,19 +3677,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
         if(Entry % 5000 == 0){
             printf("\tPoint processed : %d\n", Entry);
-            canvas->cd(1);
-            fH2Energy_PMTs->Draw();
-            canvas->cd(2);
-            fH1EnergySpectra[1]->Draw();
-            canvas->cd(3);
-            fH1EnergySpectra[0]->Draw();
-            canvas->cd(4);
-            fH1EnergySpectra[2]->Draw();
         }
     }
     canvas->cd(1);
     gPad->Update();
-    gStyle->SetOptStat(1);
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
 
@@ -3707,7 +3714,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
     canvas->cd(3);
     fH1EnergySpectra[0]->Draw();
     canvas->cd(4);
+    gStyle->SetOptStat(1);
     fH1EnergySpectra[2]->Draw();
+    canvas->cd(5);
+    fH1TriggerTimes[0]->Draw();
+    canvas->cd(6);
+    fH1TriggerTimes[1]->Draw();
 
     canvas->cd(1);
     TLine *line = new TLine(0, 511, 511,0);
