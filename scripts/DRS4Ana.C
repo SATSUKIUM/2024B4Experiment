@@ -3722,11 +3722,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-    filename_figure += "_fH2Energy_PMTs.pdf";
-    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+    TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
+    TString filename_figure_png = filename_figure + "_fH2Energy_PMTs.png";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
-    IfFile_duplication(folderPath, filename_figure);
-    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    IfFile_duplication(folderPath, filename_figure_pdf);
+    IfFile_duplication(folderPath, filename_figure_png);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
     
     printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
     return counter;
