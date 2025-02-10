@@ -3918,7 +3918,7 @@ void DRS4Ana::PlotTrigger(){
         for(Int_t ich=0; ich<4; ich++){
             hists[iBoard][ich] = new TH1D(Form("ib%d_ic%d_Trigger", iBoard, ich),
                                           Form("Trigger_ib%d_ic%d", iBoard, ich),
-                                          1101, 0, 1100);
+                                          300, 0, 299);
             hists[iBoard][ich]->SetXTitle("Voltage [V]");
             hists[iBoard][ich]->SetYTitle("[counts]");
         }
@@ -3927,6 +3927,7 @@ void DRS4Ana::PlotTrigger(){
     // データ取得 & ヒストグラムに Fill
     for(Long64_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
+        std::cout << "Entry: " << Entry << std::endl;  // デバッグ出
 
         for(Int_t iBoard=0; iBoard<2; iBoard++){
             for(Int_t ich=0; ich<4; ich++){
@@ -3935,8 +3936,7 @@ void DRS4Ana::PlotTrigger(){
             }
         }
     }
-
-    // 描画
+    //描画
     c1->cd();
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t ich=0; ich<4; ich++){
@@ -3948,5 +3948,76 @@ void DRS4Ana::PlotTrigger(){
     }
 
     c1->Update();
+    gPad->WaitPrimitive();
+}
+
+void DRS4Ana::PlotDiscriADC(Int_t iBoard = 0, Int_t iCh = 0){
+    TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
+    c2->Divide(2, 5);  // 10 分割
+
+    // 5つの範囲 × 2 種類のデータを保存するヒストグラム
+    TH1D* hists[2][5];
+    for (Int_t i = 0; i < 5; i++) {
+        hists[0][i] = new TH1D(Form("Trigger_%dto%d",100 + 25 * i , 100 + 25 * (i+1)),
+                                   Form("Trigger_%dto%d",100 + 25 * i , 100 + 25 * (i+1)),
+                                   300, 100, 250);
+        hists[0][i]->SetXTitle("Time [ns]");
+        hists[0][i]->SetYTitle("counts");
+
+        hists[1][i] = new TH1D(Form("PlotEnergy_%dto%d",100 + 25 * i , 100 + 25 * (i+1)),
+                                   Form("PlotEnergy_%dto%d",100 + 25 * i , 100 + 25 * (i+1)),
+                                   650, 0, 650);
+        hists[1][i]->SetXTitle("Energy [keV]");
+        hists[1][i]->SetYTitle("counts");
+    }
+
+    // エネルギー較正データの読み込み
+    TString key = "PhysicsRun";
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+    
+    // データ取得 & フィル
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t DiscriTime, energy_buf;
+
+    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+        fChain->GetEntry(Entry);
+        DiscriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+        Double_t chargeIntegral = GetChargeIntegral(iBoard, iCh, 20, DiscriTime - 50, DiscriTime + 600);
+        
+        if (chargeIntegral > -9999.9) {
+            energy_buf = p0[iBoard][iCh] + p1[iBoard][iCh] * (-chargeIntegral);
+        }
+
+        // 範囲による分岐
+        if (180 <= DiscriTime && DiscriTime < 185) {
+            hists[0][0]->Fill(DiscriTime);  
+            hists[1][0]->Fill(energy_buf);
+        } else if (185 <= DiscriTime && DiscriTime < 190) {
+            hists[0][1]->Fill(DiscriTime);
+            hists[1][1]->Fill(energy_buf);
+        } else if (190 <= DiscriTime && DiscriTime < 195) {
+            hists[0][2]->Fill(DiscriTime);
+            hists[1][2]->Fill(energy_buf);
+        } else if (195 <= DiscriTime && DiscriTime < 200) {
+            hists[0][3]->Fill(DiscriTime);
+            hists[1][3]->Fill(energy_buf);
+        } else if (200 <= DiscriTime && DiscriTime < 205) {
+            hists[0][4]->Fill(DiscriTime);
+            hists[1][4]->Fill(energy_buf);
+        }
+    }
+
+    // 描画（10個の `gPad` に分ける）
+    for (Int_t i = 0; i < 5; i++) {
+        for (Int_t j = 0; j < 2; j++) {
+            c2->cd(i * 2 + j + 1);
+            hists[j][i]->Draw();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+    c2->Update();
     gPad->WaitPrimitive();
 }

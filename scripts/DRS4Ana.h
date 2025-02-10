@@ -135,9 +135,16 @@ public:
     virtual Double_t Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
    
     virtual Double_t Plot_2Dhist_energy_with_cut1(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
-    virtual Double_t Plot_2Dhist_energy_with_cut2(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
+    virtual Double_t Plot_2Dhist_energy_with_cut2(TString key, TString key_Crystal_x, TString key_Crystal_y, 
+                                          Int_t x_iBoard, Int_t x_iCh, Int_t y_iBoard, Int_t y_iCh, 
+                                          Int_t nSigma_sato, Int_t nSigma_GSO);
+
+    virtual Double_t Plot_2Dhist_energy_with_cut2_1(TString key, TString key_Crystal_x, TString key_Crystal_y, 
+                                            Int_t x_iBoard, Int_t x_iCh, Int_t y_iBoard, Int_t y_iCh, 
+                                            Int_t nSigma);
     virtual void PlotTrigger();
-    
+    virtual void PlotDiscriADC(Int_t iBoard = 0, Int_t iCh = 0);
+
 
 
     TH2F *fH2Waveform = NULL;
