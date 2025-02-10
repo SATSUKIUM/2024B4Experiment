@@ -143,6 +143,7 @@ public:
     virtual Double_t Plot_2Dhist_energy_with_cut3_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_NaI = 2, Int_t nSigma_y_GSO = 2);
     virtual Double_t Plot_2Dhist_energy_with_cut4(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2);
     virtual Double_t Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2);
+    virtual Double_t Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2);
 
 
     TH2F *fH2Waveform = NULL;
