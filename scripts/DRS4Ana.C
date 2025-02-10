@@ -3273,7 +3273,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
         
        
 
-        if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 300) && (difference_DiscriTime < 30)){
+        if((150 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 250) && (difference_DiscriTime < 30)){
 
           
           std::cout << "最大値: " << max_DiscriTime << std::endl;
@@ -3306,7 +3306,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
            
-              if(( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
+              if(( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy ) && ( A1_energy < 100 )){
                   
                   //std::cout << "S1_energy: " << S1_energy << std::endl;
                   //std::cout << "x_energy: " << x_energy << std::endl;
