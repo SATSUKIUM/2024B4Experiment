@@ -174,7 +174,7 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\tiBoard : 0, iCh : %d, line_inedex %d \n", line_index % 4, line_index);
             //printf("\tline_index %d\n",line_index);
             //std::cout << Form("\tiBoard : 0, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
+            //std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
         else if(line_index < 8){
             p0[1][line_index-4] = p0_buf;
@@ -184,7 +184,7 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\tiBoard : 1, iCh : %d, line_index %d\n", line_index % 4, line_index);
             //printf("\tline_index %d\n",line_index);
             //std::cout << Form("\tiBoard : 1, iCh : %d || energy calibration data loaded.\n", line_index % 4);
-            std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
+            //std::cout << Form("\t\t%lf %lf %lf %lf\n", p0_buf, p1_buf, p0e_buf, p1e_buf);
         }
         
         line_index++;
@@ -203,7 +203,7 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\tiBoard : 0, iCh : %d, line_index %d \n", line_index % 4, line_index);
             //std::cout << Form("\tiBoard : 0, iCh : %d || energy resolution data loaded.\n", line_index % 4);
             //printf("\tline_index %d\n",line_index);
-            std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
+            //std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
         }
         else if(line_index < 16){
             p0_res[1][line_index-12] = p0_res_buf;
@@ -211,7 +211,7 @@ void DRS4Ana::Load_EnergycalbData(TString key, Double_t p0[2][4], Double_t p0e[2
             std::cout << Form("\tiBoard : 1, iCh : %d, line_index %d \n", line_index % 4, line_index);
             //std::cout << Form("\tiBoard : 1, iCh : %d || energy resolution data loaded.\n", line_index % 4);
             //printf("\tline_index %d\n",line_index);
-            std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
+            //std::cout << Form("\t\t%lf %lf\n", p0_res_buf, p0e_res_buf);
         }
         line_index++;
     }
