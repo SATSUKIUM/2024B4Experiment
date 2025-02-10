@@ -4780,6 +4780,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 2000);
     canvas->Divide(2,4);
+    gStyle->SetLabelSize(0.08, "XYZ");  // 軸ラベルサイズ
+    gStyle->SetTitleSize(0.10, "XYZ");  // 軸タイトルサイズ
+    gStyle->SetTitleSize(0.1, "t"); // "t" はタイトル全体を指す
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
@@ -4808,7 +4811,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     // gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    TH2D *fH2DiscriCell = new TH2D("fH2DiscriCell", Form("iBoard %d iCh %d vs iBoard %d iCh %d discriCell", 0,0,0,2), 200,0,199,200,0,199);
+    TH2D *fH2DiscriCells[2];
+    fH2DiscriCells[0] = new TH2D("fH2DiscriCell", Form("iBoard %d iCh %d vs iBoard %d iCh %d discriCell", 0,0,0,2), 200,0,199,200,0,199);
+    fH2DiscriCells[1] = new TH2D("fH2DiscriCell", Form("iBoard %d iCh %d vs iBoard %d iCh %d discriCell(cut passed)", 0,0,0,2), 200,0,199,200,0,199);
     gPad->SetGrid();
 
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
@@ -4894,7 +4899,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
         distance_huruno1_sato_discriCell_line = pow(fDiscriCell[0][0] - fDiscriCell[0][2] - 7, 2.0) / 2.0;
         if(distance_huruno1_sato_discriCell_line < 50.0)
         {
-            fH2DiscriCell->Fill(fDiscriCell[0][0], fDiscriCell[0][2]);
+            fH2DiscriCells[0]->Fill(fDiscriCell[0][0], fDiscriCell[0][2]);
             //satoのdiscriCell分布の右の山を消す。
             if(fDiscriCell[0][2]<135)
             {
@@ -4945,6 +4950,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
                                     }
                                     if(flag_other_counter_cut == 0)
                                     {
+                                        fH2DiscriCells[1]->Fill(fDiscriCell[0][0], fDiscriCell[0][2]);
                                         fH2Energy_PMTs->Fill(x_energy, y_energy);
                                         fH1EnergySpectra[0]->Fill(x_energy);
                                         fH1EnergySpectra[1]->Fill(y_energy);
@@ -5010,7 +5016,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     fH1TriggerTimes[1]->Draw();
     canvas->cd(7);
     gPad->SetLogz();
-    fH2DiscriCell->Draw();
+    fH2DiscriCells[0]->Draw();
+    canvas->cd(8);
+    gPad->SetLogz();
+    fH2DiscriCells[1]->Draw();
 
     canvas->cd(1);
     TLine *line = new TLine(0, 511, 511,0);
