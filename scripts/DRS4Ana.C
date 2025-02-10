@@ -4699,7 +4699,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch_difference(){
     Double_t nentries = fChain->GetEntriesFast();
     Double_t counter = 0.0;
 
-    TCanvas *c1 = new TCanvas("title", "name", 12000, 8000);
+    TCanvas *c1 = new TCanvas("title", "name", 6000, 4000);
     c1->Divide(2,4);
     TH1D* hists[2][4];
     // TF1* fits[2][4];
