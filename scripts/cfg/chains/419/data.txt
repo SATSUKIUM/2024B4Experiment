@@ -1,0 +1,10 @@
+../data/PhysicsRun/ROOT_FILES/Run_004.dat.root
+../data/PhysicsRun/ROOT_FILES/Run_005.dat.root
+../data/PhysicsRun/ROOT_FILES/Run_006.dat.root
+../data/PhysicsRun/ROOT_FILES/Run010.dat.root
+../data/PhysicsRun/ROOT_FILES/Run011.dat.root
+../data/PhysicsRun/ROOT_FILES/Run015.dat.root
+../data/PhysicsRun/ROOT_FILES/Run016.dat.root
+../data/PhysicsRun/ROOT_FILES/Run017.dat.root
+../data/PhysicsRun/ROOT_FILES/Run018.dat.root
+../data/PhysicsRun/ROOT_FILES/Run019.dat.root
