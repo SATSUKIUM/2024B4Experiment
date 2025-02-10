@@ -3265,10 +3265,21 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
         y_DiscriTime = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
         S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
         A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
-      
+
+        Double_t max_DiscriTime = std::max({x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime});
+        Double_t min_DiscriTime = std::min({x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime});
+        Double_t difference_DiscriTime = max_DiscriTime - min_DiscriTime;
+
+        
        
 
-        if(100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 300){
+        if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 300) && (difference_DiscriTime < 30)){
+
+          
+          std::cout << "最大値: " << max_DiscriTime << std::endl;
+          std::cout << "最小値: " << min_DiscriTime << std::endl;
+          std::cout << "時間差: " << difference_DiscriTime << std::endl;
+
 
           S1_charge_buf = -GetChargeIntegral(0, 0, 20, S1_DiscriTime - 50, S1_DiscriTime + 600);
           A1_charge_buf = -GetChargeIntegral(0, 2, 20, A1_DiscriTime - 50, A1_DiscriTime + 600);
@@ -3278,26 +3289,24 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
           S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
           A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
 
-        
-          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error)){
-            x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
-            y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
+          x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
+          y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
 
-          
-            x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
-            y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
+          x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
+          y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
 
-            
+          x_error = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+          y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
 
-            x_error = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
-            y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
 
+          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 256 - 3 * x_error < x_energy ) && (x_energy < 256 + 3 * x_error) ){
+           
             //distance_from_511_line = x_energy + y_energy - 511.0 / sqrt(2.0);
             //x_distance= (511 - x_energy - y_energy);
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
            
-              if(( 256 - 3 * x_error < x_energy ) && (x_energy < 256 + 3 * x_error) && ( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
+              if(( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
                   
                   //std::cout << "S1_energy: " << S1_energy << std::endl;
                   //std::cout << "x_energy: " << x_energy << std::endl;
