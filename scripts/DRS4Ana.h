@@ -144,7 +144,7 @@ public:
                                             Int_t nSigma);
     virtual void PlotTrigger();
     virtual void PlotDiscriADC(Int_t iBoard = 0, Int_t iCh = 0);
-
+    virtual void DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120);
 
 
     TH2F *fH2Waveform = NULL;
