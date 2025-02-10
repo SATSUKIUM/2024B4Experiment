@@ -4751,6 +4751,8 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch_difference(){
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t iCh=0; iCh<4; iCh++){
             c1->cd(iBoard*4+iCh+1);
+            hists[iBoard][iCh]->GetXaxis()->SetLabelSize(0.05); // X軸ラベルのサイズを大きく
+            hists[iBoard][iCh]->GetYaxis()->SetLabelSize(0.05); // Y軸ラベルのサイズを大きく
             hists[iBoard][iCh]->Draw();
             hists[iBoard][iCh]->Fit("gaus", "", "", 100, 200);
             gPad->SetGrid();
