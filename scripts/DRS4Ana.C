@@ -4693,3 +4693,77 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch_sato_cut(){
 
     return (Double_t)counter;
 }
+
+
+Double_t DRS4Ana::Plot_TriggerTimeDist_8ch_difference(){
+    Double_t nentries = fChain->GetEntriesFast();
+    Double_t counter = 0.0;
+
+    TCanvas *c1 = new TCanvas("title", "name", 2400, 12000);
+    c1->Divide(2,4);
+    TH1D* hists[2][4];
+    // TF1* fits[2][4];
+    gPad->SetLogz();
+    gPad->SetGrid();
+    gStyle->SetOptStat(0);
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            if(iBoard == 0 && iCh == 0){
+                hists[iBoard][iCh] = new TH1D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 512, fWaveformXmin, fWaveformXmax);
+            }
+            else{
+                hists[iBoard][iCh] = new TH1D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 512, fWaveformXmin - 200.0, fWaveformXmax - 200.0);
+            }
+            
+            // fits[iBoard][iCh] = new TF1("fit%d %d", "gaus", 150, 220);
+        }
+    }
+    Double_t trig_time_buf;
+    Double_t trig_time_base_buf;
+    for(Int_t jentry=0; jentry<nentries; jentry++){
+        fChain->GetEntry(jentry);
+        trig_time_base_buf = fTime[0][0][fDiscriCell[0][0]];
+        if(fDiscriCell[0][2] < 133)
+        {
+            for(Int_t iBoard=0; iBoard<2; iBoard++)
+            {
+                for(Int_t iCh=0; iCh<4; iCh++)
+                {
+                    for(Int_t iCell=0; iCell<1024; iCell++)
+                    {
+                        trig_time_buf = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
+                        if(trig_time_buf < 1400 && trig_time_buf > 10)
+                        hists[iBoard][iCh]->Fill(trig_time_buf - trig_time_base_buf);
+                    }
+                }
+            }
+        }
+        if(static_cast<Int_t>(counter) % 5000 == 0){
+            printf("\tfilled points %d...\n", static_cast<Int_t>(counter));
+        }
+        counter++;
+    }
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            c1->cd(iBoard*4+iCh+1);
+            hists[iBoard][iCh]->Draw();
+            hists[iBoard][iCh]->Fit("gaus", "", "", 100, 200);
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+    TString folderPath = Makedir_Date();
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    TString filename_figure_pdf = filename_figure + "_allCH_triggertime.pdf";
+    TString filename_figure_png = filename_figure + "_allCH_triggertime.png";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure_pdf);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+    IfFile_duplication(folderPath, filename_figure_png);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    return (Double_t)counter;
+}
