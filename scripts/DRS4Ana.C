@@ -4720,7 +4720,7 @@ Double_t DRS4Ana::Plot_TriggerTimeDist_8ch_difference(){
     }
     Double_t trig_time_buf;
     Double_t trig_time_base_buf;
-    for(Int_t jentry=0; jentry<nentries; jentry++){
+    for(Int_t jentry=0; jentry<10000; jentry++){
         fChain->GetEntry(jentry);
         trig_time_base_buf = fTime[0][0][fDiscriCell[0][0]];
         if(fDiscriCell[0][2] < 133)
