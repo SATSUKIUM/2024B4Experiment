@@ -3273,11 +3273,11 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
         
        
 
-        if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 250) && (difference_DiscriTime < 30)){
+        if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 250) && (difference_DiscriTime < 20)){
 
           
-          std::cout << "最大値: " << max_DiscriTime << std::endl;
-          std::cout << "最小値: " << min_DiscriTime << std::endl;
+          //std::cout << "最大値: " << max_DiscriTime << std::endl;
+          //std::cout << "最小値: " << min_DiscriTime << std::endl;
           std::cout << "時間差: " << difference_DiscriTime << std::endl;
 
 
