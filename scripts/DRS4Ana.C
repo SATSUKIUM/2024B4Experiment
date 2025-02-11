@@ -5086,6 +5086,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     Long64_t counter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 3000);
+    TCanvas *canvas_S1_energy = new TCanvas("canvas_S1_energy", "S1 energy", 1200, 800);
     canvas->Divide(2,3);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -5110,6 +5111,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     TH1F* fH1TriggerTimes[2];
     fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
     fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
+
+    TH1F *fH1EnergySpectrum = new TH1F("energy_spectrum", "Energy spectrum S1", 200, 0, 600.0);
 
     gPad->SetGrid();
     // gPad->SetLogz();
@@ -5208,7 +5211,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
 
         if(abs(S1_energy - 511.0) < 2.0 * S1_error)
         {
-
+            fH1EnergySpectrum->Fill(S1_energy);
             DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
             DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
 
@@ -5310,6 +5313,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     line->Draw("SAME");
 
     canvas->Update();
+
+    canvas_S1_energy->cd();
+    fH1EnergySpectrum->Draw();
+    canvas_S1_energy->Update();
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
