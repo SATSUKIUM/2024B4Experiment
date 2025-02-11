@@ -5445,8 +5445,8 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     }
 
     for (Int_t i = 3; i < 6; i++) {
-        hists[i] = new TH1D(Form("%s_PlotEnergy_%dto%d",strVec[i].c_str(),Scell, Fcell),
-                                   Form("%s_PlotEnergy_%dto%d",strVec[i].c_str(),Scell, Fcell),
+        hists[i] = new TH1D(Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
+                                   Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
                                    650, 0, 650);
         hists[i]->SetXTitle("Energy [keV]");
         hists[i]->SetYTitle("counts");
@@ -5525,8 +5525,8 @@ void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
     }
 
     for (Int_t i = 3; i < 6; i++) {
-        hists[i] = new TH1D(Form("%s_PlotEnergy_%dto%d",strVec[i].c_str(),Scell, Fcell),
-                                   Form("%s_PlotEnergy_%dto%d",strVec[i].c_str(),Scell, Fcell),
+        hists[i] = new TH1D(Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
+                                   Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
                                    650, 0, 650);
         hists[i]->SetXTitle("Energy [keV]");
         hists[i]->SetYTitle("counts");
@@ -5606,8 +5606,8 @@ void DRS4Ana::Discricut(){
     }
 
     for (Int_t i = 3; i < 6; i++) {
-        hists[i] = new TH1D(Form("%s_PlotEnergy",strVec[i].c_str()),
-                                   Form("%s_PlotEnergy",strVec[i].c_str()),
+        hists[i] = new TH1D(Form("%s_PlotEnergy",strVec[i%3].c_str()),
+                                   Form("%s_PlotEnergy",strVec[i%3].c_str()),
                                    650, 0, 650);
         hists[i]->SetXTitle("Energy [keV]");
         hists[i]->SetYTitle("counts");
@@ -5707,6 +5707,40 @@ void DRS4Ana::Discricut(){
         gPad->SetGrid();
         gStyle->SetOptStat(1);
     }
+    waveform(nentries);
 
     c2->Update();
+}
+
+void DRS4Ana::waveform(Int_t nentries ){
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
+    c1->Divide(2,4);
+    TH2D* hists[2][4];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            hists[iBoard][iCh] = new TH2D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 500, 0, 1500, 500, -0.55, 0.05);
+        }
+    }
+    Double_t discriTime;
+    for(Int_t jentry=0; jentry<nentries; jentry++){
+        fChain->GetEntry(jentry);
+        for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                    for(Int_t iCell=0; iCell<1024; iCell++){
+                        hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);   
+                    }
+            }
+        }
+    }
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            c1->cd(iBoard*4+iCh+1);
+            hists[iBoard][iCh]->Draw();
+            gPad->SetLogz();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+
 }
