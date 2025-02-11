@@ -5106,7 +5106,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     Double_t S1_p0_buf = p0[0][0];
     Double_t S1_p1_buf = p1[0][0];
     Double_t S1_p0_res_buf = p0_res[0][0];
-    Double_t S1_error = S1_p0_res_buf * sqrt(511.0) / (2.0*sqrt(2.0+log(2.0)));
+    Double_t S1_error = S1_p0_res_buf * sqrt(511.0) / (2.0*sqrt(2.0*log(2.0)));
     printf("\n\tDEBUG : S1_error %f\n", S1_error);
 
     Double_t x_energy, y_energy, x_error, y_error;
