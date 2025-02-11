@@ -192,7 +192,7 @@ private:
 #ifdef DRS4Ana_cxx
 DRS4Ana::DRS4Ana() : fChain(globalChain_Event)
 {
-    fRootFile += "FILENAME_";
+    fRootFile += "_FILENAME_";
     // TFile *f = globalChain_Event->GetFile();
     // if (!f || !f->IsOpen())
     // {
