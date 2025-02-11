@@ -3176,7 +3176,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
 
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t allcounter = 0;
     Long64_t validcounter = 0;
@@ -3444,6 +3444,74 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
 
     return 0;
 }
+
+
+void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
+    c1->Divide(2,4);
+    TH2D* hists[2][4];
+
+
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
+    
+
+        
+
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            hists[iBoard][iCh] = new TH2D(Form("iBoard%d_iCh%d", iBoard, iCh), Form("iBoard%d, iCh%d", iBoard, iCh), 500, 0, 1500, 500, -0.55, 0.05);
+        }
+    }
+    
+
+    for(Int_t Entry=0; Entry<nentries; Entry++){
+        fChain->GetEntry(Entry);
+        
+        x_DiscriTime = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        y_DiscriTime = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
+        A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
+
+        Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
+
+
+       if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
+             && ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
+
+            for(Int_t iBoard=0; iBoard<2; iBoard++){
+              for(Int_t iCh=0; iCh<4; iCh++){
+                for (Int_t iCell = 0; iCell < 1024; iCell++){
+                hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);   
+                }         
+              }
+            }
+           
+        }   
+
+         
+
+        if(Entry % 5000 == 0){
+            printf("\tPoint plot : %d\n", Entry);
+        }
+
+    }
+
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            c1->cd(iBoard*4+iCh+1);
+            hists[iBoard][iCh]->Draw();
+            gPad->SetLogz();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+    
+}
+
+
+
 
 
 
