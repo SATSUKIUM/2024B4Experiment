@@ -5459,8 +5459,8 @@ void DRS4Ana::PlotDiscriADC(Int_t iBoard = 0, Int_t iCh = 0){
     gPad->WaitPrimitive();
 }
 
-void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
-
+Double_t DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
+    gErrorIgnoreLevel = kError; 
     TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
     c2->Divide(2, 3); 
 
@@ -5493,7 +5493,7 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     Long64_t nentries = fChain->GetEntriesFast();
     Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
 
-    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+    for (Long64_t Entry = 0; Entry < 10; Entry++) {
         fChain->GetEntry(Entry);
         DiscriTime1 = fTime[0][0][fDiscriCell[0][0]];
         DiscriTime2 = fTime[0][3][fDiscriCell[0][3]];
@@ -5537,6 +5537,7 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     }
 
     c2->Update();
+    return nentries;
 }
 
 void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
