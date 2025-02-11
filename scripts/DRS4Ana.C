@@ -5179,7 +5179,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
-    for(Int_t Entry=0; Entry<nentries; Entry++){
+    for(Int_t Entry=0; Entry<100; Entry++){
         fChain->GetEntry(Entry);
 
         S1_discriTime = fTime[0][0][fDiscriCell[0][0]];
