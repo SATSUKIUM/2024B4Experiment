@@ -3183,8 +3183,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
     Long64_t timecutcounter = 0;
     Long64_t energycutcounter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 1200);
-    canvas->Divide(2,2);
+    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 4000);
+    canvas->Divide(2,4);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
@@ -3270,12 +3270,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
 
         Double_t max_DiscriTime = std::max({x_DiscriTime, S1_DiscriTime, A1_DiscriTime});
         Double_t min_DiscriTime = std::min({x_DiscriTime, S1_DiscriTime, A1_DiscriTime});
-        Double_t difference_DiscriTime = max_DiscriTime - min_DiscriTime;
+        //Double_t difference_DiscriTime = max_DiscriTime - min_DiscriTime;
+        Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
 
         
        
 
-        if((150 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 250) && (difference_DiscriTime < 30)){
+        if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
+             && ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
 
           
           //std::cout << "最大値: " << max_DiscriTime << std::endl;
@@ -3320,6 +3322,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
                   fH1EnergySpectra[0]->Fill(x_energy);
                   fH1EnergySpectra[1]->Fill(y_energy);
                   fH1EnergySpectra[2]->Fill(x_energy + y_energy);
+                  fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[0][0]]);
+                  fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[0][2]]);
+                  fH1TriggerTimes[2]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
+                  fH1TriggerTimes[3]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
 
                   validcounter++;
             
@@ -3378,6 +3384,26 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
     // gPad->RedrawAxis();
     //hs->GetXaxis()->SetRangeUser(0, 600);  // 必要な範囲に設定
     //hs->GetYaxis()->SetRangeUser(0, 4000);
+
+    canvas->cd(5);
+    gPad->SetGrid();
+    fH1TriggerTimes[0]->Draw();
+
+    canvas->cd(6);
+    gPad->SetGrid();
+    fH1TriggerTimes[1]->Draw();
+
+    canvas->cd(7);
+    gPad->SetGrid();
+    fH1TriggerTimes[2]->Draw();
+
+    canvas->cd(8);
+    gPad->SetGrid();
+    fH1TriggerTimes[3]->Draw();
+
+
+
+
    
     canvas->Update();
 
