@@ -5736,58 +5736,58 @@ void DRS4Ana::waveform(Int_t nentries ){
 
 }
 
-Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
-    TObjArray *fileElements = fChain->GetListOfFiles();
-    TIter next(fileElements);
-    TChainElement *chEl = nullptr;
+// Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
+//     TObjArray *fileElements = fChain->GetListOfFiles();
+//     TIter next(fileElements);
+//     TChainElement *chEl = nullptr;
 
-    Int_t temp_discriCell[2][4];
-    Double_t counter=0;
+//     Int_t temp_discriCell[2][4];
+//     Double_t counter=0;
 
-    while((chEl = (TChainElement*)next())){
-        TString filename = chEl->GetTitle();
-        std::cout << "file : " << filename << std::endl;
+//     while((chEl = (TChainElement*)next())){
+//         TString filename = chEl->GetTitle();
+//         std::cout << "file : " << filename << std::endl;
 
-        TChain *tempChain = new TChain(fChain->GetName());
-        tempChain->Add(filename);
-        tempChain->SetBranchAddress("discriCell", temp_discriCell);
+//         TChain *tempChain = new TChain(fChain->GetName());
+//         tempChain->Add(filename);
+//         tempChain->SetBranchAddress("discriCell", temp_discriCell);
 
-        TCanvas *canvas = new TCanvas("discriCell", Form("discriCell %s", filename.Data()), 1200, 800);
-        canvas->Divide(2,4);
-        TH1I* hist[2][4];
-        for(Int_t iBoard=0; iBoard<2; iBoard++){
-            for(Int_t iCh=0; iCh<4; iCh++){
-                TString histname = Form("%s : %d %d discriCell", filename.Data(), iBoard, iCh);
-                hist[iBoard][iCh] = new TH1I(histname, histname, 256, 0, 255);
-            }
-        }
+//         TCanvas *canvas = new TCanvas("discriCell", Form("discriCell %s", filename.Data()), 1200, 800);
+//         canvas->Divide(2,4);
+//         TH1I* hist[2][4];
+//         for(Int_t iBoard=0; iBoard<2; iBoard++){
+//             for(Int_t iCh=0; iCh<4; iCh++){
+//                 TString histname = Form("%s : %d %d discriCell", filename.Data(), iBoard, iCh);
+//                 hist[iBoard][iCh] = new TH1I(histname, histname, 256, 0, 255);
+//             }
+//         }
 
-        Int_t temp_nentries = tempChain->GetEntries();
-        for(Int_t EntryID=0; EntryID<temp_nentries; EntryID++){
-            for(Int_t iBoard=0; iBoard<2; iBoard++){
-                for(Int_t iCh=0; iCh<4; iCh++){
-                    hist[iBoard][iCh]->Fill(temp_discriCell[iBoard][iCh]);
-                }
-            }
-        }
+//         Int_t temp_nentries = tempChain->GetEntries();
+//         for(Int_t EntryID=0; EntryID<temp_nentries; EntryID++){
+//             for(Int_t iBoard=0; iBoard<2; iBoard++){
+//                 for(Int_t iCh=0; iCh<4; iCh++){
+//                     hist[iBoard][iCh]->Fill(temp_discriCell[iBoard][iCh]);
+//                 }
+//             }
+//         }
 
-        for(Int_t iBoard=0; iBoard<2; iBoard++){
-            for(Int_t iCh=0; iCh<4; iCh++){
-                canvas->cd(iBoard*4+iCh+1);
-                hist[iBoard][iCh]->Draw();
-            }
-        }
+//         for(Int_t iBoard=0; iBoard<2; iBoard++){
+//             for(Int_t iCh=0; iCh<4; iCh++){
+//                 canvas->cd(iBoard*4+iCh+1);
+//                 hist[iBoard][iCh]->Draw();
+//             }
+//         }
 
-        //保存用のディレクトリを作る
-        TString folderPath = Makedir_Date();
-        TString filename_figure = filename;
-        filename_figure.ReplaceAll(".", "_");
-        filename_figure += Form("_discriCell.pdf");
+//         //保存用のディレクトリを作る
+//         TString folderPath = Makedir_Date();
+//         TString filename_figure = filename;
+//         filename_figure.ReplaceAll(".", "_");
+//         filename_figure += Form("_discriCell.pdf");
 
-        IfFile_duplication(folderPath, filename_figure);
-        canvas->SaveAs(Form("%s/%s", folderPath.Data(),filename_figure.Data()));
-        counter++;
-    }
+//         IfFile_duplication(folderPath, filename_figure);
+//         canvas->SaveAs(Form("%s/%s", folderPath.Data(),filename_figure.Data()));
+//         counter++;
+//     }
 
-    return counter;
-}
+//     return counter;
+// }
