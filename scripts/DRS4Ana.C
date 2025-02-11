@@ -4863,31 +4863,51 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
 
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(7);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetGrid();
+
+    canvas->cd(8);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -4947,6 +4967,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
                                             flag_other_counter_cut++;
                                             printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
                                         }
+                                    }
+                                    if(y_iBoard == 0 && y_iCh == 1){
+                                        flag_other_counter_cut = 0;
                                     }
                                     if(flag_other_counter_cut == 0)
                                     {
@@ -5063,6 +5086,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     Long64_t counter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 3000);
+    TCanvas *canvas_S1_energy = new TCanvas("canvas_S1_energy", "S1 energy", 1200, 800);
     canvas->Divide(2,3);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -5087,6 +5111,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     TH1F* fH1TriggerTimes[2];
     fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
     fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
+
+    TH1F *fH1EnergySpectrum = new TH1F("energy_spectrum", "Energy spectrum S1", 200, 0, 600.0);
 
     gPad->SetGrid();
     // gPad->SetLogz();
@@ -5185,7 +5211,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
 
         if(abs(S1_energy - 511.0) < 2.0 * S1_error)
         {
-
+            fH1EnergySpectrum->Fill(S1_energy);
             DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
             DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
 
@@ -5287,6 +5313,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     line->Draw("SAME");
 
     canvas->Update();
+
+    canvas_S1_energy->cd();
+    fH1EnergySpectrum->Draw();
+    canvas_S1_energy->Update();
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
@@ -5461,7 +5491,7 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     Long64_t nentries = fChain->GetEntriesFast();
     Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
 
-    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+    for (Long64_t Entry = 0; Entry < 10; Entry++) {
         fChain->GetEntry(Entry);
         DiscriTime1 = fTime[0][0][fDiscriCell[0][0]];
         DiscriTime2 = fTime[0][3][fDiscriCell[0][3]];
