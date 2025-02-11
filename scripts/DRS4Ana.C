@@ -5305,6 +5305,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     filename_figure.ReplaceAll(".", "_");
     TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
     TString filename_figure_png = filename_figure + "_fH2Energy_PMTs.png";
+    TString filename_figure_pdf_S1 = filename_figure + "_energy_S1.pdf";
+    TString filename_figure_png_S1 = filename_figure + "_energy_S1.png";
     printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
     IfFile_duplication(folderPath, filename_figure_pdf);
@@ -5312,6 +5314,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
 
     IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_pdf_S1);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf_S1.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_png_S1);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png_S1.Data()));
 
     for(Int_t another_iCh=0; another_iCh<3; another_iCh++){
         printf("\tother GSO counter %d\n", iCh_other_A2s[another_iCh]);
