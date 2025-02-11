@@ -5749,6 +5749,9 @@ void DRS4Ana::waveform(Int_t nentries ){
 }
 
 Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
+    /*
+    DRSOscのdelayがいつしか1490 nsから1502 nsになっていた症状のデバッグ用。TChainの中のすべてのファイルについてdiscriCellを出力する。
+    */
     TObjArray *fileElements = fChain->GetListOfFiles();
     TIter next(fileElements);
     TChainElement *chEl = nullptr;
@@ -5764,22 +5767,38 @@ Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
         tempChain->Add(filename);
         tempChain->SetBranchAddress("discriCell", temp_discriCell);
 
-        TCanvas *canvas = new TCanvas("discriCell", Form("discriCell %s", filename.Data()), 1200, 800);
+        TCanvas *canvas = new TCanvas("discriCell", Form("discriCell %s", filename.Data()), 12000, 8000);
+        gStyle->SetLabelSize(0.08, "XYZ");  // 軸ラベルサイズ
+        gStyle->SetTitleSize(0.10, "XYZ");  // 軸タイトルサイズ
+        gStyle->SetTitleSize(0.1, "t"); // "t" はタイトル全体を指す
+        gStyle->SetStatFontSize(0.10);  // 適宜サイズを調整
+
         canvas->Divide(2,4);
         TH1I* hist[2][4];
         for(Int_t iBoard=0; iBoard<2; iBoard++){
             for(Int_t iCh=0; iCh<4; iCh++){
                 TString histname = Form("%s : %d %d discriCell", filename.Data(), iBoard, iCh);
                 hist[iBoard][iCh] = new TH1I(histname, histname, 256, 0, 255);
+                hist[iBoard][iCh]->SetTitle(Form("%s;discriCell;count per %.2f cells", histname.Data(), 1.0));
             }
         }
 
+        Int_t discriCell_buf;
         Int_t temp_nentries = tempChain->GetEntries();
+        if(nentries < temp_nentries){
+            temp_nentries = nentries;
+        }
         for(Int_t EntryID=0; EntryID<temp_nentries; EntryID++){
+            tempChain->GetEntry(EntryID);
             for(Int_t iBoard=0; iBoard<2; iBoard++){
                 for(Int_t iCh=0; iCh<4; iCh++){
-                    hist[iBoard][iCh]->Fill(temp_discriCell[iBoard][iCh]);
+                    discriCell_buf = temp_discriCell[iBoard][iCh];
+                    if(discriCell_buf > 10)
+                    hist[iBoard][iCh]->Fill(discriCell_buf);
                 }
+            }
+            if(EntryID % 5000 == 0){
+                std::cout << Form("EntryID : %d", EntryID) << std::endl; 
             }
         }
 
@@ -5792,12 +5811,15 @@ Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
 
         //保存用のディレクトリを作る
         TString folderPath = Makedir_Date();
-        TString filename_figure = filename;
+        TString filename_figure = filename(filename.Last('/')+1, filename.Length()-filename.Last('/'));
         filename_figure.ReplaceAll(".", "_");
-        filename_figure += Form("_discriCell.pdf");
+        TString filename_figure_pdf = filename_figure + "_discriCell.pdf";
+        TString filename_figure_png = filename_figure + "_discriCell.png";
 
-        IfFile_duplication(folderPath, filename_figure);
-        canvas->SaveAs(Form("%s/%s", folderPath.Data(),filename_figure.Data()));
+        IfFile_duplication(folderPath, filename_figure_pdf);
+        canvas->SaveAs(Form("%s/%s", folderPath.Data(),filename_figure_pdf.Data()));
+        IfFile_duplication(folderPath, filename_figure_png);
+        canvas->SaveAs(Form("%s/%s", folderPath.Data(),filename_figure_png.Data()));
         counter++;
     }
 
