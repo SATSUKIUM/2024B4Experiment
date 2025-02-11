@@ -3241,6 +3241,23 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 100, 0, 600);
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh,(maxEnergy-minEnergy)/nBins));
    
+    
+    
+    TH1F* fH1TriggerTimes[4];
+    fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 0), 128, 0, 1023);
+    fH1TriggerTimes[0]->SetTitle("S1 trigger time: iBoard 0, iCh 0, crystal NaI;time [ns]; counts");
+    
+    fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 2), 128, 0, 1023);
+    fH1TriggerTimes[1]->SetTitle("A1 trigger time: iBoard 0, iCh 0, crystal NaI;time [ns]; counts");
+
+
+    fH1TriggerTimes[2] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
+    fH1TriggerTimes[2]->SetTitle(Form("S2 trigger time : iBoard %d, iCh %d, crystal NaI ;time [ns]; counts", x_iBoard, x_iCh));
+   
+    
+    fH1TriggerTimes[3] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
+    fH1TriggerTimes[3]->SetTitle(Form("A2 trigger time : iBoard %d, iCh %d, crystal GSO ;time [ns]; counts", y_iBoard, y_iCh));
+    
     // THStack *hs = new THStack("hs", "Stacked Energy Spectra;Energy [keV];Counts");
 
     // fH1EnergySpectra[0]->SetFillColorAlpha(kBlue, 0.3);
@@ -3310,7 +3327,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
            
-              if(( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy ) && ( 100 < A1_energy )){
+              if(( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
+                // && ( 100 < A1_energy )
                   
                   //std::cout << "S1_energy: " << S1_energy << std::endl;
                   //std::cout << "x_energy: " << x_energy << std::endl;
