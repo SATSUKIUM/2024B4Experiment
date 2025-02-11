@@ -5527,7 +5527,7 @@ Double_t DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
 
 
 
-    for (Int_t i = 0; i < 8; i++) {
+    for (Int_t i = 0; i < 6; i++) {
         c2->cd(i+1);
         hists[i]->Draw();
         gPad->SetGrid();
@@ -5608,7 +5608,7 @@ void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
 
 
 
-    for (Int_t i = 0; i < 8; i++) {
+    for (Int_t i = 0; i < 6; i++) {
         c2->cd(i+1);
         hists[i]->Draw();
         gPad->SetGrid();
