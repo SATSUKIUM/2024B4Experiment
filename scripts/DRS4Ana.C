@@ -5937,3 +5937,285 @@ Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
 
     return counter;
 }
+
+
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2){
+    /*
+    satoのdiscriCellのカットを強くした。
+    */
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    TCanvas *canvas = new TCanvas("canvas", "title", 4000, 4000);
+    canvas->Divide(2,4);
+    gStyle->SetLabelSize(0.08, "XYZ");  // 軸ラベルサイズ
+    gStyle->SetTitleSize(0.10, "XYZ");  // 軸タイトルサイズ
+    gStyle->SetTitleSize(0.1, "t"); // "t" はタイトル全体を指す
+    if(fH2Energy_PMTs != NULL){
+        delete fH2Energy_PMTs;
+    }
+    Double_t minEnergy, maxEnergy;
+    Int_t nBins = 100;
+    minEnergy = 0.0;
+    maxEnergy = 600.0;
+    TH1D *fH1EnergySpectra[3];
+    fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", x_iBoard, x_iCh, key_Crystal_x.Data()), nBins, minEnergy, maxEnergy);
+    fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), nBins, minEnergy, maxEnergy);
+    fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, key_Crystal_x.Data(), (maxEnergy-minEnergy)/nBins));
+    fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", y_iBoard, y_iCh, key_Crystal_y.Data(), (maxEnergy-minEnergy)/nBins));
+    fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", nBins, minEnergy, maxEnergy);
+    fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh, (maxEnergy-minEnergy)/nBins));
+
+    fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
+    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
+    canvas->cd(1);
+    fH2Energy_PMTs->Draw();
+
+    TH1F* fH1TriggerTimes[2];
+    fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
+    fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
+
+    gPad->SetGrid();
+    // gPad->SetLogz();
+    gStyle->SetOptStat(0);
+
+    TH2D *fH2DiscriCells[2];
+    fH2DiscriCells[0] = new TH2D("fH2DiscriCell", Form("iBoard %d iCh %d vs iBoard %d iCh %d discriCell", 0,0,0,2), 200,0,199,200,0,199);
+    fH2DiscriCells[1] = new TH2D("fH2DiscriCell", Form("iBoard %d iCh %d vs iBoard %d iCh %d discriCell(cut passed)", 0,0,0,2), 200,0,199,200,0,199);
+    gPad->SetGrid();
+
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
+
+    //他のA2でヒットがないことをカット条件に入れたい。
+    Int_t iCh_other_A2s[3];
+    iCh_other_A2s[0] = (y_iCh + 1) % 4;
+    iCh_other_A2s[1] = (y_iCh + 2) % 4;
+    iCh_other_A2s[2] = (y_iCh + 3) % 4;
+
+    Int_t S1_BoardID = 0;
+    Int_t S1_ChID = 0;
+    Int_t A1_BoardID = 0;
+    Int_t A1_ChID = 2;
+    Double_t discriTime_S1, discriTime_A1;
+    Double_t x_energy, y_energy, x_error, y_error;
+    Double_t x_charge_buf, y_charge_buf;
+    Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
+    x_p0_buf = p0[x_iBoard][x_iCh];
+    x_p1_buf = p1[x_iBoard][x_iCh];
+    y_p0_buf = p0[y_iBoard][y_iCh];
+    y_p1_buf = p1[y_iBoard][y_iCh];
+    Double_t DiscriTime_x, DiscriTime_y;
+    Double_t adcSum_timerange_x, adcSum_timerange_y;
+    Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
+    Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+    Double_t distance_huruno1_sato_discriCell_line;
+    if(key_Crystal_x == "NaI"){
+        adcSum_timerange_x = 600;
+    }
+    else if(key_Crystal_x == "GSO"){
+        adcSum_timerange_x = 180;
+    }
+    else{
+        printf("\t\nx axis || type of crystal is invalid\n");
+    }
+    if(key_Crystal_y == "NaI"){
+        adcSum_timerange_y = 600;
+    }
+    else if(key_Crystal_y == "GSO"){
+        adcSum_timerange_y = 180;
+    }
+    else{
+        printf("\t\ny axis || type of crystal is invalid\n");
+    }
+
+    canvas->cd(1);
+    gPad->SetGrid();
+    gStyle->SetPalette(kDeepSea);
+
+    canvas->cd(2);
+    gPad->SetGrid();
+
+    canvas->cd(3);
+    gPad->SetGrid();
+
+    canvas->cd(4);
+    gPad->SetGrid();
+
+    canvas->cd(5);
+    gPad->SetGrid();
+
+    canvas->cd(6);
+    gPad->SetGrid();
+
+    canvas->cd(7);
+    gPad->SetGrid();
+
+    canvas->cd(8);
+    gPad->SetGrid();
+
+    for(Int_t Entry=0; Entry<nentries; Entry++){
+        fChain->GetEntry(Entry);
+
+        DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        //huruno1とsatoのdiscriCellでのカット
+        distance_huruno1_sato_discriCell_line = pow(fDiscriCell[0][0] - fDiscriCell[0][2] - 7, 2.0) / 2.0;
+        if(distance_huruno1_sato_discriCell_line < 50.0)
+        {
+            fH2DiscriCells[0]->Fill(fDiscriCell[0][0], fDiscriCell[0][2]);
+            //satoのdiscriCell分布の右の山を消す。
+            if(fDiscriCell[0][2]<135 && 115<fDiscriCell[0][2])
+            {
+                if(100 < DiscriTime_y && DiscriTime_y < 220)
+                {
+                    x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+                    y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+
+                    x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
+                    y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
+                    
+                    if(abs(y_energy - (511.0 - x_energy)) < 0.01*(nSigma_y_A2 * y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_x_S2 * x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0)))))
+                    {
+                        if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
+                            discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
+                            discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
+                            Double_t chargeIntegral_S1 = GetChargeIntegral(S1_BoardID , S1_ChID, 20.0, discriTime_S1 - 50, discriTime_S1 + 600);
+                            Double_t chargeIntegral_A1 = GetChargeIntegral(A1_BoardID , A1_ChID, 20.0, discriTime_A1 - 50, discriTime_A1 + 600);
+
+                            Double_t energy_S1 = p0[S1_BoardID][S1_ChID] + p1[S1_BoardID][S1_ChID]*(-chargeIntegral_S1);
+                            Double_t energy_A1 = p0[A1_BoardID][A1_ChID] + p1[A1_BoardID][A1_ChID]*(-chargeIntegral_A1);
+
+                            if((energy_A1 > 50) && (energy_S1 > 50) && (energy_A1< 400) && (energy_S1 < 400))
+                            {
+                                if(abs(energy_A1 - (511.0 - energy_S1)) < 0.01*(nSigma_A1 * p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_S1 * p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0)))))
+                                {
+                                    Int_t flag_other_counter_cut = 0;
+                                    Double_t chargeIntegral_another_A2s[3];
+                                    // Double_t discriTime_other_A2s[3];
+                                    // for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                                    // {
+                                    //     discriTime_other_A2s[another_iCh] = fTime[y_iBoard][iCh_other_A2s[another_iCh]][fDiscriCell[y_iBoard][iCh_other_A2s[another_iCh]]];
+                                    // }
+                                    for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                                    {
+                                        chargeIntegral_another_A2s[another_iCh] = GetChargeIntegral(y_iBoard, iCh_other_A2s[another_iCh], 20, DiscriTime_y - 50.0, DiscriTime_y + 180.0);
+                                    }
+                                    Double_t energy_other_A2s[3];
+                                    for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                                    {
+                                        Double_t energy_another_buf = p0[y_iBoard][iCh_other_A2s[another_iCh]] + p1[y_iBoard][iCh_other_A2s[another_iCh]] * (-chargeIntegral_another_A2s[another_iCh]);
+                                        energy_other_A2s[another_iCh] = energy_another_buf;
+                                        if(energy_another_buf > 100)
+                                        {
+                                            flag_other_counter_cut++;
+                                            printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
+                                        }
+                                    }
+                                    if(y_iBoard == 0 && y_iCh == 1){
+                                        flag_other_counter_cut = 0;
+                                    }
+                                    if(flag_other_counter_cut == 0)
+                                    {
+                                        fH2DiscriCells[1]->Fill(fDiscriCell[0][0], fDiscriCell[0][2]);
+                                        fH2Energy_PMTs->Fill(x_energy, y_energy);
+                                        fH1EnergySpectra[0]->Fill(x_energy);
+                                        fH1EnergySpectra[1]->Fill(y_energy);
+                                        fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                                        fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
+                                        fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
+                                        counter++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        
+
+        if(Entry % 5000 == 0){
+            printf("\tPoint processed : %d\n", Entry);
+        }
+    }
+    canvas->cd(1);
+    gPad->Update();
+    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
+    fH2Energy_PMTs->Draw();
+
+    //カット範囲の図示
+    TF1 *curve_upper = new TF1("error curve", error_curve_upper, 0.0, 511.0, 4);
+    curve_upper->SetParameters(y_p0_res_buf, x_p0_res_buf, nSigma_y_A2, nSigma_x_S2);
+    curve_upper->SetLineColor(kBlue);
+    curve_upper->SetLineWidth(1);
+    curve_upper->Draw("SAME");
+    TF1 *curve_lower = new TF1("error curve", error_curve_lower, 0.0, 511.0, 4);
+    curve_lower->SetParameters(y_p0_res_buf, x_p0_res_buf, nSigma_y_A2, nSigma_x_S2);
+    curve_lower->SetLineColor(kBlue);
+    curve_lower->SetLineWidth(1);
+    curve_lower->Draw("SAME");
+
+    TF1 *curve_upper_1sigma = new TF1("error curve", error_curve_upper, 0.0, 511.0, 4);
+    curve_upper_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf, 1, 1);
+    curve_upper_1sigma->SetLineColor(kBlack);
+    curve_upper_1sigma->SetLineWidth(1);
+    curve_upper_1sigma->SetLineStyle(2);
+    curve_upper_1sigma->Draw("SAME");
+    TF1 *curve_lower_1sigma = new TF1("error curve", error_curve_lower, 0.0, 511.0, 4);
+    curve_lower_1sigma->SetParameters(y_p0_res_buf, x_p0_res_buf, 1, 1);
+    curve_lower_1sigma->SetLineColor(kBlack);
+    curve_lower_1sigma->SetLineWidth(1);
+    curve_lower_1sigma->SetLineStyle(2);
+    curve_lower_1sigma->Draw("SAME");
+
+    canvas->cd(2);
+    fH1EnergySpectra[1]->Draw();
+    canvas->cd(3);
+    fH1EnergySpectra[0]->Draw();
+    canvas->cd(4);
+    gStyle->SetOptStat(1);
+    fH1EnergySpectra[2]->Draw();
+    canvas->cd(5);
+    fH1TriggerTimes[0]->Draw();
+    canvas->cd(6);
+    fH1TriggerTimes[1]->Draw();
+    canvas->cd(7);
+    gPad->SetLogz();
+    fH2DiscriCells[0]->Draw();
+    canvas->cd(8);
+    gPad->SetLogz();
+    fH2DiscriCells[1]->Draw();
+
+    canvas->cd(1);
+    TLine *line = new TLine(0, 511, 511,0);
+    line->SetLineColor(kBlack);
+    line->SetLineWidth(2);
+    line->Draw("SAME");
+
+    canvas->ResizePad();
+    canvas->Update();
+
+    //保存用のディレクトリを作る
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
+    TString filename_figure_png = filename_figure + "_fH2Energy_PMTs.png";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
+
+    IfFile_duplication(folderPath, filename_figure_pdf);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_png);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    for(Int_t another_iCh=0; another_iCh<3; another_iCh++){
+        printf("\tother GSO counter %d\n", iCh_other_A2s[another_iCh]);
+    }
+    
+    printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
+    return counter;
+}
