@@ -5535,7 +5535,7 @@ Double_t DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     }
 
     c2->Update();
-    return nentries
+    return nentries;
 }
 
 void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
