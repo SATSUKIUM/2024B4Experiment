@@ -5050,6 +5050,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     line->SetLineWidth(2);
     line->Draw("SAME");
 
+    canvas->ResizePad();
     canvas->Update();
 
     //保存用のディレクトリを作る
@@ -5312,6 +5313,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     line->SetLineWidth(2);
     line->Draw("SAME");
 
+    canvas->ResizePad();
     canvas->Update();
 
     canvas_S1_energy->cd();
