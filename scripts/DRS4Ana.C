@@ -5517,7 +5517,6 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     }
 
     c2->Update();
-    gPad->WaitPrimitive();
 }
 
 void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
@@ -5598,7 +5597,6 @@ void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
     }
 
     c2->Update();
-    gPad->WaitPrimitive();
 }
 
 
