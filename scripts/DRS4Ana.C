@@ -4862,52 +4862,32 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     }
 
     canvas->cd(1);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(7);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
-    gPad->SetGrid();
-
-    canvas->cd(8);
-    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -4967,9 +4947,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
                                             flag_other_counter_cut++;
                                             printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
                                         }
-                                    }
-                                    if(y_iBoard == 0 && y_iCh == 1){
-                                        flag_other_counter_cut = 0;
                                     }
                                     if(flag_other_counter_cut == 0)
                                     {
@@ -5076,12 +5053,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
 }
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2){
-    /*
-    ・S1, S2のANDでDAQしたもの
-    ・DRS4のdaisy-chainのDAQレート(— 370 acq/s)に張り付いていた
-    ・S1で511 keVのエネルギーを落としたイベントだけ使う。(S1でコンプトン散乱してGSOに入るイベントを排除したい)
-    */
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2){
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
@@ -5102,8 +5074,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", nBins, minEnergy, maxEnergy);
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh, (maxEnergy-minEnergy)/nBins));
 
-    fH2Energy_PMTs = new TH2F("name", "title", 100, -50, 600, 100, -50, 600);
-    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, x_iBoard, x_iCh, y_iBoard, y_iCh));
+    fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
+    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
@@ -5123,14 +5095,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     iCh_other_A2s[0] = (y_iCh + 1) % 4;
     iCh_other_A2s[1] = (y_iCh + 2) % 4;
     iCh_other_A2s[2] = (y_iCh + 3) % 4;
-
-    //huruno1で511 keVを落としたことをカット条件に入れたい。
-    Double_t S1_chargeInt, S1_energy, S1_discriTime;
-    Double_t S1_p0_buf = p0[0][0];
-    Double_t S1_p1_buf = p1[0][0];
-    Double_t S1_p0_res_buf = p0_res[0][0];
-    Double_t S1_error = 0.01 * S1_p0_res_buf * sqrt(511.0) / (2.0*sqrt(2.0*log(2.0)));
-    printf("\n\tDEBUG : S1_error %f\n", S1_error);
 
     Double_t x_energy, y_energy, x_error, y_error;
     Double_t x_charge_buf, y_charge_buf;
@@ -5190,61 +5154,52 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
-        S1_discriTime = fTime[0][0][fDiscriCell[0][0]];
-        S1_chargeInt = GetChargeIntegral(0, 0, 20, S1_discriTime - 50.0, S1_discriTime + 600.0);
-        S1_energy = S1_p0_buf + S1_p1_buf * (-S1_chargeInt);
+        DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
 
-        if(abs(S1_energy - 511.0) < 2.0 * S1_error)
+        if(100 < DiscriTime_y && DiscriTime_y < 220)
         {
-            DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
-            DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+            x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+            y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
 
-            if(100 < DiscriTime_y && DiscriTime_y < 220)
+            x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
+            y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
+            
+            if(abs(y_energy - (511.0 - x_energy)) < 0.01*(nSigma_y_A2 * y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_x_S2 * x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0)))))
             {
-                x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
-                y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
-
-                x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
-                y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
-                
-                if(abs(y_energy - (511.0 - x_energy)) < 0.01*(nSigma_y_A2 * y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_x_S2 * x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0)))))
+                if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400))
                 {
-                    if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400))
+                    Int_t flag_other_counter_cut = 0;
+                    Double_t chargeIntegral_another_A2s[3];
+                    for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
                     {
-                        Int_t flag_other_counter_cut = 0;
-                        Double_t chargeIntegral_another_A2s[3];
-                        for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                        chargeIntegral_another_A2s[another_iCh] = GetChargeIntegral(y_iBoard, iCh_other_A2s[another_iCh], 20, DiscriTime_y - 50.0, DiscriTime_y + 180.0);
+                    }
+                    Double_t energy_other_A2s[3];
+                    for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                    {
+                        Double_t energy_another_buf = p0[y_iBoard][iCh_other_A2s[another_iCh]] + p1[y_iBoard][iCh_other_A2s[another_iCh]] * (-chargeIntegral_another_A2s[another_iCh]);
+                        energy_other_A2s[another_iCh] = energy_another_buf;
+                        if(energy_another_buf > 100)
                         {
-                            chargeIntegral_another_A2s[another_iCh] = GetChargeIntegral(y_iBoard, iCh_other_A2s[another_iCh], 20, DiscriTime_y - 50.0, DiscriTime_y + 180.0);
-                        }
-                        Double_t energy_other_A2s[3];
-                        for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
-                        {
-                            Double_t energy_another_buf = p0[y_iBoard][iCh_other_A2s[another_iCh]] + p1[y_iBoard][iCh_other_A2s[another_iCh]] * (-chargeIntegral_another_A2s[another_iCh]);
-                            energy_other_A2s[another_iCh] = energy_another_buf;
-                            if(energy_another_buf > 100)
-                            {
-                                flag_other_counter_cut++;
-                                // printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
-                            }
-                        }
-                        // if(flag_other_counter_cut == 0)
-                        if(true)
-                        {
-                            fH2Energy_PMTs->Fill(x_energy, y_energy);
-                            fH1EnergySpectra[0]->Fill(x_energy);
-                            fH1EnergySpectra[1]->Fill(y_energy);
-                            fH1EnergySpectra[2]->Fill(x_energy+y_energy);
-                            fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
-                            fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
-                            counter++;
+                            flag_other_counter_cut++;
+                            // printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
                         }
                     }
+                    // if(flag_other_counter_cut == 0)
+                    if(true)
+                    {
+                        fH2Energy_PMTs->Fill(x_energy, y_energy);
+                        fH1EnergySpectra[0]->Fill(x_energy);
+                        fH1EnergySpectra[1]->Fill(y_energy);
+                        fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                        fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
+                        fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
+                        counter++;
+                    }
                 }
+            }
         }
-        }
-
-        
 
         if(Entry % 5000 == 0){
             printf("\tPoint processed : %d\n", Entry);
@@ -5721,5 +5676,4 @@ void DRS4Ana::Discricut(){
     }
 
     c2->Update();
-    gPad->WaitPrimitive();
 }
