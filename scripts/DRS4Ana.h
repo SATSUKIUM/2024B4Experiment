@@ -143,11 +143,14 @@ public:
     virtual Double_t Plot_2Dhist_energy_with_cut3_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_NaI = 2, Int_t nSigma_y_GSO = 2);
     virtual Double_t Plot_2Dhist_energy_with_cut4(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2);
     virtual Double_t Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2);
-    virtual Double_t Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2);
+    virtual Double_t Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2);
     virtual void PlotTrigger();
     virtual void PlotDiscriADC(Int_t iBoard, Int_t iCh);
-    virtual void DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120);
+    virtual Double_t DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120);
+    virtual void DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120);
     virtual void Discricut();
+    virtual void waveform(Int_t nentry);
+    virtual Double_t Plot_discriCell_each_chain(Int_t nentries = 10000);
 
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;
@@ -191,7 +194,7 @@ private:
 #ifdef DRS4Ana_cxx
 DRS4Ana::DRS4Ana() : fChain(globalChain_Event)
 {
-    fRootFile += "FILENAME_";
+    fRootFile += "_FILENAME_";
     // TFile *f = globalChain_Event->GetFile();
     // if (!f || !f->IsOpen())
     // {

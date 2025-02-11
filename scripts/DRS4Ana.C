@@ -60,6 +60,8 @@ TString DRS4Ana::fRootFile = "";
 #include <fstream>
 
 #include <TApplication.h>
+#include <TChainElement.h>
+#include <TObjArray.h>
 
 void addGlobalChain(const TString fRootFile_par){
     if(globalChain_Event && globalChain_Info){
@@ -4778,7 +4780,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 2000);
+    TCanvas *canvas = new TCanvas("canvas", "title", 4000, 4000);
     canvas->Divide(2,4);
     gStyle->SetLabelSize(0.08, "XYZ");  // 軸ラベルサイズ
     gStyle->SetTitleSize(0.10, "XYZ");  // 軸タイトルサイズ
@@ -4862,32 +4864,28 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     }
 
     canvas->cd(1);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(7);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetGrid();
+
+    canvas->cd(8);
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -4947,6 +4945,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
                                             flag_other_counter_cut++;
                                             printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
                                         }
+                                    }
+                                    if(y_iBoard == 0 && y_iCh == 1){
+                                        flag_other_counter_cut = 0;
                                     }
                                     if(flag_other_counter_cut == 0)
                                     {
@@ -5027,6 +5028,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     line->SetLineWidth(2);
     line->Draw("SAME");
 
+    canvas->ResizePad();
     canvas->Update();
 
     //保存用のディレクトリを作る
@@ -5053,11 +5055,17 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
 }
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2){
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2){
+    /*
+    ・S1, S2のANDでDAQしたもの
+    ・DRS4のdaisy-chainのDAQレート(— 370 acq/s)に張り付いていた
+    ・S1で511 keVのエネルギーを落としたイベントだけ使う。(S1でコンプトン散乱してGSOに入るイベントを排除したい)
+    */
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 2000);
+    TCanvas *canvas = new TCanvas("canvas", Form("%s cut5_t", fRootFile.Data()), 2000, 3000);
+    TCanvas *canvas_S1_energy = new TCanvas("canvas_S1_energy", "S1 energy", 1200, 800);
     canvas->Divide(2,3);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -5075,7 +5083,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh, (maxEnergy-minEnergy)/nBins));
 
     fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
-    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
+    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
@@ -5083,12 +5091,22 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
     fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
 
+    TH1F *fH1EnergySpectrum = new TH1F("energy_spectrum", Form("Energy spectrum S1 (when cut iBoard %d iCh %d and iBoard %d iCh %d)", x_iBoard, x_iCh, y_iBoard, y_iCh), 200, 0, 600.0);
+
     gPad->SetGrid();
     // gPad->SetLogz();
     gStyle->SetOptStat(0);
 
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
+
+    //huruno1で511 keVを落としたことをカット条件に入れたい。
+    Double_t S1_chargeInt, S1_energy, S1_discriTime;
+    Double_t S1_p0_buf = p0[0][0];
+    Double_t S1_p1_buf = p1[0][0];
+    Double_t S1_p0_res_buf = p0_res[0][0];
+    Double_t S1_error = 0.01 * S1_p0_res_buf * sqrt(511.0) / (2.0*sqrt(2.0*log(2.0)));
+    printf("\n\tDEBUG : S1_error %f\n", S1_error);
 
     //他のA2でヒットがないことをカット条件に入れたい。
     Int_t iCh_other_A2s[3];
@@ -5127,75 +5145,77 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     }
 
     canvas->cd(1);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
-        DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
-        DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        S1_discriTime = fTime[0][0][fDiscriCell[0][0]];
+        S1_chargeInt = GetChargeIntegral(0, 0, 20, S1_discriTime - 50.0, S1_discriTime + 600.0);
+        S1_energy = S1_p0_buf + S1_p1_buf * (-S1_chargeInt);
 
-        if(100 < DiscriTime_y && DiscriTime_y < 220)
+        if(abs(S1_energy - 500) < 2.0 * S1_error)
         {
-            x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
-            y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+            fH1EnergySpectrum->Fill(S1_energy);
+            DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+            DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
 
-            x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
-            y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
-            
-            if(abs(y_energy - (511.0 - x_energy)) < 0.01*(nSigma_y_A2 * y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_x_S2 * x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0)))))
+            if(100 < DiscriTime_y && DiscriTime_y < 220)
             {
-                if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400))
+                x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
+                y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
+
+                x_energy = x_p0_buf + x_p1_buf*x_charge_buf;
+                y_energy = y_p0_buf + y_p1_buf*y_charge_buf;
+                
+                if(abs(y_energy - (511.0 - x_energy)) < 0.01*(nSigma_y_A2 * y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_x_S2 * x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0)))))
                 {
-                    Int_t flag_other_counter_cut = 0;
-                    Double_t chargeIntegral_another_A2s[3];
-                    for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                    if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400))
                     {
-                        chargeIntegral_another_A2s[another_iCh] = GetChargeIntegral(y_iBoard, iCh_other_A2s[another_iCh], 20, DiscriTime_y - 50.0, DiscriTime_y + 180.0);
-                    }
-                    Double_t energy_other_A2s[3];
-                    for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
-                    {
-                        Double_t energy_another_buf = p0[y_iBoard][iCh_other_A2s[another_iCh]] + p1[y_iBoard][iCh_other_A2s[another_iCh]] * (-chargeIntegral_another_A2s[another_iCh]);
-                        energy_other_A2s[another_iCh] = energy_another_buf;
-                        if(energy_another_buf > 100)
+                        Int_t flag_other_counter_cut = 0;
+                        Double_t chargeIntegral_another_A2s[3];
+                        for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
                         {
-                            flag_other_counter_cut++;
-                            // printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
+                            chargeIntegral_another_A2s[another_iCh] = GetChargeIntegral(y_iBoard, iCh_other_A2s[another_iCh], 20, DiscriTime_y - 50.0, DiscriTime_y + 180.0);
                         }
-                    }
-                    // if(flag_other_counter_cut == 0)
-                    if(true)
-                    {
-                        fH2Energy_PMTs->Fill(x_energy, y_energy);
-                        fH1EnergySpectra[0]->Fill(x_energy);
-                        fH1EnergySpectra[1]->Fill(y_energy);
-                        fH1EnergySpectra[2]->Fill(x_energy+y_energy);
-                        fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
-                        fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
-                        counter++;
+                        Double_t energy_other_A2s[3];
+                        for(Int_t another_iCh=0; another_iCh<3; another_iCh++)
+                        {
+                            Double_t energy_another_buf = p0[y_iBoard][iCh_other_A2s[another_iCh]] + p1[y_iBoard][iCh_other_A2s[another_iCh]] * (-chargeIntegral_another_A2s[another_iCh]);
+                            energy_other_A2s[another_iCh] = energy_another_buf;
+                            if(energy_another_buf > 100)
+                            {
+                                flag_other_counter_cut++;
+                                // printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
+                            }
+                        }
+                        // if(flag_other_counter_cut == 0)
+                        if(true)
+                        {
+                            fH2Energy_PMTs->Fill(x_energy, y_energy);
+                            fH1EnergySpectra[0]->Fill(x_energy);
+                            fH1EnergySpectra[1]->Fill(y_energy);
+                            fH1EnergySpectra[2]->Fill(x_energy+y_energy);
+                            fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
+                            fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
+                            counter++;
+                        }
                     }
                 }
             }
@@ -5253,7 +5273,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     line->SetLineWidth(2);
     line->Draw("SAME");
 
+    canvas_S1_energy->cd();
+    fH1EnergySpectrum->Draw();
+    canvas_S1_energy->Update();
+
+    // canvas->ResizePad();
     canvas->Update();
+
+    
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
@@ -5262,6 +5289,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     filename_figure.ReplaceAll(".", "_");
     TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
     TString filename_figure_png = filename_figure + "_fH2Energy_PMTs.png";
+    TString filename_figure_pdf_S1 = filename_figure + "_energy_S1.pdf";
+    TString filename_figure_png_S1 = filename_figure + "_energy_S1.png";
     printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
     IfFile_duplication(folderPath, filename_figure_pdf);
@@ -5269,6 +5298,12 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
 
     IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_pdf_S1);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf_S1.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_png_S1);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png_S1.Data()));
 
     for(Int_t another_iCh=0; another_iCh<3; another_iCh++){
         printf("\tother GSO counter %d\n", iCh_other_A2s[another_iCh]);
@@ -5394,26 +5429,26 @@ void DRS4Ana::PlotDiscriADC(Int_t iBoard = 0, Int_t iCh = 0){
     gPad->WaitPrimitive();
 }
 
-void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
-
+Double_t DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
+    gErrorIgnoreLevel = kError; 
     TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
     c2->Divide(2, 3); 
 
-    TH1D* hists[8];
+    TH1D* hists[6];
 
     std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
 
     for (Int_t i = 0; i < 3; i++) {
-        hists[i] = new TH1D(Form("%s_Trigger_%dto%d",strVec[i],Scell, Fcell),
-                                   Form("%s_Trigger_%dto%d",strVec[i],Scell,Fcell),
+        hists[i] = new TH1D(Form("%s_Trigger_%dto%d",strVec[i].c_str(),Scell, Fcell),
+                                   Form("%s_Trigger_%dto%d",strVec[i].c_str(),Scell,Fcell),
                                    301, 0, 300);
         hists[i]->SetXTitle("Time [ns]");
         hists[i]->SetYTitle("counts");
     }
 
     for (Int_t i = 3; i < 6; i++) {
-        hists[i] = new TH1D(Form("PlotEnergy_%dto%d",100 + 25 * i , 100 + 25 * (i+1)),
-                                   Form("PlotEnergy_%dto%d",100 + 25 * i , 100 + 25 * (i+1)),
+        hists[i] = new TH1D(Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
+                                   Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
                                    650, 0, 650);
         hists[i]->SetXTitle("Energy [keV]");
         hists[i]->SetYTitle("counts");
@@ -5464,16 +5499,97 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
 
 
 
-    for (Int_t i = 0; i < 8; i++) {
+    for (Int_t i = 0; i < 6; i++) {
         c2->cd(i+1);
         hists[i]->Draw();
         gPad->SetGrid();
-        gStyle->SetOptStat(0);
+        gStyle->SetOptStat(1);
     }
 
     c2->Update();
-    gPad->WaitPrimitive();
+    return nentries;
 }
+
+void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
+
+    TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
+    c2->Divide(2, 3); 
+
+    TH1D* hists[6];
+
+    std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
+
+    for (Int_t i = 0; i < 3; i++) {
+        hists[i] = new TH1D(Form("%s_Trigger_%dto%d",strVec[i].c_str(),Scell, Fcell),
+                                   Form("%s_Trigger_%dto%d",strVec[i].c_str(),Scell,Fcell),
+                                   101, 100, 200);
+        hists[i]->SetXTitle("Time [ns]");
+        hists[i]->SetYTitle("counts");
+    }
+
+    for (Int_t i = 3; i < 6; i++) {
+        hists[i] = new TH1D(Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
+                                   Form("%s_PlotEnergy_%dto%d",strVec[i%3].c_str(),Scell, Fcell),
+                                   650, 0, 650);
+        hists[i]->SetXTitle("Energy [keV]");
+        hists[i]->SetYTitle("counts");
+    }
+
+        // エネルギー較正データの読み込み
+    TString key = "0204";
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+    
+    // データ取得 & フィル
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
+
+    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+        fChain->GetEntry(Entry);
+        DiscriTime1 = fTime[0][0][fDiscriCell[0][0]];
+        DiscriTime2 = fTime[0][3][fDiscriCell[0][3]];
+        DiscriTime3 = fTime[0][2][fDiscriCell[0][2]];
+        Double_t chargeIntegral1 = GetChargeIntegral(0, 0, 20, DiscriTime1 - 50, DiscriTime1 + 600);
+        Double_t chargeIntegral2 = GetChargeIntegral(0, 3, 20, DiscriTime2 - 50, DiscriTime2 + 600);
+        Double_t chargeIntegral3 = GetChargeIntegral(0, 2, 20, DiscriTime3 - 50, DiscriTime3 + 600);
+
+        if (chargeIntegral1 > -9999.9) {
+            energy_buf1 = p0[0][0] + p1[0][0] * (-chargeIntegral1);
+        }
+
+        if (chargeIntegral2 > -9999.9) {
+            energy_buf2 = p0[0][3] + p1[0][3] * (-chargeIntegral2);
+        }
+
+        if (chargeIntegral3 > -9999.9) {
+            energy_buf3 = p0[0][2] + p1[0][2] * (-chargeIntegral3);
+        }
+
+        // 範囲による分岐
+        if (Scell <= DiscriTime1 && DiscriTime1 < Fcell) {
+            hists[0]->Fill(DiscriTime1);  
+            hists[1]->Fill(DiscriTime2); 
+            hists[2]->Fill(DiscriTime3); 
+            hists[3]->Fill(energy_buf1);  
+            hists[4]->Fill(energy_buf2); 
+            hists[5]->Fill(energy_buf3); 
+           
+        }
+    }
+
+
+
+
+    for (Int_t i = 0; i < 6; i++) {
+        c2->cd(i+1);
+        hists[i]->Draw();
+        gPad->SetGrid();
+        gStyle->SetOptStat(1);
+    }
+
+    c2->Update();
+}
+
 
 void DRS4Ana::Discricut(){
 
@@ -5485,16 +5601,16 @@ void DRS4Ana::Discricut(){
     std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
 
     for (Int_t i = 0; i < 3; i++) {
-        hists[i] = new TH1D(Form("%s_Trigger",strVec[i]),
-                                   Form("%s_Trigger",strVec[i]),
+        hists[i] = new TH1D(Form("%s_Trigger",strVec[i].c_str()),
+                                   Form("%s_Trigger",strVec[i].c_str()),
                                    201, 50, 250);
         hists[i]->SetXTitle("Time [ns]");
         hists[i]->SetYTitle("counts");
     }
 
     for (Int_t i = 3; i < 6; i++) {
-        hists[i] = new TH1D(Form("%s_PlotEnergy",strVec[i]),
-                                   Form("%s_PlotEnergy",strVec[i]),
+        hists[i] = new TH1D(Form("%s_PlotEnergy",strVec[i%3].c_str()),
+                                   Form("%s_PlotEnergy",strVec[i%3].c_str()),
                                    650, 0, 650);
         hists[i]->SetXTitle("Energy [keV]");
         hists[i]->SetYTitle("counts");
@@ -5594,7 +5710,96 @@ void DRS4Ana::Discricut(){
         gPad->SetGrid();
         gStyle->SetOptStat(1);
     }
+    waveform(nentries);
 
     c2->Update();
-    gPad->WaitPrimitive();
 }
+
+void DRS4Ana::waveform(Int_t nentries ){
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
+    c1->Divide(2,4);
+    TH2D* hists[2][4];
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            hists[iBoard][iCh] = new TH2D(Form("title_ib%d_ic%d", iBoard, iCh), Form("name_ib%d_ic%d", iBoard, iCh), 500, 0, 1500, 500, -0.55, 0.05);
+        }
+    }
+    Double_t discriTime;
+    for(Int_t jentry=0; jentry<nentries; jentry++){
+        fChain->GetEntry(jentry);
+        for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t iCh=0; iCh<4; iCh++){
+                    for(Int_t iCell=0; iCell<1024; iCell++){
+                        hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);   
+                    }
+            }
+        }
+    }
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t iCh=0; iCh<4; iCh++){
+            c1->cd(iBoard*4+iCh+1);
+            hists[iBoard][iCh]->Draw();
+            gPad->SetLogz();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+
+}
+
+// Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
+//     TObjArray *fileElements = fChain->GetListOfFiles();
+//     TIter next(fileElements);
+//     TChainElement *chEl = nullptr;
+
+//     Int_t temp_discriCell[2][4];
+//     Double_t counter=0;
+
+//     while((chEl = (TChainElement*)next())){
+//         TString filename = chEl->GetTitle();
+//         std::cout << "file : " << filename << std::endl;
+
+//         TChain *tempChain = new TChain(fChain->GetName());
+//         tempChain->Add(filename);
+//         tempChain->SetBranchAddress("discriCell", temp_discriCell);
+
+//         TCanvas *canvas = new TCanvas("discriCell", Form("discriCell %s", filename.Data()), 1200, 800);
+//         canvas->Divide(2,4);
+//         TH1I* hist[2][4];
+//         for(Int_t iBoard=0; iBoard<2; iBoard++){
+//             for(Int_t iCh=0; iCh<4; iCh++){
+//                 TString histname = Form("%s : %d %d discriCell", filename.Data(), iBoard, iCh);
+//                 hist[iBoard][iCh] = new TH1I(histname, histname, 256, 0, 255);
+//             }
+//         }
+
+//         Int_t temp_nentries = tempChain->GetEntries();
+//         for(Int_t EntryID=0; EntryID<temp_nentries; EntryID++){
+//             for(Int_t iBoard=0; iBoard<2; iBoard++){
+//                 for(Int_t iCh=0; iCh<4; iCh++){
+//                     hist[iBoard][iCh]->Fill(temp_discriCell[iBoard][iCh]);
+//                 }
+//             }
+//         }
+
+//         for(Int_t iBoard=0; iBoard<2; iBoard++){
+//             for(Int_t iCh=0; iCh<4; iCh++){
+//                 canvas->cd(iBoard*4+iCh+1);
+//                 hist[iBoard][iCh]->Draw();
+//             }
+//         }
+
+//         //保存用のディレクトリを作る
+//         TString folderPath = Makedir_Date();
+//         TString filename_figure = filename;
+//         filename_figure.ReplaceAll(".", "_");
+//         filename_figure += Form("_discriCell.pdf");
+
+//         IfFile_duplication(folderPath, filename_figure);
+//         canvas->SaveAs(Form("%s/%s", folderPath.Data(),filename_figure.Data()));
+//         counter++;
+//     }
+
+//     return counter;
+// }
