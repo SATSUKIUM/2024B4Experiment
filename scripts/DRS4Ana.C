@@ -4778,7 +4778,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 2000);
+    TCanvas *canvas = new TCanvas("canvas", "title", 4000, 4000);
     canvas->Divide(2,4);
     gStyle->SetLabelSize(0.08, "XYZ");  // 軸ラベルサイズ
     gStyle->SetTitleSize(0.10, "XYZ");  // 軸タイトルサイズ
@@ -4862,52 +4862,28 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     }
 
     canvas->cd(1);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(7);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(8);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
