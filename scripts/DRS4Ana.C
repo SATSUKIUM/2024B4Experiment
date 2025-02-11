@@ -5089,7 +5089,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
     fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
 
-    TH1F *fH1EnergySpectrum = new TH1F("energy_spectrum", "Energy spectrum S1", 200, 0, 600.0);
+    TH1F *fH1EnergySpectrum = new TH1F("energy_spectrum", Form("Energy spectrum S1 (when cut iBoard %d iCh %d and iBoard %d iCh %d)", x_iBoard, x_iCh, y_iBoard, y_iCh), 200, 0, 600.0);
 
     gPad->SetGrid();
     // gPad->SetLogz();
@@ -5289,12 +5289,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     line->SetLineWidth(2);
     line->Draw("SAME");
 
-    canvas->ResizePad();
-    canvas->Update();
-
     canvas_S1_energy->cd();
     fH1EnergySpectrum->Draw();
     canvas_S1_energy->Update();
+
+    canvas->ResizePad();
+    canvas->Update();
+
+    
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
