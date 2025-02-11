@@ -927,23 +927,6 @@ void DRS4Ana::DEBUG_timebin(Int_t iBoard = 0, Int_t iCh = 0){
 
 //     for(Int_t i=0; i<nentries; i++){
 //         for(Int_t iCell=0; iCell<1024; iCell++){
-//             fH2Filtered_Overlay_Waves->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);
-//         }
-//     }
-
-//     Double_t binContent;
-//     Int_t flag_search_done = 0;
-//     for(Int_t xBin = 1; xBin <= fH2Filtered_Overlay_Waves->GetNbinsX(); ++xBin){
-//         for(Int_t yBin = fH2Filtered_Overlay_Waves->GetNbinsY(); yBin > 0; yBin += -1){
-//             if(fH2Filtered_Overlay_Waves->GetBinContent(xBin, yBin) > nentries*threshold){
-//                 if(fH2Filtered_Overlay_Waves->GetYaxis()->GetBinCenter(yBin) < trigger_voltage){
-//                     flag_search_done = 1;
-//                     Double_t v_return = fH2Filtered_Overlay_Waves->GetXaxis()->GetBinCenter(xBin);
-//                     return(v_return);
-//                     break;
-//                 }
-//             }
-//         }
 //     }
 //     if(flag_search_done != 1){
 //         return(-1.0); //trigger time was not found in the loop
