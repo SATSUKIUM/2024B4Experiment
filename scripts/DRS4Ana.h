@@ -150,6 +150,8 @@ public:
     virtual void DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120);
     virtual void Discricut();
     virtual void waveform(Int_t nentry);
+    virtual Double_t Plot_discriCell_each_chain(Int_t nentries = 10000);
+
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;
     TH1F *fH1AdcPeak = NULL;
