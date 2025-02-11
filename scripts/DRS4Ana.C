@@ -5062,7 +5062,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t counter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 3000);
+    TCanvas *canvas = new TCanvas("canvas", Form("%s cut5_t", fRootFile.Data()), 2000, 3000);
     TCanvas *canvas_S1_energy = new TCanvas("canvas_S1_energy", "S1 energy", 1200, 800);
     canvas->Divide(2,3);
     if(fH2Energy_PMTs != NULL){
@@ -5143,43 +5143,25 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     }
 
     canvas->cd(1);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetTopMargin(0.05); // 上の余白を広げる
-    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
-    for(Int_t Entry=0; Entry<100; Entry++){
+    for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
 
         S1_discriTime = fTime[0][0][fDiscriCell[0][0]];
@@ -5293,7 +5275,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     fH1EnergySpectrum->Draw();
     canvas_S1_energy->Update();
 
-    canvas->ResizePad();
+    // canvas->ResizePad();
     canvas->Update();
 
     
