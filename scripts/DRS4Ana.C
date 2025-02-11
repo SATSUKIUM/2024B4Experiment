@@ -5491,7 +5491,7 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     Long64_t nentries = fChain->GetEntriesFast();
     Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
 
-    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+    for (Long64_t Entry = 0; Entry < 10; Entry++) {
         fChain->GetEntry(Entry);
         DiscriTime1 = fTime[0][0][fDiscriCell[0][0]];
         DiscriTime2 = fTime[0][3][fDiscriCell[0][3]];
