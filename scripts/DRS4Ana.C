@@ -5076,7 +5076,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
 }
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2){
+Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2){
     /*
     ・S1, S2のANDでDAQしたもの
     ・DRS4のdaisy-chainのDAQレート(— 370 acq/s)に張り付いていた
@@ -5103,7 +5103,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh, (maxEnergy-minEnergy)/nBins));
 
     fH2Energy_PMTs = new TH2F("name", "title", 100, -50, 600, 100, -50, 600);
-    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
+    fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
