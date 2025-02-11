@@ -3248,7 +3248,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
     fH1TriggerTimes[0]->SetTitle("S1 trigger time: iBoard 0, iCh 0, crystal NaI;time [ns]; counts");
     
     fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 2), 128, 0, 1023);
-    fH1TriggerTimes[1]->SetTitle("A1 trigger time: iBoard 0, iCh 0, crystal NaI;time [ns]; counts");
+    fH1TriggerTimes[1]->SetTitle("A1 trigger time: iBoard 0, iCh 2, crystal NaI;time [ns]; counts");
 
 
     fH1TriggerTimes[2] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
@@ -3299,7 +3299,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
           
           //std::cout << "最大値: " << max_DiscriTime << std::endl;
           //std::cout << "最小値: " << min_DiscriTime << std::endl;
-          std::cout << "時間差: " << difference_DiscriTime << std::endl;
+          //std::cout << "時間差: " << difference_DiscriTime << std::endl;
 
 
           S1_charge_buf = -GetChargeIntegral(0, 0, 20, S1_DiscriTime - 50, S1_DiscriTime + 600);
