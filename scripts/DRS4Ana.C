@@ -60,6 +60,8 @@ TString DRS4Ana::fRootFile = "";
 #include <fstream>
 
 #include <TApplication.h>
+#include <TChainElement.h>
+#include <TObjArray.h>
 
 void addGlobalChain(const TString fRootFile_par){
     if(globalChain_Event && globalChain_Info){
