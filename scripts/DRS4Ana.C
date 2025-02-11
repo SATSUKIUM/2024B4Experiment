@@ -4862,32 +4862,52 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
     }
 
     canvas->cd(1);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(7);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetGrid();
+
+    canvas->cd(8);
+    gPad->SetLeftMargin(0.05);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -4947,6 +4967,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
                                             flag_other_counter_cut++;
                                             printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
                                         }
+                                    }
+                                    if(y_iBoard == 0 && y_iCh == 1){
+                                        flag_other_counter_cut = 0;
                                     }
                                     if(flag_other_counter_cut == 0)
                                     {
@@ -5079,7 +5102,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", nBins, minEnergy, maxEnergy);
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh, (maxEnergy-minEnergy)/nBins));
 
-    fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
+    fH2Energy_PMTs = new TH2F("name", "title", 100, -50, 600, 100, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
@@ -5106,7 +5129,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
     Double_t S1_p0_buf = p0[0][0];
     Double_t S1_p1_buf = p1[0][0];
     Double_t S1_p0_res_buf = p0_res[0][0];
-    Double_t S1_error = S1_p0_res_buf * sqrt(511.0) / (2.0*sqrt(2.0*log(2.0)));
+    Double_t S1_error = 0.01 * S1_p0_res_buf * sqrt(511.0) / (2.0*sqrt(2.0*log(2.0)));
     printf("\n\tDEBUG : S1_error %f\n", S1_error);
 
     Double_t x_energy, y_energy, x_error, y_error;
