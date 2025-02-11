@@ -3461,7 +3461,7 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
    
     for(Int_t iCh=0; iCh<4; iCh++){
         hists[0][iCh] = new TH2D(Form("iBoard 0, iCh %d", iCh), Form("iBoard 0, iCh %d",iCh), 500, 0, 1500, 500, -0.55, 0.05);
-        hist[0][iCh]->SetTitle(Form("waveform: iBoard 0, iCh %d;time [ns]; voltage [V]",iCh));
+        hists[0][iCh]->SetTitle(Form("waveform: iBoard 0, iCh %d;time [ns]; voltage [V]",iCh));
         fH1TriggerTimes[iCh] = new TH1F("trigger time", Form("iBoard 0,iCh %d trigger time", iCh), 128, 0, 1023);
         fH1TriggerTimes[iCh]->SetTitle(Form("trigger time: iBoard 0, iCh %d;time [ns]; counts",iCh));
     
