@@ -5128,27 +5128,39 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
 
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
