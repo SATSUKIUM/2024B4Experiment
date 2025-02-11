@@ -149,7 +149,6 @@ public:
     virtual void DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120);
     virtual void DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120);
     virtual void Discricut();
-
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;
     TH1F *fH1AdcPeak = NULL;
