@@ -3266,8 +3266,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
         S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
         A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
 
-        Double_t max_DiscriTime = std::max({x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime});
-        Double_t min_DiscriTime = std::min({x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime});
+        Double_t max_DiscriTime = std::max({x_DiscriTime, S1_DiscriTime, A1_DiscriTime});
+        Double_t min_DiscriTime = std::min({x_DiscriTime, S1_DiscriTime, A1_DiscriTime});
         Double_t difference_DiscriTime = max_DiscriTime - min_DiscriTime;
 
         
@@ -3276,8 +3276,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
         if((150 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 250) && (difference_DiscriTime < 30)){
 
           
-          std::cout << "最大値: " << max_DiscriTime << std::endl;
-          std::cout << "最小値: " << min_DiscriTime << std::endl;
+          //std::cout << "最大値: " << max_DiscriTime << std::endl;
+          //std::cout << "最小値: " << min_DiscriTime << std::endl;
           std::cout << "時間差: " << difference_DiscriTime << std::endl;
 
 
