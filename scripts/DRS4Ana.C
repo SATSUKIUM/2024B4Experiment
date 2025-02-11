@@ -3456,13 +3456,17 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
     Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
     
 
-        
+    TH1F* fH1TriggerTimes[4];
 
-    for(Int_t iBoard=0; iBoard<2; iBoard++){
-        for(Int_t iCh=0; iCh<4; iCh++){
-            hists[iBoard][iCh] = new TH2D(Form("iBoard%d_iCh%d", iBoard, iCh), Form("iBoard%d, iCh%d", iBoard, iCh), 500, 0, 1500, 500, -0.55, 0.05);
-        }
+   
+    for(Int_t iCh=0; iCh<4; iCh++){
+        hists[0][iCh] = new TH2D(Form("iBoard 0, iCh %d", iCh), Form("iBoard 0, iCh %d",iCh), 500, 0, 1500, 500, -0.55, 0.05);
+        hist[0][iCh]->->SetTitle(Form("waveform: iBoard 0, iCh %d;time [ns]; voltage [V]",iCh));
+        fH1TriggerTimes[iCh] = new TH1F("trigger time", Form("iBoard 0,iCh %d trigger time", iCh), 128, 0, 1023);
+        fH1TriggerTimes[iCh]->SetTitle(Form("trigger time: iBoard 0, iCh %d;time [ns]; counts",iCh));
+    
     }
+    
     
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -3476,20 +3480,19 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
         Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
 
 
-       if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
+       if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
              && ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
 
-            for(Int_t iBoard=0; iBoard<2; iBoard++){
+            
               for(Int_t iCh=0; iCh<4; iCh++){
                 for (Int_t iCell = 0; iCell < 1024; iCell++){
-                hists[iBoard][iCh]->Fill(fTime[iBoard][iCh][iCell], fWaveform[iBoard][iCh][iCell]);   
+                  hists[0][iCh]->Fill(fTime[0][iCh][iCell], fWaveform[0][iCh][iCell]);   
+                  fH1TriggerTimes[iCh]->Fill(fTime[0][iCh][fDiscriCell[0][iCh]]);
                 }         
               }
-            }
+        
            
-        }   
-
-         
+        }
 
         if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
@@ -3497,15 +3500,20 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
 
     }
 
-    for(Int_t iBoard=0; iBoard<2; iBoard++){
+    
         for(Int_t iCh=0; iCh<4; iCh++){
-            c1->cd(iBoard*4+iCh+1);
-            hists[iBoard][iCh]->Draw();
+            c1->cd(iCh+1);
+            hists[0][iCh]->Draw();
             gPad->SetLogz();
             gPad->SetGrid();
             gStyle->SetOptStat(0);
         }
-    }
+    
+        for(Int_t iCh=0; iCh<4; iCh++){
+            c1->cd(iCh+5);
+            fH1TriggerTimes[iCh]->Draw();
+        }
+    
 
     
 }
