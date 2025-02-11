@@ -5210,7 +5210,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5_t(TString key = "0120", TString k
         S1_chargeInt = GetChargeIntegral(0, 0, 20, S1_discriTime - 50.0, S1_discriTime + 600.0);
         S1_energy = S1_p0_buf + S1_p1_buf * (-S1_chargeInt);
 
-        if(abs(S1_energy - 511.0) < 2.0 * S1_error)
+        if(abs(S1_energy - 500) < 2.0 * S1_error)
         {
             fH1EnergySpectrum->Fill(S1_energy);
             DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
