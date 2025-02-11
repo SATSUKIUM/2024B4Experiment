@@ -3340,8 +3340,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0120", Int_t x
                   fH1EnergySpectra[0]->Fill(x_energy);
                   fH1EnergySpectra[1]->Fill(y_energy);
                   fH1EnergySpectra[2]->Fill(x_energy + y_energy);
-                  fH1TriggerTimes[0]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[0][0]]);
-                  fH1TriggerTimes[1]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[0][2]]);
+                  fH1TriggerTimes[0]->Fill(fTime[0][0][fDiscriCell[0][0]]);
+                  fH1TriggerTimes[1]->Fill(fTime[0][2][fDiscriCell[0][2]]);
                   fH1TriggerTimes[2]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
                   fH1TriggerTimes[3]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
 
