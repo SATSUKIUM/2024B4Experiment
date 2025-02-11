@@ -60,6 +60,8 @@ TString DRS4Ana::fRootFile = "";
 #include <fstream>
 
 #include <TApplication.h>
+#include <TChainElement.h>
+#include <TObjArray.h>
 
 #include <TChainElement.h>
 #include <TObjArray.h>
