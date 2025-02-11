@@ -5426,8 +5426,8 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
 
     for (Int_t i = 0; i < 3; i++) {
-        hists[i] = new TH1D(Form("%s_Trigger_%dto%d",strVec[i],Scell, Fcell),
-                                   Form("%s_Trigger_%dto%d",strVec[i],Scell,Fcell),
+        hists[i] = new TH1D(Form("%s_Trigger_%dto%d",strVec[i].c_str(),Scell, Fcell),
+                                   Form("%s_Trigger_%dto%d",strVec[i].c_str(),Scell,Fcell),
                                    301, 0, 300);
         hists[i]->SetXTitle("Time [ns]");
         hists[i]->SetYTitle("counts");
@@ -5507,16 +5507,16 @@ void DRS4Ana::Discricut(){
     std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
 
     for (Int_t i = 0; i < 3; i++) {
-        hists[i] = new TH1D(Form("%s_Trigger",strVec[i]),
-                                   Form("%s_Trigger",strVec[i]),
+        hists[i] = new TH1D(Form("%s_Trigger",strVec[i].c_str()),
+                                   Form("%s_Trigger",strVec[i].c_str()),
                                    201, 50, 250);
         hists[i]->SetXTitle("Time [ns]");
         hists[i]->SetYTitle("counts");
     }
 
     for (Int_t i = 3; i < 6; i++) {
-        hists[i] = new TH1D(Form("%s_PlotEnergy",strVec[i]),
-                                   Form("%s_PlotEnergy",strVec[i]),
+        hists[i] = new TH1D(Form("%s_PlotEnergy",strVec[i].c_str()),
+                                   Form("%s_PlotEnergy",strVec[i].c_str()),
                                    650, 0, 650);
         hists[i]->SetXTitle("Energy [keV]");
         hists[i]->SetYTitle("counts");
