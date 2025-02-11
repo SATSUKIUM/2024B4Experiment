@@ -5457,7 +5457,7 @@ void DRS4Ana::PlotDiscriADC(Int_t iBoard = 0, Int_t iCh = 0){
     gPad->WaitPrimitive();
 }
 
-void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
+Double_t DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     gErrorIgnoreLevel = kError; 
     TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
     c2->Divide(2, 3); 
@@ -5535,6 +5535,7 @@ void DRS4Ana::DiscriAna(Int_t Scell = 100 , Int_t Fcell = 120){
     }
 
     c2->Update();
+    return nentries
 }
 
 void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
