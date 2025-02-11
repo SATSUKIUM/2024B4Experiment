@@ -4863,31 +4863,51 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
 
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kDeepSea);
 
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(3);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(4);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(5);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(6);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     canvas->cd(7);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
+    gPad->SetGrid();
+
+    canvas->cd(8);
+    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
+    gPad->SetTopMargin(0.05); // 上の余白を広げる
+    gPad->SetBottomMargin(0.05); // 上の余白を広げる
     gPad->SetGrid();
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -4947,6 +4967,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut5(TString key = "0120", TString key
                                             flag_other_counter_cut++;
                                             printf("\n\tEntry %d, y_iBoard %d, iCh %d, abnormal energy %f keV\n", Entry, y_iBoard, iCh_other_A2s[another_iCh], energy_another_buf);
                                         }
+                                    }
+                                    if(y_iBoard == 0 && y_iCh == 1){
+                                        flag_other_counter_cut = 0;
                                     }
                                     if(flag_other_counter_cut == 0)
                                     {
