@@ -5777,7 +5777,7 @@ Double_t DRS4Ana::Plot_discriCell_each_chain(Int_t nentries = 10000){
         TH1I* hist[2][4];
         for(Int_t iBoard=0; iBoard<2; iBoard++){
             for(Int_t iCh=0; iCh<4; iCh++){
-                TString histname = Form("%s : %d %d discriCell", filename.Data(), iBoard, iCh);
+                TString histname = Form("%s : iBoard %d, iCh %d discriCell", filename.Data(), iBoard, iCh);
                 hist[iBoard][iCh] = new TH1I(histname, histname, 256, 0, 255);
                 hist[iBoard][iCh]->SetTitle(Form("%s;discriCell;count per %.2f cells", histname.Data(), 1.0));
             }
