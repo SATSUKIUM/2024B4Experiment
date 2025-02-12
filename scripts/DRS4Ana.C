@@ -6507,7 +6507,7 @@ void DRS4Ana::PlotTrigger2(){
     gPad->WaitPrimitive();
 }
 
-void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2){
+void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 15.0){
 
     Int_t fit_flag = 1; // フィットするなら1,しないなら0 描画範囲を決める
     
@@ -6530,11 +6530,11 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         xmax = 250;
     }
 
-    if(fit_flag == 1){
-        histDiv = 100;
-        xmin = -50;
-        xmax = 50;
-    }
+    // if(fit_flag == 1){
+    //     histDiv = 100;
+    //     xmin = -50;
+    //     xmax = 50;
+    // }
     
     fH1TriggerTimeDifference = new TH1F("fH1TriggerTimeDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
     fH1TriggerTimeDifference->SetXTitle("[ns]");
@@ -6553,32 +6553,24 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
 
     fH1TriggerTimeDifference->Draw();
 
-    Double_t fit_min = -5.0;
-    Double_t fit_max = 25.0;
 
-    TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", fit_min, fit_max);
-    gaussian_plus_linear->SetParameters(10000, 10, 1.0, 50.0, -5.0);
-    fH1TriggerTimeDifference->Fit(gaussian_plus_linear, "R");
-    gaussian_plus_linear->Draw("LSAME");
+    if(fit_flag == 1){
 
-    // TF1* gauss1 = new TF1("gauss1", "gaus", 440, 580);
-    // gauss1->SetParameters(
-    //     gaussian_plus_linear->GetParameter(0), // 振幅
-    //     gaussian_plus_linear->GetParameter(1), // 中心
-    //     gaussian_plus_linear->GetParameter(2)  // 幅
-    // );
-    // gauss1->SetLineColor(kOrange+7);
-    // gauss1->SetLineStyle(1);
-    // gauss1->Draw("LSAME");
+        TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", fit_min, fit_max);
+        gaussian_plus_linear->SetParameters(10000, 10, 1.0, 50.0, -5.0);
+        fH1TriggerTimeDifference->Fit(gaussian_plus_linear, "R");
+        gaussian_plus_linear->Draw("LSAME");
 
-    TF1* linear = new TF1("linear", "pol1", fit_min, fit_max);
-    linear->SetParameters(
-        gaussian_plus_linear->GetParameter(3), // 切片
-        gaussian_plus_linear->GetParameter(4)  // 傾き
-    );
-    linear->SetLineColor(kGreen+1);
-    linear->SetLineStyle(1);
-    linear->Draw("LSAME");
+        TF1* linear = new TF1("linear", "pol1", fit_min, fit_max);
+        linear->SetParameters(
+            gaussian_plus_linear->GetParameter(3), // 切片
+            gaussian_plus_linear->GetParameter(4)  // 傾き
+        );
+        linear->SetLineColor(kGreen+1);
+        linear->SetLineStyle(1);
+        linear->Draw("LSAME");
+    }
+
 
     c1->Update();
     gStyle->SetOptFit(1);
