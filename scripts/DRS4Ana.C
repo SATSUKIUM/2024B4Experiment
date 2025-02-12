@@ -6394,3 +6394,29 @@ void DRS4Ana::PlotTrigger2(){
     c1->Update();
     gPad->WaitPrimitive();
 }
+
+void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 3){
+
+    Long64_t nentries = fChain->GetEntriesFast();
+
+    if(fH1TriggerTimeDifference != NULL){
+        delete fH1TriggerTimeDifference;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", Form("(%d:ch%d) - (%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), 1600, 1200);
+    c1->Draw();
+    gPad->SetGrid();
+
+    Double_t discriTime1, discriTime2, Time_difference;
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
+        fChain->GetEntry(jentry);
+        discriTime1 = fTime[iBoard1][iCh1][fDiscriCell[iBoard1][iCh1]];
+        discriTime2 = fTime[iBoard2][iCh2][fDiscriCell[iBoard2][iCh2]];
+        Time_difference = discriTime1 - discriTime2;
+        fH1TriggerTimeDifference->Fill(Time_difference);
+
+    }
+
+    fH1TriggerTimeDifference->Draw();
+}
