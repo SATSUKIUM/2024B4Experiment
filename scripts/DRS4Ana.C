@@ -6366,7 +6366,7 @@ void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=
     
     // データ取得 & フィル
     Long64_t nentries = fChain->GetEntriesFast();
-    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
+    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3,energy_buf;
 
     for (Long64_t Entry = 0; Entry < nentries; Entry++) {
         fChain->GetEntry(Entry);
@@ -6376,7 +6376,7 @@ void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=
         Double_t chargeIntegral1 = GetChargeIntegral(0, 0, 20, DiscriTime1 - 50, DiscriTime1 + 600);
         Double_t chargeIntegral2 = GetChargeIntegral(0, 3, 20, DiscriTime2 - 50, DiscriTime2 + 600);
         Double_t chargeIntegral3 = GetChargeIntegral(0, 2, 20, DiscriTime3 - 50, DiscriTime3 + 600);
-
+        energy_buf = 0;
         if (chargeIntegral1 > -9999.9) {
             energy_buf1 = p0[0][0] + p1[0][0] * (-chargeIntegral1);
         }
@@ -6405,9 +6405,18 @@ void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=
             continue;
         }
 
+        if (iCh=0){
+            energy_buf=energy_buf1;
+        }else if(iCh=3){
+            energy_buf=energy_buf2;
+        }else if(iCh=2){
+            energy_buf=energy_buf3;
+        }
+
+        hist->Fill(energy_buf);
     }
 
-    hist->Fill(energy_buf1);
+    
     c2->cd();
     hist->Draw();
     gPad->SetGrid();
