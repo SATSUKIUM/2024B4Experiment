@@ -6509,7 +6509,8 @@ void DRS4Ana::PlotTrigger2(){
 
 void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 3){
 
-    Long64_t nentries = fChain->GetEntriesFast();
+    // Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t nentries = 100000;
 
     if(fH1TriggerTimeDifference != NULL){
         delete fH1TriggerTimeDifference;
