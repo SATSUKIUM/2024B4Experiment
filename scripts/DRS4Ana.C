@@ -6507,7 +6507,7 @@ void DRS4Ana::PlotTrigger2(){
     gPad->WaitPrimitive();
 }
 
-void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 3){
+void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2){
 
     // Long64_t nentries = fChain->GetEntriesFast();
     Long64_t nentries = 100000;
@@ -6516,14 +6516,14 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         delete fH1TriggerTimeDifference;
     }
 
-    TCanvas *c1 = new TCanvas("c1", Form("(%d:ch%d) - (%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), 1600, 1200);
+    TCanvas *c1 = new TCanvas("c1", Form("(Board%d:ch%d) - (Board%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), 1600, 1200);
     c1->Draw();
     gPad->SetGrid();
 
     Int_t histDiv = 500;
     Int_t xmin = -250;
     Int_t xmax = 250;
-    fH1TriggerTimeDifference = new TH1F("fH1TriggerTimeDifference", Form("(%d:ch%d) - (%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
+    fH1TriggerTimeDifference = new TH1F("fH1TriggerTimeDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
     fH1TriggerTimeDifference->SetXTitle("[ns]");
     fH1TriggerTimeDifference->SetYTitle(Form("counts per %d ns", (xmax-xmin)/histDiv));
 
@@ -6539,4 +6539,28 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     }
 
     fH1TriggerTimeDifference->Draw();
+
+    TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", -10, 30);
+    gaussian_plus_linear->SetParameters(7000, 10, 1.0, 50.0, -5.0);
+    fH1TriggerTimeDifference -> Fit(gaussian_plus_linear, "R");
+    gaussian_plus_linear -> Draw("same");
+
+    // TF1* gauss1 = new TF1("gauss1", "gaus", 440, 580);
+    // gauss1->SetParameters(
+    //     gaussian_plus_linear->GetParameter(0), // 振幅
+    //     gaussian_plus_linear->GetParameter(1), // 中心
+    //     gaussian_plus_linear->GetParameter(2)  // 幅
+    // );
+    // gauss1->SetLineColor(kOrange+7);
+    // gauss1->SetLineStyle(1);
+    // gauss1->Draw("LSAME");
+
+    TF1* linear = new TF1("linear", "pol1", 440, 580);
+    linear->SetParameters(
+        gaussian_plus_linear->GetParameter(3), // 切片
+        gaussian_plus_linear->GetParameter(4)  // 傾き
+    );
+    linear->SetLineColor(kGreen+1);
+    linear->SetLineStyle(1);
+    linear->Draw("same");
 }
