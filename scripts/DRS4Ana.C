@@ -5768,8 +5768,8 @@ void DRS4Ana::Discricut(){
 
         // 範囲による分岐
         if (120 >= DiscriTime1 && DiscriTime1 >=50)  {
-            if (DiscriTime2<=175 && DiscriTime2 >=50){
-                if(DiscriTime3<=160 && DiscriTime3 >=50){
+            if (DiscriTime2<=160 && DiscriTime2 >=50){
+                if(DiscriTime3<=150 && DiscriTime3 >=50){
                     hists[0]->Fill(DiscriTime1);  
                     hists[1]->Fill(DiscriTime2); 
                     hists[2]->Fill(DiscriTime3); 
@@ -5779,7 +5779,7 @@ void DRS4Ana::Discricut(){
                 }
             }
         }else if(140 >= DiscriTime1 && DiscriTime1 >120){
-            if (DiscriTime2<=175 && DiscriTime2 >=50){
+            if (DiscriTime2<=172 && DiscriTime2 >=50){
                 if(DiscriTime3<=165 && DiscriTime3 >=50){
                     hists[0]->Fill(DiscriTime1);  
                     hists[1]->Fill(DiscriTime2); 
@@ -5790,8 +5790,8 @@ void DRS4Ana::Discricut(){
                 }
             }
         }else if(160 >= DiscriTime1 && DiscriTime1 >140){
-            if (DiscriTime2<=185 && DiscriTime2 >=50){
-                if(DiscriTime3<=175 && DiscriTime3 >=50){
+            if (DiscriTime2<=183 && DiscriTime2 >=50){
+                if(DiscriTime3<=176 && DiscriTime3 >=50){
                     hists[0]->Fill(DiscriTime1);  
                     hists[1]->Fill(DiscriTime2); 
                     hists[2]->Fill(DiscriTime3); 
@@ -5810,14 +5810,13 @@ void DRS4Ana::Discricut(){
                 hists[5]->Fill(energy_buf3); 
             }
         }else if(200 >= DiscriTime1 && DiscriTime1 >180){
-            if(DiscriTime3<=190 && DiscriTime3 >=50){
-                hists[0]->Fill(DiscriTime1);  
-                hists[1]->Fill(DiscriTime2); 
-                hists[2]->Fill(DiscriTime3); 
-                hists[3]->Fill(energy_buf1);  
-                hists[4]->Fill(energy_buf2); 
-                hists[5]->Fill(energy_buf3); 
-            }
+            hists[0]->Fill(DiscriTime1);  
+            hists[1]->Fill(DiscriTime2); 
+            hists[2]->Fill(DiscriTime3); 
+            hists[3]->Fill(energy_buf1);  
+            hists[4]->Fill(energy_buf2); 
+            hists[5]->Fill(energy_buf3); 
+
         }
     }
 
