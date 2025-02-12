@@ -1201,11 +1201,11 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     
     fH1ChargeIntegral->Draw();
 
-    TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol(3)", 400, 600);
+    TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", 440, 580);
     fH1ChargeIntegral -> Fit(gaussian_plus_linear, "R");
     gaussian_plus_linear -> Draw("same");
-    
-    TF1* gauss1 = new TF1("gauss1", "gaus", 400, 600);
+
+    TF1* gauss1 = new TF1("gauss1", "gaus", 440, 580);
     gauss1->SetParameters(
         gaussian_plus_linear->GetParameter(0), // 振幅
         gaussian_plus_linear->GetParameter(1), // 中心
@@ -1215,7 +1215,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     gauss1->SetLineStyle(1);
     gauss1->Draw("LSAME");
 
-    TF1* linear = new TF1("linear", "pol1", 400, 600);
+    TF1* linear = new TF1("linear", "pol1", 440, 580);
     linear->SetParameters(
         gaussian_plus_linear->GetParameter(3), // 切片
         gaussian_plus_linear->GetParameter(4)  // 傾き
