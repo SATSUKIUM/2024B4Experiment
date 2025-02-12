@@ -1216,14 +1216,14 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     // gauss1->SetLineStyle(1);
     // gauss1->Draw("LSAME");
 
-    // TF1* linear = new TF1("linear", "pol1", 440, 580);
-    // linear->SetParameters(
-    //     gaussian_plus_linear->GetParameter(3), // 切片
-    //     gaussian_plus_linear->GetParameter(4)  // 傾き
-    // );
-    // linear->SetLineColor(kGreen+1);
-    // linear->SetLineStyle(1);
-    // linear->Draw("LSAME");
+    TF1* linear = new TF1("linear", "pol1", 440, 580);
+    linear->SetParameters(
+        gaussian_plus_linear->GetParameter(3), // 切片
+        gaussian_plus_linear->GetParameter(4)  // 傾き
+    );
+    linear->SetLineColor(kGreen+1);
+    linear->SetLineStyle(1);
+    linear->Draw("same");
 
 
 
