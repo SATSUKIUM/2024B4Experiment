@@ -5976,7 +5976,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
     fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
-    fH2Energy_PMTs->Draw();
+    // fH2Energy_PMTs->Draw();
 
     TH1F* fH1TriggerTimes[2];
     fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
