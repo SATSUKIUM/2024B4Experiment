@@ -6531,7 +6531,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     }
 
     if(fit_flag == 1){
-        histDiv = 100;
+        histDiv = 50;
         xmin = -50;
         xmax = 50;
     }
