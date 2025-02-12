@@ -6405,12 +6405,15 @@ void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=
             continue;
         }
 
-        hist->Fill(energy_buf1);
-        c2->cd();
-        hist->Draw();
-        gPad->SetGrid();
-        gStyle->SetOptStat(1);
     }
+
+    hist->Fill(energy_buf1);
+    c2->cd();
+    hist->Draw();
+    gPad->SetGrid();
+    gStyle->SetOptStat(1);
+    c2->Update();
+
 
 }
 
