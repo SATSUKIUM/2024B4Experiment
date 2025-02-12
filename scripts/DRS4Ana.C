@@ -3293,8 +3293,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
         
        
 
-        if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
-             && ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
+        if((100 < y_DiscriTime && y_DiscriTime < 220) && (170 < A1_DiscriTime && A1_DiscriTime < 190) 
+             && ( 180 < S1_DiscriTime && S1_DiscriTime < 200 ) && ( 190 < x_DiscriTime && x_DiscriTime < 200)){
 
           
           //std::cout << "最大値: " << max_DiscriTime << std::endl;
@@ -3447,24 +3447,36 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
 
 
 void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
-    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
-    c1->Divide(2,4);
-    TH2D* hists[2][4];
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 2400);
+    c1->Divide(3,2);
+    TH2D* hists[3][3];
+    //TH2D* hists[3][2];
+
+    // Double_t minEnergy, maxEnergy;
+    // Int_t nBins = 100;
+    // minEnergy = 0.0;
+    // maxEnergy = 600.0;
 
 
     Long64_t nentries = fChain->GetEntriesFast();
     Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
     
 
-    TH1F* fH1TriggerTimes[4];
-
+    TH1F* fH1TriggerTimes[3];
+    //TH1D *fH1EnergySpectra[3];
    
     for(Int_t iCh=0; iCh<4; iCh++){
+        if (iCh == 1) {
+            continue;  // i が 1 の場合はスキップする
+        }
+        else{
         hists[0][iCh] = new TH2D(Form("iBoard 0, iCh %d", iCh), Form("iBoard 0, iCh %d",iCh), 500, 0, 1500, 500, -0.55, 0.05);
         hists[0][iCh]->SetTitle(Form("waveform: iBoard 0, iCh %d;time [ns]; voltage [V]",iCh));
         fH1TriggerTimes[iCh] = new TH1F("trigger time", Form("iBoard 0,iCh %d trigger time", iCh), 128, 0, 1023);
         fH1TriggerTimes[iCh]->SetTitle(Form("trigger time: iBoard 0, iCh %d;time [ns]; counts",iCh));
-    
+        //fH1EnergySpectra[iCh] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard 0, iCh %d",iCh, nBins, minEnergy, maxEnergy));
+        //fH1EnergySpectra[iCh]->SetTitle(Form("energy spectrum : iBoard 0, iCh %d;energy [keV]; count per %.2f keV", iCh, (maxEnergy-minEnergy)/nBins));
+        }
     }
     
     
@@ -3480,19 +3492,25 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
         Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
 
 
-       if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
-             && ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
+       //if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 5) ){
+             //&& ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
 
             
               for(Int_t iCh=0; iCh<4; iCh++){
-                for (Int_t iCell = 0; iCell < 1024; iCell++){
-                  hists[0][iCh]->Fill(fTime[0][iCh][iCell], fWaveform[0][iCh][iCell]);   
-                  fH1TriggerTimes[iCh]->Fill(fTime[0][iCh][fDiscriCell[0][iCh]]);
+
+                if (iCh == 1) {
+                  continue;  // i=1 の場合はスキップする
+                }
+                else{
+                fH1TriggerTimes[iCh]->Fill(fTime[0][iCh][fDiscriCell[0][iCh]]);
+                  for (Int_t iCell = 0; iCell < 1024; iCell++){
+                     hists[0][iCh]->Fill(fTime[0][iCh][iCell], fWaveform[0][iCh][iCell]);   
+                  }
                 }         
               }
         
            
-        }
+        //}
 
         if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
@@ -3501,19 +3519,37 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
     }
 
     
-        for(Int_t iCh=0; iCh<4; iCh++){
-            c1->cd(iCh+1);
+        for(Int_t iCh=1; iCh<4; iCh++){ //canvas1~3
+            c1->cd(iCh);
+            if (iCh == 1) {
+            hists[0][iCh-1]->Draw();
+            }
+            else{
             hists[0][iCh]->Draw();
+            }
             gPad->SetLogz();
             gPad->SetGrid();
             gStyle->SetOptStat(0);
         }
     
-        for(Int_t iCh=0; iCh<4; iCh++){
-            c1->cd(iCh+5);
+        for(Int_t iCh=1; iCh<4; iCh++){ //canvas4~6
+            c1->cd(iCh+3);
+            if (iCh == 1) {
+            fH1TriggerTimes[iCh-1]->Draw();  // i が 1 の場合はスキップする
+            }
+            else{
             fH1TriggerTimes[iCh]->Draw();
+            }
         }
-    
+        
+        // for(Int_t iCh=1; iCh<4; iCh++){ //canvas4~6
+        //     if (i == 1) {
+        //     c1->cd(iCh+6);
+        //     fH1TriggerTimes[0][iCh-1]->Draw();  // i が 1 の場合はスキップする
+        //     }
+        //     c1->cd(iCh+3);
+        //     fH1TriggerTimes[0][iCh]->Draw();
+        // }
 
     
 }
