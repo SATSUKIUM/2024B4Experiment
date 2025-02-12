@@ -6,7 +6,7 @@ run_root() {
     YY=$2
     root -l <<EOF
 .L DRS4Ana.C
-addGlobalChain("../data/PhysicsRun/Run_005.dat.root")
+addGlobalChain("../data/PhysicsRun/ROOT_FILES/Run_005.dat.root")
 DRS4Ana obj
 obj.Plot_2Dhist_energy_with_cut5("0204", "NaI", "GSO", 0, 3, $XX, $YY, 2, 2, 1, 1)
 EOF
