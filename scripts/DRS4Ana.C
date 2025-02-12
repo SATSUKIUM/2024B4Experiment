@@ -6519,12 +6519,12 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     c1->Draw();
     gPad->SetGrid();
 
-    Int_t histDiv = 100;
+    Int_t histDiv = 500;
     Int_t xmin = -250;
     Int_t xmax = 250;
     fH1TriggerTimeDifference = new TH1F("fH1TriggerTimeDifference", Form("(%d:ch%d) - (%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
     fH1TriggerTimeDifference->SetXTitle("[ns]");
-    fH1TriggerTimeDifference->SetYTitle(Form("counts per %f ns", (xmax-xmin)/histDiv));
+    fH1TriggerTimeDifference->SetYTitle(Form("counts per %d ns", (xmax-xmin)/histDiv));
 
     Double_t discriTime1, discriTime2, Time_difference;
 
