@@ -156,6 +156,7 @@ public:
     virtual Double_t Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Int_t nSigma_x_S2 = 1, Int_t nSigma_y_A2 = 2, Int_t nSigma_S1 = 2, Int_t nSigma_A1 = 2);
     virtual void Discricut2();
     virtual void Energy_fit(Int_t iBoard , Int_t ich , Int_t xMin=0, Int_t xMax=650, Int_t fitRangeMin , Int_t fitRangeMax);
+    virtual void PlotTrigger2();
 
     TH2F *fH2Waveform = NULL;
     TH1F *fH1AdcSum = NULL;

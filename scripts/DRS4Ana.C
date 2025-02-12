@@ -1201,20 +1201,34 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     
     fH1ChargeIntegral->Draw();
 
-     TF1* gaussian = new TF1("gaussian", "gaus", 400, 600);
-        // gauss1->SetParameters(
-        //     gaussian_plus_linear->GetParameter(0), // 振幅
-        //     gaussian_plus_linear->GetParameter(1), // 中心
-        //     gaussian_plus_linear->GetParameter(2)  // 幅
-        // );
-        //gauss1->SetLineColor(kOrange+7);
-        //gauss1->SetLineStyle(1);
-        //gauss->Draw("LSAME");
-        fH1ChargeIntegral -> Fit(gaussian, "R");
-        gaussian -> Draw("same");
+    TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", 440, 580);
+    gaussian_plus_linear->SetParameters(7000, 500, 1.0, 50.0, -5.0);
+    fH1ChargeIntegral -> Fit(gaussian_plus_linear, "R");
+    gaussian_plus_linear -> Draw("same");
 
-        c1->Update();
-        gStyle->SetOptFit(1);
+    // TF1* gauss1 = new TF1("gauss1", "gaus", 440, 580);
+    // gauss1->SetParameters(
+    //     gaussian_plus_linear->GetParameter(0), // 振幅
+    //     gaussian_plus_linear->GetParameter(1), // 中心
+    //     gaussian_plus_linear->GetParameter(2)  // 幅
+    // );
+    // gauss1->SetLineColor(kOrange+7);
+    // gauss1->SetLineStyle(1);
+    // gauss1->Draw("LSAME");
+
+    TF1* linear = new TF1("linear", "pol1", 440, 580);
+    linear->SetParameters(
+        gaussian_plus_linear->GetParameter(3), // 切片
+        gaussian_plus_linear->GetParameter(4)  // 傾き
+    );
+    linear->SetLineColor(kGreen+1);
+    linear->SetLineStyle(1);
+    linear->Draw("same");
+
+
+
+    c1->Update();
+    gStyle->SetOptFit(1);
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
@@ -5446,7 +5460,7 @@ void DRS4Ana::PlotTrigger(){
             hists[iBoard][ich] = new TH1D(Form("ib%d_ic%d_Trigger", iBoard, ich),
                                           Form("Trigger_ib%d_ic%d", iBoard, ich),
                                           1101, 0, 1100);
-            hists[iBoard][ich]->SetXTitle("Voltage [V]");
+            hists[iBoard][ich]->SetXTitle("[ns]");
             hists[iBoard][ich]->SetYTitle("[counts]");
         }
     }
@@ -5976,7 +5990,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
     fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
-    fH2Energy_PMTs->Draw();
+    // fH2Energy_PMTs->Draw();
 
     TH1F* fH1TriggerTimes[2];
     fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
@@ -6240,7 +6254,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
 
 void DRS4Ana::Discricut2(){
     TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
-    c2->Divide(2, 3); 
+    c2->Divide(2, 3);
 
     TH1D* hists[6];
 
@@ -6398,4 +6412,49 @@ void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=
         gStyle->SetOptStat(1);
     }
 
+}
+
+void DRS4Ana::PlotTrigger2(){
+    TCanvas* c1 = new TCanvas("title","name",1200,6000);
+    c1->Divide(2,4);
+    TH1D* hists[2][4];
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t DiscriTime;
+
+    // ヒストグラムの初期化
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t ich=0; ich<4; ich++){
+            hists[iBoard][ich] = new TH1D(Form("ib%d_ic%d_Trigger", iBoard, ich),
+                                          Form("Trigger_ib%d_ic%d", iBoard, ich),
+                                          300, 0, 300);
+            hists[iBoard][ich]->SetXTitle("[ns]");
+            hists[iBoard][ich]->SetYTitle("[counts]");
+        }
+    }
+
+    // データ取得 & ヒストグラムに Fill
+    for(Long64_t Entry=0; Entry<300000; Entry++){
+        fChain->GetEntry(Entry);
+
+        for(Int_t iBoard=0; iBoard<2; iBoard++){
+            for(Int_t ich=0; ich<4; ich++){
+                DiscriTime = fTime[iBoard][ich][fDiscriCell[iBoard][ich]];
+                hists[iBoard][ich]->Fill(DiscriTime);
+            }
+        }
+    }
+
+    // 描画
+    c1->cd();
+    for(Int_t iBoard=0; iBoard<2; iBoard++){
+        for(Int_t ich=0; ich<4; ich++){
+            c1->cd(iBoard*4+ich+1);
+            hists[iBoard][ich]->Draw();
+            gPad->SetGrid();
+            gStyle->SetOptStat(0);
+        }
+    }
+
+    c1->Update();
+    gPad->WaitPrimitive();
 }
