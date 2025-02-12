@@ -6548,3 +6548,75 @@ void DRS4Ana::PlotTrigger2(){
     c1->Update();
     gPad->WaitPrimitive();
 }
+
+void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 25.0, Double_t sigma = 2.0){
+
+    // Int_t fit_flag = 1; // フィットするなら1,しないなら0 描画範囲を決める
+    
+    // Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t nentries = 100000;
+
+    if(fH1TriggerTimeDifference != NULL){
+        delete fH1TriggerTimeDifference;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", Form("(Board%d:ch%d) - (Board%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), 1600, 1200);
+    c1->Draw();
+    gPad->SetGrid();
+
+    Int_t histDiv, xmin, xmax;
+
+    if(fit_flag == 0){
+        histDiv = 500;
+        xmin = -250;
+        xmax = 250;
+    }
+
+    if(fit_flag == 1){
+        histDiv = 100;
+        xmin = -50;
+        xmax = 50;
+    }
+    
+    fH1TriggerTimeDifference = new TH1F("fH1TriggerTimeDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
+    fH1TriggerTimeDifference->SetXTitle("[ns]");
+    fH1TriggerTimeDifference->SetYTitle(Form("counts per %d ns", (xmax-xmin)/histDiv));
+
+    Double_t discriTime1, discriTime2, Time_difference;
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
+        fChain->GetEntry(jentry);
+        discriTime1 = fTime[iBoard1][iCh1][fDiscriCell[iBoard1][iCh1]];
+        discriTime2 = fTime[iBoard2][iCh2][fDiscriCell[iBoard2][iCh2]];
+
+        if(fDiscriCell[iBoard1][iCh1] > 3 && fDiscriCell[iBoard2][iCh2] > 3){
+            Time_difference = discriTime1 - discriTime2;
+            fH1TriggerTimeDifference->Fill(Time_difference);
+        }
+        
+    }
+
+    fH1TriggerTimeDifference->Draw();
+
+
+    if(fit_flag == 1){
+
+        TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", fit_min, fit_max);
+        gaussian_plus_linear->SetParameters(10000, (fit_max + fit_min) / 2, sigma, 50.0, -5.0);
+        fH1TriggerTimeDifference->Fit(gaussian_plus_linear, "R");
+        gaussian_plus_linear->Draw("LSAME");
+
+        TF1* linear = new TF1("linear", "pol1", fit_min, fit_max);
+        linear->SetParameters(
+            gaussian_plus_linear->GetParameter(3), // 切片
+            gaussian_plus_linear->GetParameter(4)  // 傾き
+        );
+        linear->SetLineColor(kGreen+1);
+        linear->SetLineStyle(1);
+        linear->Draw("LSAME");
+    }
+
+
+    c1->Update();
+    gStyle->SetOptFit(1);
+}
