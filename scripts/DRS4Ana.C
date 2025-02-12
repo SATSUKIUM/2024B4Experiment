@@ -5452,7 +5452,7 @@ void DRS4Ana::PlotTrigger(){
     }
 
     // データ取得 & ヒストグラムに Fill
-    for(Long64_t Entry=0; Entry<nentries; Entry++){
+    for(Long64_t Entry=0; Entry<100000; Entry++){
         fChain->GetEntry(Entry);
 
         for(Int_t iBoard=0; iBoard<2; iBoard++){
