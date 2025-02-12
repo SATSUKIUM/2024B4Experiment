@@ -1202,6 +1202,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     fH1ChargeIntegral->Draw();
 
     TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", 440, 580);
+    gaussian_plus_linear->SetParameters(7000, 500, 1.0, 50.0, -5.0);
     fH1ChargeIntegral -> Fit(gaussian_plus_linear, "R");
     gaussian_plus_linear -> Draw("same");
 
