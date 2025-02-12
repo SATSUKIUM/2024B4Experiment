@@ -6542,8 +6542,8 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
 
     TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", -10, 30);
     gaussian_plus_linear->SetParameters(10000, 10, 1.0, 50.0, -5.0);
-    fH1TriggerTimeDifference -> Fit(gaussian_plus_linear, "R");
-    gaussian_plus_linear -> Draw("same");
+    fH1TriggerTimeDifference->Fit(gaussian_plus_linear, "R");
+    gaussian_plus_linear->Draw("LSAME");
 
     // TF1* gauss1 = new TF1("gauss1", "gaus", 440, 580);
     // gauss1->SetParameters(
@@ -6562,7 +6562,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     );
     linear->SetLineColor(kGreen+1);
     linear->SetLineStyle(1);
-    linear->Draw("same");
+    linear->Draw("LSAME");
 
     c1->Update();
     gStyle->SetOptFit(1);
