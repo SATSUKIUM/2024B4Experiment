@@ -7,7 +7,7 @@ run_root() {
     FUNC_CALL=$3
     root -l <<EOF
 .L DRS4Ana.C
-addGlobalChain("../data/PhysicsRun/Run_005.dat.root")
+addGlobalChain("../data/PhysicsRun/ROOT_FILES/Run_005.dat.root")
 DRS4Ana obj
 obj.${FUNC_CALL}($XX, $YY)
 EOF
