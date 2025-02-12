@@ -6350,6 +6350,82 @@ void DRS4Ana::Discricut2(){
 
 }
 
+void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=650, Int_t fitRangeMin=450 , Int_t fitRangeMax=580){
+    TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
+
+    TH1D* hist;
+    hist = new TH1D(Form("PlotEnergy_iBoard%d_iCh%d",iBoard,iCh),
+                                   Form("PlotEnergy_iBoard%d_iCh%d",iBoard,iCh),
+                                    1000, xMin, xMax);
+    hist->SetXTitle("Energy [keV]");
+    hist->SetYTitle("counts");
+        // エネルギー較正データの読み込み
+    TString key = "0204";
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+    
+    // データ取得 & フィル
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3,energy_buf;
+
+    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+        fChain->GetEntry(Entry);
+        DiscriTime1 = fTime[0][0][fDiscriCell[0][0]];
+        DiscriTime2 = fTime[0][3][fDiscriCell[0][3]];
+        DiscriTime3 = fTime[0][2][fDiscriCell[0][2]];
+        Double_t chargeIntegral1 = GetChargeIntegral(0, 0, 20, DiscriTime1 - 50, DiscriTime1 + 600);
+        Double_t chargeIntegral2 = GetChargeIntegral(0, 3, 20, DiscriTime2 - 50, DiscriTime2 + 600);
+        Double_t chargeIntegral3 = GetChargeIntegral(0, 2, 20, DiscriTime3 - 50, DiscriTime3 + 600);
+        energy_buf = 0;
+        if (chargeIntegral1 > -9999.9) {
+            energy_buf1 = p0[0][0] + p1[0][0] * (-chargeIntegral1);
+        }
+
+        if (chargeIntegral2 > -9999.9) {
+            energy_buf2 = p0[0][3] + p1[0][3] * (-chargeIntegral2);
+        }
+
+        if (chargeIntegral3 > -9999.9) {
+            energy_buf3 = p0[0][2] + p1[0][2] * (-chargeIntegral3);
+        }
+
+        // 範囲による分岐
+        if (120 >= DiscriTime1 && DiscriTime1 >= 50) {
+            if (!(DiscriTime2 <= 160 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 150 && DiscriTime3 >= 50)) continue;
+        } else if (140 >= DiscriTime1 && DiscriTime1 > 120) {
+            if (!(DiscriTime2 <= 172 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 165 && DiscriTime3 >= 50)) continue;
+        } else if (160 >= DiscriTime1 && DiscriTime1 > 140) {
+            if (!(DiscriTime2 <= 183 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 176 && DiscriTime3 >= 50)) continue;
+        } else if (180 >= DiscriTime1 && DiscriTime1 > 160) {
+            if (!(DiscriTime3 <= 190 && DiscriTime3 >= 50)) continue;
+        } else if (!(200 >= DiscriTime1 && DiscriTime1 > 180)) {
+            continue;
+        }
+
+        if (iCh=0){
+            energy_buf=energy_buf1;
+        }else if(iCh=3){
+            energy_buf=energy_buf2;
+        }else if(iCh=2){
+            energy_buf=energy_buf3;
+        }
+
+        hist->Fill(energy_buf);
+    }
+
+    
+    c2->cd();
+    hist->Draw();
+    gPad->SetGrid();
+    gStyle->SetOptStat(1);
+    c2->Update();
+
+
+}
+
 void DRS4Ana::PlotTrigger2(){
     TCanvas* c1 = new TCanvas("title","name",1200,6000);
     c1->Divide(2,4);
