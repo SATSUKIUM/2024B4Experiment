@@ -6441,11 +6441,11 @@ void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=
             continue;
         }
 
-        if (iCh=0){
+        if (iCh==0){
             energy_buf=energy_buf1;
-        }else if(iCh=3){
+        }else if(iCh==3){
             energy_buf=energy_buf2;
-        }else if(iCh=2){
+        }else if(iCh==2){
             energy_buf=energy_buf3;
         }
 
