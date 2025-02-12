@@ -1201,20 +1201,33 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     
     fH1ChargeIntegral->Draw();
 
-     TF1* gaussian = new TF1("gaussian", "gaus", 400, 600);
-        // gauss1->SetParameters(
-        //     gaussian_plus_linear->GetParameter(0), // 振幅
-        //     gaussian_plus_linear->GetParameter(1), // 中心
-        //     gaussian_plus_linear->GetParameter(2)  // 幅
-        // );
-        //gauss1->SetLineColor(kOrange+7);
-        //gauss1->SetLineStyle(1);
-        //gauss->Draw("LSAME");
-        fH1ChargeIntegral -> Fit(gaussian, "R");
-        gaussian -> Draw("same");
+    TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol(3)", 400, 600);
+    fH1ChargeIntegral -> Fit(gaussian_plus_linear, "R");
+    gaussian_plus_linear -> Draw("same");
+    
+    TF1* gauss1 = new TF1("gauss1", "gaus", 400, 600);
+    gauss1->SetParameters(
+        gaussian_plus_linear->GetParameter(0), // 振幅
+        gaussian_plus_linear->GetParameter(1), // 中心
+        gaussian_plus_linear->GetParameter(2)  // 幅
+    );
+    gauss1->SetLineColor(kOrange+7);
+    gauss1->SetLineStyle(1);
+    gauss1->Draw("LSAME");
 
-        c1->Update();
-        gStyle->SetOptFit(1);
+    TF1* linear = new TF1("linear", "pol1", 400, 600);
+    linear->SetParameters(
+        gaussian_plus_linear->GetParameter(3), // 切片
+        gaussian_plus_linear->GetParameter(4)  // 傾き
+    );
+    linear->SetLineColor(kGreen+1);
+    linear->SetLineStyle(1);
+    linear->Draw("LSAME");
+
+
+
+    c1->Update();
+    gStyle->SetOptFit(1);
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
@@ -1225,7 +1238,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
 
     IfFile_duplication(folderPath, filename_figure);
-    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
 
     return (Double_t)counter;
 }
