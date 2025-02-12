@@ -6546,9 +6546,12 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         fChain->GetEntry(jentry);
         discriTime1 = fTime[iBoard1][iCh1][fDiscriCell[iBoard1][iCh1]];
         discriTime2 = fTime[iBoard2][iCh2][fDiscriCell[iBoard2][iCh2]];
-        Time_difference = discriTime1 - discriTime2;
-        fH1TriggerTimeDifference->Fill(Time_difference);
-
+        
+        if(fDiscriCell[iBoard1][iCh1] > 3 && fDiscriCell[iBoard2][iCh2] > 3){
+            Time_difference = discriTime1 - discriTime2;
+            fH1TriggerTimeDifference->Fill(Time_difference);
+        }
+        
     }
 
     fH1TriggerTimeDifference->Draw();
