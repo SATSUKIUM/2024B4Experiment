@@ -5446,7 +5446,7 @@ void DRS4Ana::PlotTrigger(){
             hists[iBoard][ich] = new TH1D(Form("ib%d_ic%d_Trigger", iBoard, ich),
                                           Form("Trigger_ib%d_ic%d", iBoard, ich),
                                           1101, 0, 1100);
-            hists[iBoard][ich]->SetXTitle("Voltage [V]");
+            hists[iBoard][ich]->SetXTitle("[ns]");
             hists[iBoard][ich]->SetYTitle("[counts]");
         }
     }
