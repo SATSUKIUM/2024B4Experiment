@@ -6560,7 +6560,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     if(fit_flag == 1){
 
         TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", fit_min, fit_max);
-        gaussian_plus_linear->SetParameters(10000, (fit_max + fit_min) / 2, 5.0, 50.0, -5.0);
+        gaussian_plus_linear->SetParameters(10000, (fit_max + fit_min) / 2, 2.5, 50.0, -5.0);
         fH1TriggerTimeDifference->Fit(gaussian_plus_linear, "R");
         gaussian_plus_linear->Draw("LSAME");
 
