@@ -6553,8 +6553,8 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
 
     fH1TriggerTimeDifference->Draw();
 
-    Double_t fit_min = -10.0;
-    Double_t fit_max = 30.0;
+    Double_t fit_min = -5.0;
+    Double_t fit_max = 25.0;
 
     TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", fit_min, fit_max);
     gaussian_plus_linear->SetParameters(10000, 10, 1.0, 50.0, -5.0);
