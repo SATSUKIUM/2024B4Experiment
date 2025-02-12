@@ -3307,8 +3307,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
         
        
 
-        if((100 < x_DiscriTime && y_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
-             && ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
+        if((100 < y_DiscriTime && y_DiscriTime < 220) && (170 < A1_DiscriTime && A1_DiscriTime < 190) 
+             && ( 180 < S1_DiscriTime && S1_DiscriTime < 200 ) && ( 190 < x_DiscriTime && x_DiscriTime < 200)){
 
           
           //std::cout << "最大値: " << max_DiscriTime << std::endl;
@@ -3461,24 +3461,36 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
 
 
 void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
-    TCanvas *c1 = new TCanvas("title", "name", 1200, 6000);
-    c1->Divide(2,4);
-    TH2D* hists[2][4];
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 2400);
+    c1->Divide(3,2);
+    TH2D* hists[3][3];
+    //TH2D* hists[3][2];
+
+    // Double_t minEnergy, maxEnergy;
+    // Int_t nBins = 100;
+    // minEnergy = 0.0;
+    // maxEnergy = 600.0;
 
 
     Long64_t nentries = fChain->GetEntriesFast();
     Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
     
 
-    TH1F* fH1TriggerTimes[4];
-
+    TH1F* fH1TriggerTimes[3];
+    //TH1D *fH1EnergySpectra[3];
    
     for(Int_t iCh=0; iCh<4; iCh++){
+        if (iCh == 1) {
+            continue;  // i が 1 の場合はスキップする
+        }
+        else{
         hists[0][iCh] = new TH2D(Form("iBoard 0, iCh %d", iCh), Form("iBoard 0, iCh %d",iCh), 500, 0, 1500, 500, -0.55, 0.05);
         hists[0][iCh]->SetTitle(Form("waveform: iBoard 0, iCh %d;time [ns]; voltage [V]",iCh));
         fH1TriggerTimes[iCh] = new TH1F("trigger time", Form("iBoard 0,iCh %d trigger time", iCh), 128, 0, 1023);
         fH1TriggerTimes[iCh]->SetTitle(Form("trigger time: iBoard 0, iCh %d;time [ns]; counts",iCh));
-    
+        //fH1EnergySpectra[iCh] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard 0, iCh %d",iCh, nBins, minEnergy, maxEnergy));
+        //fH1EnergySpectra[iCh]->SetTitle(Form("energy spectrum : iBoard 0, iCh %d;energy [keV]; count per %.2f keV", iCh, (maxEnergy-minEnergy)/nBins));
+        }
     }
     
     
@@ -3494,19 +3506,25 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
         Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
 
 
-       if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 10) 
-             && ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
+       //if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 5) ){
+             //&& ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
 
             
               for(Int_t iCh=0; iCh<4; iCh++){
-                for (Int_t iCell = 0; iCell < 1024; iCell++){
-                  hists[0][iCh]->Fill(fTime[0][iCh][iCell], fWaveform[0][iCh][iCell]);   
-                  fH1TriggerTimes[iCh]->Fill(fTime[0][iCh][fDiscriCell[0][iCh]]);
+
+                if (iCh == 1) {
+                  continue;  // i=1 の場合はスキップする
+                }
+                else{
+                fH1TriggerTimes[iCh]->Fill(fTime[0][iCh][fDiscriCell[0][iCh]]);
+                  for (Int_t iCell = 0; iCell < 1024; iCell++){
+                     hists[0][iCh]->Fill(fTime[0][iCh][iCell], fWaveform[0][iCh][iCell]);   
+                  }
                 }         
               }
         
            
-        }
+        //}
 
         if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
@@ -3515,19 +3533,37 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
     }
 
     
-        for(Int_t iCh=0; iCh<4; iCh++){
-            c1->cd(iCh+1);
+        for(Int_t iCh=1; iCh<4; iCh++){ //canvas1~3
+            c1->cd(iCh);
+            if (iCh == 1) {
+            hists[0][iCh-1]->Draw();
+            }
+            else{
             hists[0][iCh]->Draw();
+            }
             gPad->SetLogz();
             gPad->SetGrid();
             gStyle->SetOptStat(0);
         }
     
-        for(Int_t iCh=0; iCh<4; iCh++){
-            c1->cd(iCh+5);
+        for(Int_t iCh=1; iCh<4; iCh++){ //canvas4~6
+            c1->cd(iCh+3);
+            if (iCh == 1) {
+            fH1TriggerTimes[iCh-1]->Draw();  // i が 1 の場合はスキップする
+            }
+            else{
             fH1TriggerTimes[iCh]->Draw();
+            }
         }
-    
+        
+        // for(Int_t iCh=1; iCh<4; iCh++){ //canvas4~6
+        //     if (i == 1) {
+        //     c1->cd(iCh+6);
+        //     fH1TriggerTimes[0][iCh-1]->Draw();  // i が 1 の場合はスキップする
+        //     }
+        //     c1->cd(iCh+3);
+        //     fH1TriggerTimes[0][iCh]->Draw();
+        // }
 
     
 }
@@ -5990,7 +6026,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
     fH2Energy_PMTs = new TH2F("name", "title", 50, -50, 600, 50, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy of two PMTs (data from cfg/%s/data.txt), cut (S2 %d sigma, A2 %d sigma), cut (S1 %d sigma, A1 %d sigma);Board%d CH%d energy (keV);Board%d CH%d energy (keV)", key.Data(), nSigma_x_S2, nSigma_y_A2, nSigma_S1, nSigma_A1, x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
-    fH2Energy_PMTs->Draw();
+    // fH2Energy_PMTs->Draw();
 
     TH1F* fH1TriggerTimes[2];
     fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
@@ -6345,6 +6381,82 @@ void DRS4Ana::Discricut2(){
     }
     waveform(nentries);
 
+    c2->Update();
+
+
+}
+
+void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=650, Int_t fitRangeMin=450 , Int_t fitRangeMax=580){
+    TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
+
+    TH1D* hist;
+    hist = new TH1D(Form("PlotEnergy_iBoard%d_iCh%d",iBoard,iCh),
+                                   Form("PlotEnergy_iBoard%d_iCh%d",iBoard,iCh),
+                                    1000, xMin, xMax);
+    hist->SetXTitle("Energy [keV]");
+    hist->SetYTitle("counts");
+        // エネルギー較正データの読み込み
+    TString key = "0204";
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+    
+    // データ取得 & フィル
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3,energy_buf;
+
+    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+        fChain->GetEntry(Entry);
+        DiscriTime1 = fTime[0][0][fDiscriCell[0][0]];
+        DiscriTime2 = fTime[0][3][fDiscriCell[0][3]];
+        DiscriTime3 = fTime[0][2][fDiscriCell[0][2]];
+        Double_t chargeIntegral1 = GetChargeIntegral(0, 0, 20, DiscriTime1 - 50, DiscriTime1 + 600);
+        Double_t chargeIntegral2 = GetChargeIntegral(0, 3, 20, DiscriTime2 - 50, DiscriTime2 + 600);
+        Double_t chargeIntegral3 = GetChargeIntegral(0, 2, 20, DiscriTime3 - 50, DiscriTime3 + 600);
+        energy_buf = 0;
+        if (chargeIntegral1 > -9999.9) {
+            energy_buf1 = p0[0][0] + p1[0][0] * (-chargeIntegral1);
+        }
+
+        if (chargeIntegral2 > -9999.9) {
+            energy_buf2 = p0[0][3] + p1[0][3] * (-chargeIntegral2);
+        }
+
+        if (chargeIntegral3 > -9999.9) {
+            energy_buf3 = p0[0][2] + p1[0][2] * (-chargeIntegral3);
+        }
+
+        // 範囲による分岐
+        if (120 >= DiscriTime1 && DiscriTime1 >= 50) {
+            if (!(DiscriTime2 <= 160 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 150 && DiscriTime3 >= 50)) continue;
+        } else if (140 >= DiscriTime1 && DiscriTime1 > 120) {
+            if (!(DiscriTime2 <= 172 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 165 && DiscriTime3 >= 50)) continue;
+        } else if (160 >= DiscriTime1 && DiscriTime1 > 140) {
+            if (!(DiscriTime2 <= 183 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 176 && DiscriTime3 >= 50)) continue;
+        } else if (180 >= DiscriTime1 && DiscriTime1 > 160) {
+            if (!(DiscriTime3 <= 190 && DiscriTime3 >= 50)) continue;
+        } else if (!(200 >= DiscriTime1 && DiscriTime1 > 180)) {
+            continue;
+        }
+
+        if (iCh==0){
+            energy_buf=energy_buf1;
+        }else if(iCh==3){
+            energy_buf=energy_buf2;
+        }else if(iCh==2){
+            energy_buf=energy_buf3;
+        }
+
+        hist->Fill(energy_buf);
+    }
+
+    
+    c2->cd();
+    hist->Draw();
+    gPad->SetGrid();
+    gStyle->SetOptStat(1);
     c2->Update();
 
 
