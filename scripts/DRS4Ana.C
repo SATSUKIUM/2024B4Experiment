@@ -5452,7 +5452,7 @@ void DRS4Ana::PlotTrigger(){
     }
 
     // データ取得 & ヒストグラムに Fill
-    for(Long64_t Entry=0; Entry<nentries; Entry++){
+    for(Long64_t Entry=0; Entry<100000; Entry++){
         fChain->GetEntry(Entry);
 
         for(Int_t iBoard=0; iBoard<2; iBoard++){
@@ -6061,21 +6061,26 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
     canvas->cd(8);
     gPad->SetGrid();
 
-    for(Int_t Entry=0; Entry<nentries; Entry++){
+    Int_t cutCounter[8];
+    for(Int_t Entry=0; Entry<nentries; Entry++)
+    {
         fChain->GetEntry(Entry);
 
-        DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
-        DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
-        //huruno1とsatoのdiscriCellでのカット
-        distance_huruno1_sato_discriCell_line = pow(fDiscriCell[0][0] - fDiscriCell[0][2] - 7, 2.0) / 2.0;
-        if(distance_huruno1_sato_discriCell_line < 50.0)
+        //satoのdiscriCell分布の右の山を消す。huruno1,2も勝手にほぼ同時になってくれる。
+        if(fDiscriCell[0][2]<135 && fDiscriCell[0][2]>115)
         {
+            cutCounter[0] += 1;
             fH2DiscriCells[0]->Fill(fDiscriCell[0][0], fDiscriCell[0][2]);
-            //satoのdiscriCell分布の右の山を消す。
-            if(fDiscriCell[0][2]<135 && 115<fDiscriCell[0][2])
+            DiscriTime_x = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+            DiscriTime_y = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+            //huruno1とsatoのdiscriCellでのカット
+            distance_huruno1_sato_discriCell_line = pow(fDiscriCell[0][0] - fDiscriCell[0][2] - 7, 2.0) / 2.0;
+            if(distance_huruno1_sato_discriCell_line < 50.0)
             {
+                cutCounter[1] += 1;
                 if(100 < DiscriTime_y && DiscriTime_y < 220)
                 {
+                    cutCounter[2] += 1;
                     x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, DiscriTime_x - 50, DiscriTime_x + adcSum_timerange_x);
                     y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, DiscriTime_y - 50, DiscriTime_y + adcSum_timerange_y);
 
@@ -6084,7 +6089,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
                     
                     if(abs(y_energy - (511.0 - x_energy)) < 0.01*(nSigma_y_A2 * y_p0_res_buf * sqrt(abs(511.0-x_energy)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_x_S2 * x_p0_res_buf * sqrt(abs(x_energy)) / (2.0*sqrt(2.0*log(2.0)))))
                     {
+                        cutCounter[3] += 1;
                         if((x_energy > 50) && (y_energy > 50) && (x_energy < 400) && (y_energy < 400)){
+                            cutCounter[4] += 1;
                             discriTime_S1 = fTime[S1_BoardID][S1_ChID][fDiscriCell[S1_BoardID][S1_ChID]];
                             discriTime_A1 = fTime[A1_BoardID][A1_ChID][fDiscriCell[A1_BoardID][A1_ChID]];
                             Double_t chargeIntegral_S1 = GetChargeIntegral(S1_BoardID , S1_ChID, 20.0, discriTime_S1 - 50, discriTime_S1 + 600);
@@ -6095,8 +6102,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
 
                             if((energy_A1 > 50) && (energy_S1 > 50) && (energy_A1< 400) && (energy_S1 < 400))
                             {
+                                cutCounter[5] += 1;
                                 if(abs(energy_A1 - (511.0 - energy_S1)) < 0.01*(nSigma_A1 * p0_res[A1_BoardID][A1_ChID] * sqrt(abs(511.0-energy_S1)) / (2.0*sqrt(2.0*log(2.0))) + nSigma_S1 * p0_res[S1_BoardID][S1_ChID] * sqrt(abs(energy_S1)) / (2.0*sqrt(2.0*log(2.0)))))
                                 {
+                                    cutCounter[6] += 1;
                                     Int_t flag_other_counter_cut = 0;
                                     Double_t chargeIntegral_another_A2s[3];
                                     // Double_t discriTime_other_A2s[3];
@@ -6124,6 +6133,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
                                     }
                                     if(flag_other_counter_cut == 0)
                                     {
+                                        cutCounter[7] += 1;
                                         fH2DiscriCells[1]->Fill(fDiscriCell[0][0], fDiscriCell[0][2]);
                                         fH2Energy_PMTs->Fill(x_energy, y_energy);
                                         fH1EnergySpectra[0]->Fill(x_energy);
@@ -6140,9 +6150,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
                 }
             }
         }
-        
-        
-
+    
         if(Entry % 5000 == 0){
             printf("\tPoint processed : %d\n", Entry);
         }
@@ -6224,6 +6232,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
     }
     
     printf("ibx icx iby icy counter : %d %d %d %d %d\n",x_iBoard, x_iCh, y_iBoard, y_iCh, static_cast<Int_t>(counter));
+    for(Int_t cutIndex=0; cutIndex<sizeof(cutCounter)/sizeof(Int_t); cutIndex++){
+        printf("\tcut %d : survived %d events\n", cutIndex+1, cutCounter[cutIndex]);
+    }
     return counter;
 }
 
