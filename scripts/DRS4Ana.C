@@ -6350,7 +6350,7 @@ void DRS4Ana::Discricut2(){
 
 }
 
-void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=650, Int_t fitRangeMin , Int_t fitRangeMax){
+void DRS4Ana::Energy_fit(Int_t iBoard=0 , Int_t iCh=0 ,Int_t xMin=0, Int_t xMax=650, Int_t fitRangeMin=450 , Int_t fitRangeMax=580){
     TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
 
     TH1D* hist;
