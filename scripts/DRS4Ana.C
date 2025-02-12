@@ -6578,3 +6578,162 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     c1->Update();
     gStyle->SetOptFit(1);
 }
+
+void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Double_t coef = 3.0, Int_t cut_flag = 0){
+
+    Long64_t nentries;
+
+    if(entry_flag ==0){
+        nentries = 100000;
+    }
+    if(entry_flag ==1){
+        nentries = fChain->GetEntriesFast();
+    }
+    
+
+    if(fH1TriggerCellDifference != NULL){
+        delete fH1TriggerCellDifference;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", Form("(Board%d:ch%d) - (Board%d:ch%d) discriCell_difference", iBoard1, iCh1, iBoard2, iCh2), 1600, 1200);
+    c1->Draw();
+    gPad->SetGrid();
+
+    Int_t histDiv, xmin, xmax;
+
+    histDiv = 300;
+    xmin = -150;
+    xmax = 150;
+    
+    
+    fH1TriggerCellDifference = new TH1F("fH1TriggerCellDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriCell_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
+    fH1TriggerCellDifference->SetXTitle("discriCell difference");
+    fH1TriggerCellDifference->SetYTitle(Form("counts per %d Cells", (xmax-xmin)/histDiv));
+
+    Double_t discriCell1, discriCell2, Cell_difference;
+
+    Int_t pedestal_counts = 0;
+    Double_t pedestal = 0.0;
+    Double_t pedestal_sigma_counts = 0.0;
+    Double_t pedestal_sigma = 0.0;
+
+    Int_t ped_nega_lower = -120;
+    Int_t ped_nega_upper = -20;
+    Int_t ped_posi_lower = 30;
+    Int_t ped_posi_upper = 120;
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
+        fChain->GetEntry(jentry);
+        discriCell1 = fDiscriCell[iBoard1][iCh1];
+        discriCell2 = fDiscriCell[iBoard2][iCh2];
+
+        if(discriCell1 > 3 && discriCell2 > 3){
+            Cell_difference = discriCell1 - discriCell2;
+            fH1TriggerCellDifference->Fill(Cell_difference);
+        
+            if((Cell_difference >= ped_nega_lower && Cell_difference <= ped_nega_upper) || 
+               (Cell_difference >= ped_posi_lower && Cell_difference <= ped_posi_upper)){
+                pedestal_counts++;
+            }
+        }
+    }
+
+    pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
+
+    Double_t x_minimum = fH1TriggerCellDifference->GetXaxis()->GetXmin();
+    Int_t Bin_min = fH1TriggerCellDifference->FindBin(x_minimum);
+    Double_t x_maximum = fH1TriggerCellDifference->GetXaxis()->GetXmax();
+    Int_t Bin_max = fH1TriggerCellDifference->FindBin(x_maximum);
+    Int_t Bin_counts = 0;
+    Int_t Bin_ped_counts = 0;
+    // Double_t coef = 3.0;
+
+    Int_t Bin_ped_nega_upper = fH1TriggerCellDifference->FindBin(ped_nega_upper);
+    Int_t Bin_ped_nega_lower = fH1TriggerCellDifference->FindBin(ped_nega_lower);
+    Int_t Bin_ped_posi_upper = fH1TriggerCellDifference->FindBin(ped_posi_upper);
+    Int_t Bin_ped_posi_lower = fH1TriggerCellDifference->FindBin(ped_posi_lower);
+
+    for (Long64_t bin_index_nega = Bin_ped_nega_lower; bin_index_nega <= Bin_ped_nega_upper; bin_index_nega++){
+        Int_t bin_content_nega = fH1TriggerCellDifference->GetBinContent(bin_index_nega);
+        pedestal_sigma_counts += pow(pedestal - bin_content_nega, 2);
+        Bin_ped_counts++;
+    }
+
+    for (Long64_t bin_index_posi = Bin_ped_posi_lower; bin_index_posi <= Bin_ped_posi_upper; bin_index_posi++){
+        Int_t bin_content_posi = fH1TriggerCellDifference->GetBinContent(bin_index_posi);
+        pedestal_sigma_counts += pow(pedestal - bin_content_posi, 2);
+        Bin_ped_counts++;
+    }
+
+    pedestal_sigma = sqrt(pedestal_sigma_counts / (Bin_ped_counts - 1));
+    Double_t threshold = pedestal + coef * pedestal_sigma;
+
+    Double_t x_minimum_wo_ped, x_maximum_wo_ped = 0;
+
+    if(cut_flag == 1){
+
+        for (Long64_t i = Bin_min; i <= Bin_max; i++){
+            Double_t bin_content = fH1TriggerCellDifference->GetBinContent(i);
+                if(bin_content - threshold >= 0){
+                    fH1TriggerCellDifference->SetBinContent(i, bin_content);
+                    Bin_counts++;
+                }
+                else{
+                    fH1TriggerCellDifference->SetBinContent(i, 0);
+                    Bin_counts++;
+                }
+
+                if(fH1TriggerCellDifference->GetBinContent(i) >= threshold &&
+                   fH1TriggerCellDifference->GetBinContent(i-1) >= threshold &&
+                   fH1TriggerCellDifference->GetBinContent(i-2) == 0){
+                    x_minimum_wo_ped = fH1TriggerCellDifference->GetBinLowEdge(i-1);
+                }
+
+                if(fH1TriggerCellDifference->GetBinContent(i) == 0 && 
+                   fH1TriggerCellDifference->GetBinContent(i-1) == 0 && 
+                   fH1TriggerCellDifference->GetBinContent(i-2) >= threshold){
+                    x_maximum_wo_ped = (xmax-xmin)/histDiv + fH1TriggerCellDifference->GetBinLowEdge(i-2);
+                }
+
+        }
+
+        fH1TriggerCellDifference->Draw();
+
+        std::cout << "pedestal = " << pedestal << std::endl;
+        std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
+        std::cout << "x_minimum_wo_ped = " << x_minimum_wo_ped << std::endl;
+        std::cout << "x_maximum_wo_ped = " << x_maximum_wo_ped << std::endl;
+    }
+
+    
+
+    if(cut_flag == 0){
+
+        fH1TriggerCellDifference->Draw();
+        TF1* line = new TF1("line", "pol0", -120, 120);
+        line->SetParameters(pedestal);
+        line->SetLineColor(kRed);
+        line->SetLineWidth(2);
+        line->SetLineStyle(1);
+        line->Draw("LSAME");
+
+        std::cout << "pedestal = " << pedestal << std::endl;
+        std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
+    }
+
+    c1->Update();
+
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    TString filename_figure_pdf = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.pdf", iBoard1, iCh1, iBoard2, iCh2, coef);
+    TString filename_figure_png = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.png", iBoard1, iCh1, iBoard2, iCh2, coef);
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
+
+    IfFile_duplication(folderPath, filename_figure_pdf);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_png);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+}
