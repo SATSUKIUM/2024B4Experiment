@@ -6509,7 +6509,7 @@ void DRS4Ana::PlotTrigger2(){
 
 void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 15.0){
 
-    Int_t fit_flag = 1; // フィットするなら1,しないなら0 描画範囲を決める
+    // Int_t fit_flag = 1; // フィットするなら1,しないなら0 描画範囲を決める
     
     // Long64_t nentries = fChain->GetEntriesFast();
     Long64_t nentries = 100000;
