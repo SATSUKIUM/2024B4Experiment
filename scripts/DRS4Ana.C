@@ -6237,3 +6237,101 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut6(TString key = "0120", TString key
     }
     return counter;
 }
+
+void DRS4Ana::Discricut2(){
+    TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
+    c2->Divide(2, 3); 
+
+    TH1D* hists[6];
+
+    std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
+
+    for (Int_t i = 0; i < 3; i++) {
+        hists[i] = new TH1D(Form("%s_Trigger",strVec[i].c_str()),
+                                   Form("%s_Trigger",strVec[i].c_str()),
+                                   201, 50, 250);
+        hists[i]->SetXTitle("Time [ns]");
+        hists[i]->SetYTitle("counts");
+    }
+
+    for (Int_t i = 3; i < 6; i++) {
+        hists[i] = new TH1D(Form("%s_PlotEnergy",strVec[i%3].c_str()),
+                                   Form("%s_PlotEnergy",strVec[i%3].c_str()),
+                                   650, 0, 650);
+        hists[i]->SetXTitle("Energy [keV]");
+        hists[i]->SetYTitle("counts");
+    }
+
+        // エネルギー較正データの読み込み
+    TString key = "0204";
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+    
+    // データ取得 & フィル
+    Long64_t nentries = fChain->GetEntriesFast();
+    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
+
+    for (Long64_t Entry = 0; Entry < nentries; Entry++) {
+        fChain->GetEntry(Entry);
+        DiscriTime1 = fTime[0][0][fDiscriCell[0][0]];
+        DiscriTime2 = fTime[0][3][fDiscriCell[0][3]];
+        DiscriTime3 = fTime[0][2][fDiscriCell[0][2]];
+        Double_t chargeIntegral1 = GetChargeIntegral(0, 0, 20, DiscriTime1 - 50, DiscriTime1 + 600);
+        Double_t chargeIntegral2 = GetChargeIntegral(0, 3, 20, DiscriTime2 - 50, DiscriTime2 + 600);
+        Double_t chargeIntegral3 = GetChargeIntegral(0, 2, 20, DiscriTime3 - 50, DiscriTime3 + 600);
+
+        if (chargeIntegral1 > -9999.9) {
+            energy_buf1 = p0[0][0] + p1[0][0] * (-chargeIntegral1);
+        }
+
+        if (chargeIntegral2 > -9999.9) {
+            energy_buf2 = p0[0][3] + p1[0][3] * (-chargeIntegral2);
+        }
+
+        if (chargeIntegral3 > -9999.9) {
+            energy_buf3 = p0[0][2] + p1[0][2] * (-chargeIntegral3);
+        }
+
+        // 範囲による分岐
+        if (120 >= DiscriTime1 && DiscriTime1 >= 50) {
+            if (!(DiscriTime2 <= 160 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 150 && DiscriTime3 >= 50)) continue;
+        } else if (140 >= DiscriTime1 && DiscriTime1 > 120) {
+            if (!(DiscriTime2 <= 172 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 165 && DiscriTime3 >= 50)) continue;
+        } else if (160 >= DiscriTime1 && DiscriTime1 > 140) {
+            if (!(DiscriTime2 <= 183 && DiscriTime2 >= 50)) continue;
+            if (!(DiscriTime3 <= 176 && DiscriTime3 >= 50)) continue;
+        } else if (180 >= DiscriTime1 && DiscriTime1 > 160) {
+            if (!(DiscriTime3 <= 190 && DiscriTime3 >= 50)) continue;
+        } else if (!(200 >= DiscriTime1 && DiscriTime1 > 180)) {
+            continue;
+        }
+
+        hists[0]->Fill(DiscriTime1);
+        hists[1]->Fill(DiscriTime2);
+        hists[2]->Fill(DiscriTime3);
+        hists[3]->Fill(energy_buf1);
+        hists[4]->Fill(energy_buf2);
+        hists[5]->Fill(energy_buf3);
+
+
+
+        
+    }
+
+
+
+
+    for (Int_t i = 0; i < 6; i++) {
+        c2->cd(i+1);
+        hists[i]->Draw();
+        gPad->SetGrid();
+        gStyle->SetOptStat(1);
+    }
+    waveform(nentries);
+
+    c2->Update();
+
+
+}
