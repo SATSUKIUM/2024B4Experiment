@@ -6348,14 +6348,14 @@ void DRS4Ana::PlotTrigger2(){
         for(Int_t ich=0; ich<4; ich++){
             hists[iBoard][ich] = new TH1D(Form("ib%d_ic%d_Trigger", iBoard, ich),
                                           Form("Trigger_ib%d_ic%d", iBoard, ich),
-                                          1101, 0, 1100);
+                                          300, 0, 300);
             hists[iBoard][ich]->SetXTitle("[ns]");
             hists[iBoard][ich]->SetYTitle("[counts]");
         }
     }
 
     // データ取得 & ヒストグラムに Fill
-    for(Long64_t Entry=0; Entry<100000; Entry++){
+    for(Long64_t Entry=0; Entry<300000; Entry++){
         fChain->GetEntry(Entry);
 
         for(Int_t iBoard=0; iBoard<2; iBoard++){
