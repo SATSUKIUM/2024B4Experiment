@@ -461,6 +461,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
 
                 adcSum[iBoard][chID] = 0;
                 pedestal[iBoard][chID] = 0;
+                discriCell[iBoard][chID] = 0;
                 Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
                 Int_t flag_found_discriCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
                 flag_b4exp_longtrig = 0;// イベントセレクションのフラグ

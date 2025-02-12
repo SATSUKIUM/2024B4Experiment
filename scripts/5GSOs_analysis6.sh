@@ -8,7 +8,7 @@ run_root() {
 .L DRS4Ana.C
 addGlobalChain("../data/PhysicsRun/ROOT_FILES/Run_005.dat.root")
 DRS4Ana obj
-obj.Plot_2Dhist_energy_with_cut5("0204", "NaI", "GSO", 0, 3, $XX, $YY, 2, 2, 1, 1)
+obj.Plot_2Dhist_energy_with_cut6("0204", "NaI", "GSO", 0, 3, $XX, $YY, 2, 2, 1, 1)
 EOF
 }
 
