@@ -3369,6 +3369,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
             //x_distance= (511 - x_energy - y_energy);
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
+            // std::cout << "y_upper: " << y_upper << std::endl;
+            // std::cout << "y_lower: " << y_lower << std::endl;
+            // std::cout << "y_energy: " << y_energy << std::endl;
            
               if((y_lower <= y_energy && y_energy <= y_upper)){
                 // && ( 100 < A1_energy )
@@ -3378,8 +3381,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
                   //std::cout << "y_energy: " << y_energy << std::endl;
                   //std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
 
-                  std::cout << "y_upper: " << y_upper << std::endl;
-                  std::cout << "y_lower: " << y_lower << std::endl;
+                  
 
                   
                   fH2Energy_PMTs->Fill(x_energy, y_energy);
