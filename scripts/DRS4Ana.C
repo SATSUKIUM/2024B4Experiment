@@ -1225,7 +1225,7 @@ Double_t DRS4Ana::PlotEnergy(TString key = "0120", TString key_Crystal = "NaI", 
     printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
 
     IfFile_duplication(folderPath, filename_figure);
-    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
 
     return (Double_t)counter;
 }
