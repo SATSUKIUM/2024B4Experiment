@@ -6507,7 +6507,7 @@ void DRS4Ana::PlotTrigger2(){
     gPad->WaitPrimitive();
 }
 
-void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 15.0){
+void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 25.0){
 
     // Int_t fit_flag = 1; // フィットするなら1,しないなら0 描画範囲を決める
     
@@ -6530,11 +6530,11 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         xmax = 250;
     }
 
-    // if(fit_flag == 1){
-    //     histDiv = 100;
-    //     xmin = -50;
-    //     xmax = 50;
-    // }
+    if(fit_flag == 1){
+        histDiv = 100;
+        xmin = -50;
+        xmax = 50;
+    }
     
     fH1TriggerTimeDifference = new TH1F("fH1TriggerTimeDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriTime_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
     fH1TriggerTimeDifference->SetXTitle("[ns]");
@@ -6546,7 +6546,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         fChain->GetEntry(jentry);
         discriTime1 = fTime[iBoard1][iCh1][fDiscriCell[iBoard1][iCh1]];
         discriTime2 = fTime[iBoard2][iCh2][fDiscriCell[iBoard2][iCh2]];
-        
+
         if(fDiscriCell[iBoard1][iCh1] > 3 && fDiscriCell[iBoard2][iCh2] > 3){
             Time_difference = discriTime1 - discriTime2;
             fH1TriggerTimeDifference->Fill(Time_difference);
