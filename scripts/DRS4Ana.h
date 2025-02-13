@@ -160,6 +160,8 @@ public:
     virtual void Energy_fit(Int_t iBoard , Int_t ich , Int_t xMin=0, Int_t xMax=650, Int_t fitRangeMin=450 , Int_t fitRangeMax=580);
     virtual void PlotTrigger2();
     virtual void PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 25.0, Double_t sigma = 2.0);
+    virtual Double_t PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050);
+    virtual Double_t PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050);
 
 
     TH2F *fH2Waveform = NULL;
@@ -178,6 +180,7 @@ public:
     TH1F *fH1TriggerTime = NULL;
     TH1F *fH1Energy_PMTs = NULL;
     TH1F *fH1TriggerTimeDifference = NULL;
+    TH1F *fH1TriggerCellDifference = NULL;
 
     
 

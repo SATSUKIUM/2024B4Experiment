@@ -1,0 +1,43 @@
+Run_004
+
+huruno1 - sato
+
+pedestal = 338
+pedestal_sigma = 21.6315
+x_minimum_wo_ped = -8
+x_maximum_wo_ped = 19
+
+huruno1 - huruno2
+
+pedestal = 23
+pedestal_sigma = 5.18129
+x_minimum_wo_ped = -19
+x_maximum_wo_ped = 16
+
+chains456
+
+100000events
+huruno1 - sato
+
+pedestal = 73
+pedestal_sigma = 8.78689
+
+huruno1 - huruno2
+
+pedestal = 5
+pedestal_sigma = 2.21844
+
+all events
+huruno1 - sato
+
+pedestal = 3658
+pedestal_sigma = 127.771
+x_minimum_wo_ped = -14
+x_maximum_wo_ped = 21
+
+huruno1 - huruno2
+
+pedestal = 257
+pedestal_sigma = 21.2584
+x_minimum_wo_ped = -22
+x_maximum_wo_ped = 18
