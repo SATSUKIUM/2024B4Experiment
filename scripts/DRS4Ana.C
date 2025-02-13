@@ -3620,9 +3620,12 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
 
 void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
     
-  const int nPads = 16;           // キャンバス内の pad 数
   const int nPoints = 1024;      // サンプル数（適宜変更）
   const int nGraphsPerPad = 4;   // 1つの pad に重ねるグラフの数
+  const int maxPads = 16;        // 最大 pad 数（16分割まで対応）
+  std::vector<int> validEntries;
+  
+    
 
   Long64_t nentries = fChain->GetEntriesFast();
 
@@ -3669,15 +3672,6 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
 
 
 
-    
-  int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
-  std::vector<int> validEntries;
-
-
-  TCanvas* canvas = new TCanvas("canvas", "Canvas with 9 Pads", 1200, 900);
-  canvas->Divide(4, 4);  // 3×3 に分割
-
-
   for (Int_t Entry = 0; Entry < nentries; Entry++) {
         fChain->GetEntry(Entry);
 
@@ -3714,9 +3708,11 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
 
 
         // 条件を満たすかチェック
-        if ( (100 < y_DiscriTime && y_DiscriTime < 220) && (A1_DiscriTime < 135 ) 
+        if ( (100 < y_DiscriTime && y_DiscriTime < 220) && ( 135 < A1_DiscriTime ) 
+              && (10 < y_energy)
               && ( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 256 + 3 * x_error_upper) 
-              && (y_lower <= y_energy && y_energy <= y_upper)) {
+              //&& (y_lower <= y_energy && y_energy <= y_upper)) 
+        ){
             validEntries.push_back(Entry);  // 条件を満たすイベントを追加
         }
 
@@ -3725,7 +3721,18 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
         }
     }
 
-    
+      
+  int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
+  
+  // 条件を満たすイベント数に応じてキャンバス分割数を決定
+    int nValidEntries = validEntries.size();
+    int nPads = std::min(nValidEntries, maxPads);  // 最大 maxPads 個まで描画
+    int nDiv = ceil(sqrt(nPads));  // 分割数を動的に決定（例: 9個なら 3×3, 4個なら 2×2）
+
+
+  TCanvas* canvas = new TCanvas("canvas", "Canvas with 9 Pads", 1200, 900);
+  canvas->Divide(nDiv, nDiv);
+
 
 // 条件を満たす最初の9つのイベントを描画
     for (int iPad = 0; iPad < nPads; ++iPad) {
@@ -3775,6 +3782,12 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
             TGraph* graph = new TGraph(nPoints, x, y);
             graph->SetLineColor(colors[iGraph]);  // 色の設定
             graph->SetLineWidth(2);
+
+            // graph->GetXaxis()->SetTitle("Time [ns]");    // X軸のタイトル
+            // graph->GetYaxis()->SetTitle("Waveform [V]"); // Y軸のタイトル
+
+            graph->SetTitle(Form("event %d;Time [ns];Voltage [V]",eventNumber));
+
             graph->GetXaxis()->SetRangeUser(0, 1500);  // x軸範囲を固定
             graph->GetYaxis()->SetRangeUser(-0.55, 0.05);  // y軸範囲を固定
 
