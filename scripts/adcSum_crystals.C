@@ -60,6 +60,8 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
     Double_t fPedestalTmin, fPedestalTmax;
     fPedestalTmin = fTime[0][0][0];
     fPedestalTmax = fTime[0][0][1023] / 40.0;
+
+    printf("\n\tDEBUG\n");
     Double_t pedeslta_sum;
     // イベントループ
     Long64_t nentries = tree->GetEntries();
