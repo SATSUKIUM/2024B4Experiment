@@ -32,7 +32,7 @@
 
 #define DEBUG 0
 
-void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.dat"){
+void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES2/Run_004.dat"){
     // 入力ファイルを開く
     TFile *file = TFile::Open(filepath, "UPDATE");
     if (!file || file->IsZombie()) {
@@ -125,15 +125,19 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                             break;
                         }
                     }
-                    if(DEBUG){
-                    std::cout << Form("adcSum_crystals[%d][%d] : %f", iBoard, iCh, adcSum_crystals[iBoard][iCh]) << std::endl;
-                    }
                 }
             }
         }
         newBranch->Fill();
         if(i % 10000 == 0){
             printf("\tevent processed... %lld\n",i);
+            for(Int_t iBoard=0; iBoard<2; iBoard++){
+                for(Int_t iCh=0; iCh<4; iCh++){
+                    if(1){
+                    std::cout << Form("adcSum_crystals[%d][%d] : %f", iBoard, iCh, adcSum_crystals[iBoard][iCh]) << std::endl;
+                    }
+                }
+            }
         }
     }
 
