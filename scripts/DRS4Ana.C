@@ -6076,6 +6076,12 @@ void DRS4Ana::Discricut(){
         //     hists[5]->Fill(energy_buf3); 
 
         // }
+        if (DiscriCell1>0 && DiscriCell2>0 && DiscriCell3>0){   
+        }else{
+            continue;
+        }
+
+
 
         if (21 >=gap_huruno1_sato  && gap_huruno1_sato >= -14) {
             if (18 >=gap_huruno1_huruno2  && gap_huruno1_huruno2 >= -22){
@@ -6100,13 +6106,13 @@ void DRS4Ana::Discricut(){
 
 
 
-    for (Int_t i = 0; i < 6; i++) {
+    for (Int_t i = 0; i < 8; i++) {
         c2->cd(i+1);
         hists[i]->Draw();
         gPad->SetGrid();
         gStyle->SetOptStat(1);
     }
-    waveform(nentries);
+    // waveform(nentries);
 
     c2->Update();
 }
@@ -6806,8 +6812,9 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     gStyle->SetOptFit(1);
 }
 
-Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050){
-
+Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130){
+    fChain->SetBranchStatus("waveform",0);
+    fChain->SetBranchStatus("time",0);
     Long64_t nentries;
 
     if(entry_flag ==0){
@@ -6841,11 +6848,6 @@ Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, I
     Double_t pedestal_sigma_counts = 0.0;
     Double_t pedestal_sigma = 0.0;
 
-    Int_t ped_nega_lower = -130;
-    Int_t ped_nega_upper = -30;
-    Int_t ped_posi_lower = 30;
-    Int_t ped_posi_upper = 130;
-
     for (Long64_t jentry = 0; jentry < nentries; jentry++){
         fChain->GetEntry(jentry);
         discriCell1 = fDiscriCell[iBoard1][iCh1];
@@ -6862,7 +6864,7 @@ Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, I
         }
     }
 
-    pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
+    pedestal = static_cast<Double_t>(pedestal_counts) / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
 
     Double_t x_minimum = fH1TriggerCellDifference->GetXaxis()->GetXmin();
     Int_t Bin_min = fH1TriggerCellDifference->FindBin(x_minimum);
@@ -6965,8 +6967,9 @@ Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, I
     return fChain->GetEntriesFast();
 }
 
-Double_t DRS4Ana::PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050){
-
+Double_t DRS4Ana::PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130){
+    fChain->SetBranchStatus("waveform",0);
+    fChain->SetBranchStatus("time",0);
     Long64_t nentries;
 
     if(entry_flag ==0){
@@ -7001,11 +7004,6 @@ Double_t DRS4Ana::PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iC
     Double_t pedestal_sigma_counts = 0.0;
     Double_t pedestal_sigma = 0.0;
 
-    Int_t ped_nega_lower = -130;
-    Int_t ped_nega_upper = -30;
-    Int_t ped_posi_lower = 30;
-    Int_t ped_posi_upper = 130;
-
     for (Long64_t jentry = 0; jentry < nentries; jentry++){
         fChain->GetEntry(jentry);
         discriCell1 = fDiscriCell[iBoard1][iCh1];
@@ -7031,7 +7029,7 @@ Double_t DRS4Ana::PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iC
         }
     }
 
-    pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
+    pedestal = static_cast<Double_t>(pedestal_counts) / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
 
     Double_t x_minimum = fH1TriggerCellDifference->GetXaxis()->GetXmin();
     Int_t Bin_min = fH1TriggerCellDifference->FindBin(x_minimum);
