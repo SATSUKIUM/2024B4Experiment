@@ -6961,7 +6961,7 @@ Double_t DRS4Ana::PlotDiscriCell_difference_NaIs(Int_t iBoard1 = 0, Int_t iCh1 =
         }
     }
 
-    fH1TriggerCellDifference->GetXAxis()->SetRangeUser(xmin, xmax);
+    fH1TriggerCellDifference->GetXaxis()->SetRangeUser(xmin, xmax);
     fH1TriggerCellDifference->Draw();
 
     c1->Update();
@@ -7136,7 +7136,7 @@ Double_t DRS4Ana::PlotdiscriCell_difference_S2A2(Int_t iBoard1 = 0, Int_t iCh1 =
         }
     }
     
-    fH1TriggerCellDifference->GetXAxis()->SetRangeUser(xmin, xmax);
+    fH1TriggerCellDifference->GetXaxis()->SetRangeUser(xmin, xmax);
     fH1TriggerCellDifference->Draw();
 
     c1->Update();
