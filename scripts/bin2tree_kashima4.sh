@@ -3,13 +3,13 @@
 #!/bin/bash
 
 # .datファイルが格納されているフォルダー
-DAT_FOLDER="${1:-../data/20241226/sato_NaI_m_2}"
+DAT_FOLDER="${1:-../data/PhysicsRun}"
 
 # ROOTスクリプトのパス
 ROOT_SCRIPT="binary2tree_kashima.C"
 
 # .rootファイルを移動させる共通のディレクトリ
-ROOT_DEST_FOLDER="${DAT_FOLDER}/ROOT_FILES"
+ROOT_DEST_FOLDER="${DAT_FOLDER}/ROOT_FILES2"
 echo "Root destination folder: $ROOT_DEST_FOLDER"
 
 # ROOT_DEST_FOLDERが存在しない場合は作成
