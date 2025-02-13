@@ -3192,7 +3192,7 @@ Double_t CurveUpper_ukai(Double_t *x, Double_t *par){
              Double_t x_error = par[0] * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
              Double_t y_error = par[1] * sqrt(abs(511 - x_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
 
-             return (- x_energy + 3 * (x_error + y_error) ) + 511 ;
+             return (- x_energy + 3 * sqrt((pow(x_error,2) + pow(y_error,2))) ) + 511 ;
             }
 
 Double_t CurveLower_ukai(Double_t *x, Double_t *par){
@@ -3200,17 +3200,19 @@ Double_t CurveLower_ukai(Double_t *x, Double_t *par){
              Double_t x_error = par[0] * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
              Double_t y_error = par[1] * sqrt(abs(511 - x_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
 
-             return  (- x_energy - 3 * (x_error + y_error) )  + 511;
+             return  (- x_energy - 3 * sqrt((pow(x_error,2) + pow(y_error,2))) )  + 511;
             }
           
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
+, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+    
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t allcounter = 0;
     Long64_t validcounter = 0;
     Long64_t timecutcounter = 0;
-    Long64_t energycutcounter = 0;
+    Long64_t scattercutcounter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 4000);
     canvas->Divide(2,2);
@@ -3228,23 +3230,28 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
 
     Double_t x_energy, y_energy, S1_energy, A1_energy;
-    Double_t x_error, y_error, S1_error, A1_error, x_error_upper, x_error_lower;
+    Double_t x_error, y_error, S1_error, A1_error;
+    Double_t x_error_upper, x_error_lower;
     Double_t x_charge_buf, y_charge_buf, S1_charge_buf, A1_charge_buf;
     Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
-    Double_t y_upper, y_lower;
+    Double_t y_upper, y_lower, A1_lower, A1_upper;
 
+    
     x_p0_buf = p0[x_iBoard][x_iCh];
     x_p1_buf = p1[x_iBoard][x_iCh];
     y_p0_buf = p0[y_iBoard][y_iCh];
     y_p1_buf = p1[y_iBoard][y_iCh];
     
     Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
+    Double_t x_DiscriCell, y_DiscriCell, S1_DiscriCell , A1_DiscriCell;
     Double_t x_adcSum_timerange, y_adcSum_timerange;
     Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
     Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
 
-    Double_t distance_from_511_line, x_distance, y_distance;
-    
+    Int_t TimeCut, ScatterCut, EnergyCut, AllCut;
+    bool cut0,cut1,cut2,cut3,cut4,cut5,cut6,cut7;
+    bool TimeCutPassed, ScatterCutPassed, EnergyCutPassed;
+
     x_adcSum_timerange = 600;
    
     if ((y_iBoard == 0 && y_iCh == 1) || (y_iBoard == 1)) {
@@ -3271,32 +3278,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 100, 0, 600);
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh,(maxEnergy-minEnergy)/nBins));
-   
-    
-    
-    // TH1F* fH1TriggerTimes[4];
-    // fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 0), 128, 0, 1023);
-    // fH1TriggerTimes[0]->SetTitle("S1 trigger time: iBoard 0, iCh 0, crystal NaI;time [ns]; counts");
-    
-    // fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 2), 128, 0, 1023);
-    // fH1TriggerTimes[1]->SetTitle("A1 trigger time: iBoard 0, iCh 2, crystal NaI;time [ns]; counts");
 
-
-    // fH1TriggerTimes[2] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
-    // fH1TriggerTimes[2]->SetTitle(Form("S2 trigger time : iBoard %d, iCh %d, crystal NaI ;time [ns]; counts", x_iBoard, x_iCh));
-   
-    
-    // fH1TriggerTimes[3] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
-    // fH1TriggerTimes[3]->SetTitle(Form("A2 trigger time : iBoard %d, iCh %d, crystal GSO ;time [ns]; counts", y_iBoard, y_iCh));
-    
-    // THStack *hs = new THStack("hs", "Stacked Energy Spectra;Energy [keV];Counts");
-
-    // fH1EnergySpectra[0]->SetFillColorAlpha(kBlue, 0.3);
-    // fH1EnergySpectra[1]->SetFillColorAlpha(kGreen, 0.3);
-
-    // THStack に追加
-    // hs->Add(fH1EnergySpectra[0]);
-    // hs->Add(fH1EnergySpectra[1]);
     
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d Ch%d energy [keV];Board%d CH%d energy [keV]", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
@@ -3317,92 +3299,120 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
         y_DiscriTime = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
         S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
         A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
-
-        Double_t max_DiscriTime = std::max({x_DiscriTime, S1_DiscriTime, A1_DiscriTime});
-        Double_t min_DiscriTime = std::min({x_DiscriTime, S1_DiscriTime, A1_DiscriTime});
-        //Double_t difference_DiscriTime = max_DiscriTime - min_DiscriTime;
-        Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
-
         
-       
+        x_DiscriCell = fDiscriCell[x_iBoard][x_iCh];
+        y_DiscriCell = fDiscriCell[y_iBoard][y_iCh];
+        S1_DiscriCell = fDiscriCell[0][0];
+        A1_DiscriCell = fDiscriCell[0][2];
+        
+        S1_charge_buf = -GetChargeIntegral(0, 0, 20, S1_DiscriTime - 50, S1_DiscriTime + 600);
+        A1_charge_buf = -GetChargeIntegral(0, 2, 20, A1_DiscriTime - 50, A1_DiscriTime + 600);
 
-        if((100 < y_DiscriTime && y_DiscriTime < 220) && ( A1_DiscriTime < 135)){
+        S1_energy = p0[0][0] + p1[0][0]* S1_charge_buf;
+        A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
+        S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
 
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
+
+        x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
+        y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
+
+        x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+        y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
           
-          //std::cout << "最大値: " << max_DiscriTime << std::endl;
-          //std::cout << "最小値: " << min_DiscriTime << std::endl;
-          //std::cout << "時間差: " << difference_DiscriTime << std::endl;
+        x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
+
+        A1_upper = -A1_energy + 3 * sqrt(pow(S1_error, 2) + pow(A1_error,2)) + 511;
+        A1_lower = -A1_energy - 3 * sqrt(pow(S1_error, 2) + pow(A1_error,2)) + 511;
+        y_upper = -x_energy + 3 * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
+        y_lower = -x_energy - 3 * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
 
 
-          S1_charge_buf = -GetChargeIntegral(0, 0, 20, S1_DiscriTime - 50, S1_DiscriTime + 600);
-          A1_charge_buf = -GetChargeIntegral(0, 2, 20, A1_DiscriTime - 50, A1_DiscriTime + 600);
+    // void ApplyCuts(bool applyTimeCut, bool applyScatterCut, bool applyEnergyCut) {
 
-          S1_energy = p0[0][0] + p1[0][0]* S1_charge_buf;
-          A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
-          S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
-          A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+    // bool applyTimeCut, applyScatterCut, applyEnergyCut;
 
-          x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
-          y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
+        cut0 =  (0 < S1_DiscriCell) && (0 < A1_DiscriCell) && (0 < x_DiscriCell) && (0 < y_DiscriCell);
+        cut1 =  (-17 <= S1_DiscriCell - A1_DiscriCell) && (S1_DiscriCell - A1_DiscriCell <= 22);
+        cut2 =  (-22 <= S1_DiscriCell - x_DiscriCell) && (S1_DiscriCell - x_DiscriCell <= 15);
 
-          x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
-          y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
+        cut3 = false;
+        if (y_iBoard == 0){
+            cut3 =  (-2 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 2);
+        }else if (y_iBoard == 1 && y_iCh == 0){
+            cut3 =  (6 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 34);
 
-          x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-          y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-          
-          x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
-          x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
+        }else if (y_iBoard == 1 && y_iCh == 1){
+            cut3 =  (12 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 35);
 
-          
+        }else if (y_iBoard == 1 && y_iCh == 2){
+            cut3 =  (10 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 39);
 
-
-          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 256 + 3 * x_error_upper) ){
-           
-            distance_from_511_line = abs(x_energy + y_energy -511) / sqrt(2);
-            //x_dash_energy = ( 511-(511-x_energy+distance_from_511_line/2) ) / 511 * 
-            
-            y_upper = -x_energy + 3 * (x_error + y_error) + 511;
-            y_lower = -x_energy - 3 * (x_error + y_error) + 511;
-
-            //x_distance= (511 - x_energy - y_energy);
-            //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
-            
-            // std::cout << "y_upper: " << y_upper << std::endl;
-            // std::cout << "y_lower: " << y_lower << std::endl;
-            // std::cout << "x_energy: " << x_energy << std::endl;
-            // std::cout << "y_energy: " << y_energy << std::endl;
-           
-              if((y_lower <= y_energy && y_energy <= y_upper)){
-                // && ( 100 < A1_energy )
-                  
-                  //std::cout << "S1_energy: " << S1_energy << std::endl;
-                  //std::cout << "x_energy: " << x_energy << std::endl;
-                  //std::cout << "y_energy: " << y_energy << std::endl;
-                  //std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
-
-                  
-
-                  
-                  fH2Energy_PMTs->Fill(x_energy, y_energy);
-                  fH1EnergySpectra[0]->Fill(x_energy);
-                  fH1EnergySpectra[1]->Fill(y_energy);
-                  fH1EnergySpectra[2]->Fill(x_energy + y_energy);
-
-                //   fH1TriggerTimes[0]->Fill(fTime[0][0][fDiscriCell[0][0]]);
-                //   fH1TriggerTimes[1]->Fill(fTime[0][2][fDiscriCell[0][2]]);
-                //   fH1TriggerTimes[2]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
-                //   fH1TriggerTimes[3]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
-
-                  validcounter++;
-            
-               }
-            energycutcounter++;
-            
+        }else if (y_iBoard == 1 && y_iCh == 3){
+            cut3 =  (12 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 33);
             }
         
-         timecutcounter++;
+
+        cut4 = ( 256 - 3 * S1_error < S1_energy ) && (S1_energy < 256 + 3 * S1_error);
+        cut5 = ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 340 + 3 * x_error_upper);
+
+    
+        cut6 = (y_lower <= y_energy && y_energy <= y_upper);
+        cut7 = (A1_lower <= A1_energy && A1_energy <= A1_upper);
+
+        TimeCutPassed = !applyTimeCut || (cut0 && cut1 && cut2 && cut3);
+        ScatterCutPassed = !applyScatterCut || (cut4 && cut5);
+        EnergyCutPassed = !applyEnergyCut || (cut6 && cut7);
+
+        // if (TimeCutPassed && ScatterCutPassed && EnergyCutPassed) {
+        // fH2Energy_PMTs->Fill(x_energy, y_energy);
+        // fH1EnergySpectra[0]->Fill(x_energy);
+        // fH1EnergySpectra[1]->Fill(y_energy);
+        // fH1EnergySpectra[2]->Fill(x_energy + y_energy);
+        // }
+        if (TimeCutPassed){
+            timecutcounter++;
+            if(ScatterCutPassed){
+                scattercutcounter++;
+            
+                if(EnergyCutPassed){
+                    validcounter++;
+                    fH2Energy_PMTs->Fill(x_energy, y_energy);
+                    fH1EnergySpectra[0]->Fill(x_energy);
+                    fH1EnergySpectra[1]->Fill(y_energy);
+                    fH1EnergySpectra[2]->Fill(x_energy + y_energy);
+                }
+            }
+            
         }
+
+
+    // }
+    
+    // if((100 < y_DiscriTime && y_DiscriTime < 220) && ( A1_DiscriTime < 135)){
+
+        // if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 340 + 3 * x_error_upper) ){
+        
+            //   if((y_lower <= y_energy && y_energy <= y_upper)){
+                // && ( 100 < A1_energy )
+                  
+                //   fH2Energy_PMTs->Fill(x_energy, y_energy);
+                //   fH1EnergySpectra[0]->Fill(x_energy);
+                //   fH1EnergySpectra[1]->Fill(y_energy);
+                //   fH1EnergySpectra[2]->Fill(x_energy + y_energy);
+
+                //   validcounter++;
+            
+            //    }
+            // energycutcounter++;
+            
+        // }
+        
+        //  timecutcounter++;
+        // }
 
         if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
@@ -3427,11 +3437,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     line->SetLineWidth(2);
     line->Draw("SAME");
 
-
-   
-    //x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-    //y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-    
     curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf); 
     curve_upper->SetLineColor(kBlue);
     curve_upper->Draw("SAME");
@@ -3442,9 +3447,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     curve_lower->Draw("SAME");
 
    
-
-
-
 // Pad2: y_energy ヒストグラム
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
@@ -3468,22 +3470,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     // gPad->RedrawAxis();
     //hs->GetXaxis()->SetRangeUser(0, 600);  // 必要な範囲に設定
     //hs->GetYaxis()->SetRangeUser(0, 4000);
-
-    // canvas->cd(5);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[0]->Draw();
-
-    // canvas->cd(6);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[1]->Draw();
-
-    // canvas->cd(7);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[2]->Draw();
-
-    // canvas->cd(8);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[3]->Draw();
    
     canvas->Update();
 
@@ -3620,9 +3606,12 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
 
 void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
     
-  const int nPads = 16;           // キャンバス内の pad 数
   const int nPoints = 1024;      // サンプル数（適宜変更）
   const int nGraphsPerPad = 4;   // 1つの pad に重ねるグラフの数
+  const int maxPads = 16;        // 最大 pad 数（16分割まで対応）
+  std::vector<int> validEntries;
+  
+    
 
   Long64_t nentries = fChain->GetEntriesFast();
 
@@ -3669,15 +3658,6 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
 
 
 
-    
-  int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
-  std::vector<int> validEntries;
-
-
-  TCanvas* canvas = new TCanvas("canvas", "Canvas with 9 Pads", 1200, 900);
-  canvas->Divide(4, 4);  // 3×3 に分割
-
-
   for (Int_t Entry = 0; Entry < nentries; Entry++) {
         fChain->GetEntry(Entry);
 
@@ -3714,9 +3694,11 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
 
 
         // 条件を満たすかチェック
-        if ( (100 < y_DiscriTime && y_DiscriTime < 220) && (A1_DiscriTime < 135 ) 
+        if ( (100 < y_DiscriTime && y_DiscriTime < 220) && ( 135 < A1_DiscriTime ) 
+              && (10 < y_energy)
               && ( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 256 + 3 * x_error_upper) 
-              && (y_lower <= y_energy && y_energy <= y_upper)) {
+              //&& (y_lower <= y_energy && y_energy <= y_upper)) 
+        ){
             validEntries.push_back(Entry);  // 条件を満たすイベントを追加
         }
 
@@ -3725,7 +3707,18 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
         }
     }
 
-    
+      
+  int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
+  
+  // 条件を満たすイベント数に応じてキャンバス分割数を決定
+    int nValidEntries = validEntries.size();
+    int nPads = std::min(nValidEntries, maxPads);  // 最大 maxPads 個まで描画
+    int nDiv = ceil(sqrt(nPads));  // 分割数を動的に決定（例: 9個なら 3×3, 4個なら 2×2）
+
+
+  TCanvas* canvas = new TCanvas("canvas", "Canvas with 9 Pads", 1200, 900);
+  canvas->Divide(nDiv, nDiv);
+
 
 // 条件を満たす最初の9つのイベントを描画
     for (int iPad = 0; iPad < nPads; ++iPad) {
@@ -3775,6 +3768,12 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
             TGraph* graph = new TGraph(nPoints, x, y);
             graph->SetLineColor(colors[iGraph]);  // 色の設定
             graph->SetLineWidth(2);
+
+            // graph->GetXaxis()->SetTitle("Time [ns]");    // X軸のタイトル
+            // graph->GetYaxis()->SetTitle("Waveform [V]"); // Y軸のタイトル
+
+            graph->SetTitle(Form("event %d;Time [ns];Voltage [V]",eventNumber));
+
             graph->GetXaxis()->SetRangeUser(0, 1500);  // x軸範囲を固定
             graph->GetYaxis()->SetRangeUser(-0.55, 0.05);  // y軸範囲を固定
 
