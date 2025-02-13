@@ -3188,7 +3188,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
 }
 
 Double_t CurveUpper_ukai(Double_t *x, Double_t *par){
-             Double_t x_energy = x[0];  // x[0] は現在の x の値 (TF1 による自動走査)
+             Double_t x_energy = x[0];
              Double_t x_error = par[0] * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
              Double_t y_error = par[1] * sqrt(abs(511 - x_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
 
@@ -3196,7 +3196,7 @@ Double_t CurveUpper_ukai(Double_t *x, Double_t *par){
             }
 
 Double_t CurveLower_ukai(Double_t *x, Double_t *par){
-             Double_t x_energy = x[0];  // x[0] は現在の x の値 (TF1 による自動走査)
+             Double_t x_energy = x[0];
              Double_t x_error = par[0] * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
              Double_t y_error = par[1] * sqrt(abs(511 - x_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
 
@@ -3362,14 +3362,15 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
             distance_from_511_line = abs(x_energy + y_energy -511) / sqrt(2);
             //x_dash_energy = ( 511-(511-x_energy+distance_from_511_line/2) ) / 511 * 
             
-            y_upper = curve_upper->Eval(x_energy);
-            y_lower = curve_lower->Eval(x_energy);
+            y_upper = -x_energy + 3 * (x_error + y_error) + 511;
+            y_lower = -x_energy - 3 * (x_error + y_error) + 511;
 
             //x_distance= (511 - x_energy - y_energy);
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
             // std::cout << "y_upper: " << y_upper << std::endl;
             // std::cout << "y_lower: " << y_lower << std::endl;
+            // std::cout << "x_energy: " << x_energy << std::endl;
             // std::cout << "y_energy: " << y_energy << std::endl;
            
               if((y_lower <= y_energy && y_energy <= y_upper)){
@@ -3387,6 +3388,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
                   fH1EnergySpectra[0]->Fill(x_energy);
                   fH1EnergySpectra[1]->Fill(y_energy);
                   fH1EnergySpectra[2]->Fill(x_energy + y_energy);
+
                 //   fH1TriggerTimes[0]->Fill(fTime[0][0][fDiscriCell[0][0]]);
                 //   fH1TriggerTimes[1]->Fill(fTime[0][2][fDiscriCell[0][2]]);
                 //   fH1TriggerTimes[2]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
@@ -3623,7 +3625,50 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
   const int nGraphsPerPad = 4;   // 1つの pad に重ねるグラフの数
 
   Long64_t nentries = fChain->GetEntriesFast();
-  Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
+
+    TString key_Crystal_y;
+    TString key = "0204";
+
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
+
+    Double_t x_energy, y_energy, S1_energy, A1_energy;
+    Double_t x_error, y_error, S1_error, A1_error, x_error_upper, x_error_lower;
+    Double_t x_charge_buf, y_charge_buf, S1_charge_buf, A1_charge_buf;
+    Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
+    Double_t y_upper, y_lower;
+
+    x_p0_buf = p0[x_iBoard][x_iCh];
+    x_p1_buf = p1[x_iBoard][x_iCh];
+    y_p0_buf = p0[y_iBoard][y_iCh];
+    y_p1_buf = p1[y_iBoard][y_iCh];
+    
+    Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
+    Double_t x_adcSum_timerange, y_adcSum_timerange;
+    Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
+    Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+    
+    x_adcSum_timerange = 600;
+
+
+    if ((y_iBoard == 0 && y_iCh == 1) || (y_iBoard == 1)) {
+    y_adcSum_timerange = 180;
+    key_Crystal_y = "GSO";
+    }
+    else if (y_iBoard == 0 && y_iCh == 2) {
+    y_adcSum_timerange = 600; 
+    key_Crystal_y = "NaI";
+    }
+    else{
+        printf("\t\ny axis || type of crystal is invalid\n");
+    }
+
+
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_ukai, 0.0, 511.0, 2);  
+    TF1 *curve_lower = new TF1("curve_lower", CurveLower_ukai, 0.0, 511.0, 2); 
+
+
+
     
   int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
   std::vector<int> validEntries;
@@ -3644,9 +3689,34 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
         Double_t S1A1_DiscriTime = abs(S1_DiscriTime - A1_DiscriTime);
         Double_t S2A1_DiscriTime = abs(x_DiscriTime - A1_DiscriTime);
 
+        S1_charge_buf = -GetChargeIntegral(0, 0, 20, S1_DiscriTime - 50, S1_DiscriTime + 600);
+        A1_charge_buf = -GetChargeIntegral(0, 2, 20, A1_DiscriTime - 50, A1_DiscriTime + 600);
+
+        S1_energy = p0[0][0] + p1[0][0]* S1_charge_buf;
+        A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
+        S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
+
+        x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
+        y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
+
+        x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+        y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+          
+        x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
+
+        y_upper = curve_upper->Eval(x_energy);
+        y_lower = curve_lower->Eval(x_energy);
+
+
         // 条件を満たすかチェック
-        if ((100 < x_DiscriTime && x_DiscriTime < 220) && (100 < y_DiscriTime && y_DiscriTime < 220) && (A1_DiscriTime < 135 ) && 
-            (S1A1_DiscriTime < 15) && (S2A1_DiscriTime < 15)) {
+        if ( (100 < y_DiscriTime && y_DiscriTime < 220) && (A1_DiscriTime < 135 ) 
+              && ( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 256 + 3 * x_error_upper) 
+              && (y_lower <= y_energy && y_energy <= y_upper)) {
             validEntries.push_back(Entry);  // 条件を満たすイベントを追加
         }
 
@@ -3660,6 +3730,13 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
 // 条件を満たす最初の9つのイベントを描画
     for (int iPad = 0; iPad < nPads; ++iPad) {
         canvas->cd(iPad + 1);  // 各 pad を選択
+
+        // 条件を満たすデータが足りない場合、そのパッドを空白にする
+        if (iPad >= validEntries.size()) {
+            std::cout << "Pad " << iPad + 1 << " is empty due to insufficient valid entries." << std::endl;
+            continue;  // そのパッドをスキップして次の pad に進む
+        }
+
         int eventNumber = validEntries[iPad];
         fChain->GetEntry(eventNumber);
 
