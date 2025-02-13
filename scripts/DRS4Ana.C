@@ -5983,17 +5983,17 @@ void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
 void DRS4Ana::Discricut(){
 
     TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
-    c2->Divide(2, 3); 
+    c2->Divide(2, 4); 
 
-    TH1D* hists[6];
+    TH1D* hists[8];
 
     std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
 
     for (Int_t i = 0; i < 3; i++) {
         hists[i] = new TH1D(Form("%s_Trigger",strVec[i].c_str()),
                                    Form("%s_Trigger",strVec[i].c_str()),
-                                   201, 50, 250);
-        hists[i]->SetXTitle("Time [ns]");
+                                   151, 0, 150);
+        hists[i]->SetXTitle("DiscriCell");
         hists[i]->SetYTitle("counts");
     }
 
@@ -6005,6 +6005,14 @@ void DRS4Ana::Discricut(){
         hists[i]->SetYTitle("counts");
     }
 
+    for (Int_t i = 6; i < 8; i++) {
+        hists[i] = new TH1D(Form("huruno1_huruno2_gap"),
+                                   Form("huruno1_sato_gap"),
+                                   101, 0, 100);
+        hists[i]->SetXTitle("DiscriCell_gap");
+        hists[i]->SetYTitle("counts");
+    }
+
         // エネルギー較正データの読み込み
     TString key = "0204";
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
@@ -6012,7 +6020,7 @@ void DRS4Ana::Discricut(){
     
     // データ取得 & フィル
     Long64_t nentries = fChain->GetEntriesFast();
-    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
+    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3,DiscriCell1,DiscriCell2,DiscriCell3;
 
     for (Long64_t Entry = 0; Entry < nentries; Entry++) {
         fChain->GetEntry(Entry);
@@ -6022,6 +6030,10 @@ void DRS4Ana::Discricut(){
         Double_t chargeIntegral1 = GetChargeIntegral(0, 0, 20, DiscriTime1 - 50, DiscriTime1 + 600);
         Double_t chargeIntegral2 = GetChargeIntegral(0, 3, 20, DiscriTime2 - 50, DiscriTime2 + 600);
         Double_t chargeIntegral3 = GetChargeIntegral(0, 2, 20, DiscriTime3 - 50, DiscriTime3 + 600);
+        DiscriCell1=fDiscriCell[0][0];
+        DiscriCell2=fDiscriCell[0][3];
+        DiscriCell3=fDiscriCell[0][2];
+
 
         if (chargeIntegral1 > -9999.9) {
             energy_buf1 = p0[0][0] + p1[0][0] * (-chargeIntegral1);
@@ -6035,58 +6047,81 @@ void DRS4Ana::Discricut(){
             energy_buf3 = p0[0][2] + p1[0][2] * (-chargeIntegral3);
         }
 
-        // 範囲による分岐
-        if (120 >= DiscriTime1 && DiscriTime1 >=50)  {
-            if (DiscriTime2<=160 && DiscriTime2 >=50){
-                if(DiscriTime3<=150 && DiscriTime3 >=50){
-                    hists[0]->Fill(DiscriTime1);  
-                    hists[1]->Fill(DiscriTime2); 
-                    hists[2]->Fill(DiscriTime3); 
-                    hists[3]->Fill(energy_buf1);  
-                    hists[4]->Fill(energy_buf2); 
-                    hists[5]->Fill(energy_buf3); 
-                }
-            }
-        }else if(140 >= DiscriTime1 && DiscriTime1 >120){
-            if (DiscriTime2<=172 && DiscriTime2 >=50){
-                if(DiscriTime3<=165 && DiscriTime3 >=50){
-                    hists[0]->Fill(DiscriTime1);  
-                    hists[1]->Fill(DiscriTime2); 
-                    hists[2]->Fill(DiscriTime3); 
-                    hists[3]->Fill(energy_buf1);  
-                    hists[4]->Fill(energy_buf2); 
-                    hists[5]->Fill(energy_buf3); 
-                }
-            }
-        }else if(160 >= DiscriTime1 && DiscriTime1 >140){
-            if (DiscriTime2<=183 && DiscriTime2 >=50){
-                if(DiscriTime3<=176 && DiscriTime3 >=50){
-                    hists[0]->Fill(DiscriTime1);  
-                    hists[1]->Fill(DiscriTime2); 
-                    hists[2]->Fill(DiscriTime3); 
-                    hists[3]->Fill(energy_buf1);  
-                    hists[4]->Fill(energy_buf2); 
-                    hists[5]->Fill(energy_buf3); 
-                }
-            }
-        }else if(180 >= DiscriTime1 && DiscriTime1 >160){
-            if(DiscriTime3<=190 && DiscriTime3 >=50){
-                hists[0]->Fill(DiscriTime1);  
-                hists[1]->Fill(DiscriTime2); 
-                hists[2]->Fill(DiscriTime3); 
-                hists[3]->Fill(energy_buf1);  
-                hists[4]->Fill(energy_buf2); 
-                hists[5]->Fill(energy_buf3); 
-            }
-        }else if(200 >= DiscriTime1 && DiscriTime1 >180){
-            hists[0]->Fill(DiscriTime1);  
-            hists[1]->Fill(DiscriTime2); 
-            hists[2]->Fill(DiscriTime3); 
-            hists[3]->Fill(energy_buf1);  
-            hists[4]->Fill(energy_buf2); 
-            hists[5]->Fill(energy_buf3); 
 
+        Double_t gap_huruno1_huruno2 = DiscriCell1 - DiscriCell2;
+        Double_t gap_huruno1_sato = DiscriCell1 - DiscriCell3;
+
+        // 範囲による分岐
+        // if (120 >= DiscriTime1 && DiscriTime1 >=50)  {
+        //     if (DiscriTime2<=160 && DiscriTime2 >=50){
+        //         if(DiscriTime3<=150 && DiscriTime3 >=50){
+        //             hists[0]->Fill(DiscriTime1);  
+        //             hists[1]->Fill(DiscriTime2); 
+        //             hists[2]->Fill(DiscriTime3); 
+        //             hists[3]->Fill(energy_buf1);  
+        //             hists[4]->Fill(energy_buf2); 
+        //             hists[5]->Fill(energy_buf3); 
+        //         }
+        //     }
+        // }else if(140 >= DiscriTime1 && DiscriTime1 >120){
+        //     if (DiscriTime2<=172 && DiscriTime2 >=50){
+        //         if(DiscriTime3<=165 && DiscriTime3 >=50){
+        //             hists[0]->Fill(DiscriTime1);  
+        //             hists[1]->Fill(DiscriTime2); 
+        //             hists[2]->Fill(DiscriTime3); 
+        //             hists[3]->Fill(energy_buf1);  
+        //             hists[4]->Fill(energy_buf2); 
+        //             hists[5]->Fill(energy_buf3); 
+        //         }
+        //     }
+        // }else if(160 >= DiscriTime1 && DiscriTime1 >140){
+        //     if (DiscriTime2<=183 && DiscriTime2 >=50){
+        //         if(DiscriTime3<=176 && DiscriTime3 >=50){
+        //             hists[0]->Fill(DiscriTime1);  
+        //             hists[1]->Fill(DiscriTime2); 
+        //             hists[2]->Fill(DiscriTime3); 
+        //             hists[3]->Fill(energy_buf1);  
+        //             hists[4]->Fill(energy_buf2); 
+        //             hists[5]->Fill(energy_buf3); 
+        //         }
+        //     }
+        // }else if(180 >= DiscriTime1 && DiscriTime1 >160){
+        //     if(DiscriTime3<=190 && DiscriTime3 >=50){
+        //         hists[0]->Fill(DiscriTime1);  
+        //         hists[1]->Fill(DiscriTime2); 
+        //         hists[2]->Fill(DiscriTime3); 
+        //         hists[3]->Fill(energy_buf1);  
+        //         hists[4]->Fill(energy_buf2); 
+        //         hists[5]->Fill(energy_buf3); 
+        //     }
+        // }else if(200 >= DiscriTime1 && DiscriTime1 >180){
+        //     hists[0]->Fill(DiscriTime1);  
+        //     hists[1]->Fill(DiscriTime2); 
+        //     hists[2]->Fill(DiscriTime3); 
+        //     hists[3]->Fill(energy_buf1);  
+        //     hists[4]->Fill(energy_buf2); 
+        //     hists[5]->Fill(energy_buf3); 
+
+        // }
+
+        if (21 >=gap_huruno1_sato  && gap_huruno1_sato >= -14) {
+            if (18 >=gap_huruno1_huruno2  && gap_huruno1_huruno2 >= -22){
+
+            }else{
+                continue;
+            }
+        }else{
+            continue;
         }
+
+        hists[0]->Fill(DiscriCell1);
+        hists[1]->Fill(DiscriCell2);
+        hists[2]->Fill(DiscriCell3);
+        hists[3]->Fill(energy_buf1);
+        hists[4]->Fill(energy_buf2);
+        hists[5]->Fill(energy_buf3);
+        hists[6]->Fill(gap_huruno1_huruno2);
+        hists[7]->Fill(gap_huruno1_sato);
     }
 
 
