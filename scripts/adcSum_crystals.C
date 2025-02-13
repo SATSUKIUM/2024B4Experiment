@@ -30,7 +30,7 @@
 #include <TChainElement.h>
 #include <TObjArray.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.dat"){
     // 入力ファイルを開く
@@ -132,6 +132,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
             }
         }
         newBranch->Fill();
+        tree->Fill();
         if(i % 10000 == 0){
             printf("\tevent processed... %lld\n",i);
         }
