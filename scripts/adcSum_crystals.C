@@ -86,6 +86,9 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                             if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 180.0){
                                 adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
                             }
+                            else if(fTime[iBoard][iCh][iCell] > discriTime + 180.0){
+                                break;
+                            }
                         }
                     }
                     else{
@@ -93,6 +96,9 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                         for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCh++){
                             if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 600.0){
                                 adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
+                            }
+                            else if(fTime[iBoard][iCh][iCell] > discriTime + 180.0){
+                                break;
                             }
                         }
                     }
@@ -102,6 +108,9 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                     for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCh++){
                         if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 180.0){
                             adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
+                        }
+                        else if(fTime[iBoard][iCh][iCell] > discriTime + 180.0){
+                            break;
                         }
                     }
                 }
@@ -113,6 +122,6 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
     // 既存のツリーを削除して新しいツリーを保存
     // ツリーをファイルに保存
     tree->Write("", TObject::kOverwrite);
-    
+
     file->Close();
 }
