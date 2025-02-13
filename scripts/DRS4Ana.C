@@ -3187,22 +3187,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
     return counter;
 }
 
-Double_t CurveUpper_ukai(Double_t *x, Double_t *par){
-             Double_t x_energy = x[0];  // x[0] は現在の x の値 (TF1 による自動走査)
-             Double_t x_error = par[0] * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-             Double_t y_error = par[1] * sqrt(abs(511 - x_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
 
-             return (- x_energy + 3 * (x_error + y_error) ) + 511 ;
-            }
-
-Double_t CurveLower_ukai(Double_t *x, Double_t *par){
-             Double_t x_energy = x[0];  // x[0] は現在の x の値 (TF1 による自動走査)
-             Double_t x_error = par[0] * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-             Double_t y_error = par[1] * sqrt(abs(511 - x_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
-
-             return  (- x_energy - 3 * (x_error + y_error) )  + 511;
-            }
-          
 
 
 Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
@@ -3213,7 +3198,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     Long64_t energycutcounter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 4000);
-    canvas->Divide(2,2);
+    canvas->Divide(2,4);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
@@ -3227,11 +3212,9 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
 
-    Double_t x_energy, y_energy, S1_energy, A1_energy;
-    Double_t x_error, y_error, S1_error, A1_error, x_error_upper, x_error_lower;
+    Double_t x_energy, y_energy, x_error, y_error, S1_energy, A1_energy, S1_error, A1_error;
     Double_t x_charge_buf, y_charge_buf, S1_charge_buf, A1_charge_buf;
     Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
-    Double_t y_upper, y_lower;
 
     x_p0_buf = p0[x_iBoard][x_iCh];
     x_p1_buf = p1[x_iBoard][x_iCh];
@@ -3274,20 +3257,20 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
    
     
     
-    // TH1F* fH1TriggerTimes[4];
-    // fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 0), 128, 0, 1023);
-    // fH1TriggerTimes[0]->SetTitle("S1 trigger time: iBoard 0, iCh 0, crystal NaI;time [ns]; counts");
+    TH1F* fH1TriggerTimes[4];
+    fH1TriggerTimes[0] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 0), 128, 0, 1023);
+    fH1TriggerTimes[0]->SetTitle("S1 trigger time: iBoard 0, iCh 0, crystal NaI;time [ns]; counts");
     
-    // fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 2), 128, 0, 1023);
-    // fH1TriggerTimes[1]->SetTitle("A1 trigger time: iBoard 0, iCh 2, crystal NaI;time [ns]; counts");
+    fH1TriggerTimes[1] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", 0, 2), 128, 0, 1023);
+    fH1TriggerTimes[1]->SetTitle("A1 trigger time: iBoard 0, iCh 2, crystal NaI;time [ns]; counts");
 
 
-    // fH1TriggerTimes[2] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
-    // fH1TriggerTimes[2]->SetTitle(Form("S2 trigger time : iBoard %d, iCh %d, crystal NaI ;time [ns]; counts", x_iBoard, x_iCh));
+    fH1TriggerTimes[2] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", x_iBoard, x_iCh), 128, 0, 1023);
+    fH1TriggerTimes[2]->SetTitle(Form("S2 trigger time : iBoard %d, iCh %d, crystal NaI ;time [ns]; counts", x_iBoard, x_iCh));
    
     
-    // fH1TriggerTimes[3] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
-    // fH1TriggerTimes[3]->SetTitle(Form("A2 trigger time : iBoard %d, iCh %d, crystal GSO ;time [ns]; counts", y_iBoard, y_iCh));
+    fH1TriggerTimes[3] = new TH1F("trigger time", Form("iBoard %d iCh %d trigger time", y_iBoard, y_iCh), 128, 0, 1023);
+    fH1TriggerTimes[3]->SetTitle(Form("A2 trigger time : iBoard %d, iCh %d, crystal GSO ;time [ns]; counts", y_iBoard, y_iCh));
     
     // THStack *hs = new THStack("hs", "Stacked Energy Spectra;Energy [keV];Counts");
 
@@ -3307,8 +3290,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_ukai, 0.0, 511.0, 2);  // パラメータ数は 2
-    TF1 *curve_lower = new TF1("curve_lower", CurveLower_ukai, 0.0, 511.0, 2); 
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
@@ -3326,7 +3307,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
         
        
 
-        if((100 < y_DiscriTime && y_DiscriTime < 220) && ( A1_DiscriTime < 135)){
+        if((100 < y_DiscriTime && y_DiscriTime < 220) && (170 < A1_DiscriTime && A1_DiscriTime < 190) 
+             && ( 180 < S1_DiscriTime && S1_DiscriTime < 200 ) && ( 190 < x_DiscriTime && x_DiscriTime < 200)){
 
           
           //std::cout << "最大値: " << max_DiscriTime << std::endl;
@@ -3348,31 +3330,18 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
           x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
           y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
 
-          x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+          x_error = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
           y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-          
-          x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
-          x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
-
-          
 
 
-          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 256 + 3 * x_error_upper) ){
+          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 256 - 3 * x_error < x_energy ) && (x_energy < 256 + 3 * x_error) ){
            
-            distance_from_511_line = abs(x_energy + y_energy -511) / sqrt(2);
-            //x_dash_energy = ( 511-(511-x_energy+distance_from_511_line/2) ) / 511 * 
-            
-            y_upper = curve_upper->Eval(x_energy);
-            y_lower = curve_lower->Eval(x_energy);
-
+            //distance_from_511_line = x_energy + y_energy - 511.0 / sqrt(2.0);
             //x_distance= (511 - x_energy - y_energy);
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
-            // std::cout << "y_upper: " << y_upper << std::endl;
-            // std::cout << "y_lower: " << y_lower << std::endl;
-            // std::cout << "y_energy: " << y_energy << std::endl;
            
-              if((y_lower <= y_energy && y_energy <= y_upper)){
+              if(( x_energy + y_energy < 511 + 3 * y_error ) && ( 100 < y_energy )){
                 // && ( 100 < A1_energy )
                   
                   //std::cout << "S1_energy: " << S1_energy << std::endl;
@@ -3381,16 +3350,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
                   //std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
 
                   
-
-                  
                   fH2Energy_PMTs->Fill(x_energy, y_energy);
                   fH1EnergySpectra[0]->Fill(x_energy);
                   fH1EnergySpectra[1]->Fill(y_energy);
                   fH1EnergySpectra[2]->Fill(x_energy + y_energy);
-                //   fH1TriggerTimes[0]->Fill(fTime[0][0][fDiscriCell[0][0]]);
-                //   fH1TriggerTimes[1]->Fill(fTime[0][2][fDiscriCell[0][2]]);
-                //   fH1TriggerTimes[2]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
-                //   fH1TriggerTimes[3]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
+                  fH1TriggerTimes[0]->Fill(fTime[0][0][fDiscriCell[0][0]]);
+                  fH1TriggerTimes[1]->Fill(fTime[0][2][fDiscriCell[0][2]]);
+                  fH1TriggerTimes[2]->Fill(fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]]);
+                  fH1TriggerTimes[3]->Fill(fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]]);
 
                   validcounter++;
             
@@ -3426,23 +3393,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     line->Draw("SAME");
 
 
-   
-    //x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-    //y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-    
-    curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf); 
-    curve_upper->SetLineColor(kBlue);
-    curve_upper->Draw("SAME");
-
-    
-    curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
-    curve_lower->SetLineColor(kBlue);
-    curve_lower->Draw("SAME");
-
-   
-
-
-
 // Pad2: y_energy ヒストグラム
     canvas->cd(2);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
@@ -3467,21 +3417,25 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
     //hs->GetXaxis()->SetRangeUser(0, 600);  // 必要な範囲に設定
     //hs->GetYaxis()->SetRangeUser(0, 4000);
 
-    // canvas->cd(5);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[0]->Draw();
+    canvas->cd(5);
+    gPad->SetGrid();
+    fH1TriggerTimes[0]->Draw();
 
-    // canvas->cd(6);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[1]->Draw();
+    canvas->cd(6);
+    gPad->SetGrid();
+    fH1TriggerTimes[1]->Draw();
 
-    // canvas->cd(7);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[2]->Draw();
+    canvas->cd(7);
+    gPad->SetGrid();
+    fH1TriggerTimes[2]->Draw();
 
-    // canvas->cd(8);
-    // gPad->SetGrid();
-    // fH1TriggerTimes[3]->Draw();
+    canvas->cd(8);
+    gPad->SetGrid();
+    fH1TriggerTimes[3]->Draw();
+
+
+
+
    
     canvas->Update();
 
@@ -3506,10 +3460,10 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
 }
 
 
-void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
-    TCanvas *c1 = new TCanvas("title", "name", 1200, 600);
+void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 2400);
     c1->Divide(3,2);
-    TH2D* hists[3][4];
+    TH2D* hists[3][3];
     //TH2D* hists[3][2];
 
     // Double_t minEnergy, maxEnergy;
@@ -3522,12 +3476,12 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
     Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
     
 
-    TH1F* fH1TriggerTimes[4];
+    TH1F* fH1TriggerTimes[3];
     //TH1D *fH1EnergySpectra[3];
    
     for(Int_t iCh=0; iCh<4; iCh++){
         if (iCh == 1) {
-            //continue;  // i が 1 の場合はスキップする
+            continue;  // i が 1 の場合はスキップする
         }
         else{
         hists[0][iCh] = new TH2D(Form("iBoard 0, iCh %d", iCh), Form("iBoard 0, iCh %d",iCh), 500, 0, 1500, 500, -0.55, 0.05);
@@ -3539,6 +3493,7 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
         }
     }
     
+    
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
@@ -3548,19 +3503,17 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
         S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
         A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
 
-        Double_t S1A1_DiscriTime = abs(S1_DiscriTime - A1_DiscriTime);
-        Double_t S2A1_DiscriTime = abs(x_DiscriTime - A1_DiscriTime);
+        Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
 
 
-       if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220)  && (135 < A1_DiscriTime) 
-          && (S1A1_DiscriTime < 15) && ( S2A1_DiscriTime < 15)){
+       //if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 5) ){
              //&& ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
 
             
               for(Int_t iCh=0; iCh<4; iCh++){
 
                 if (iCh == 1) {
-                  //continue;  // i=1 の場合はスキップする
+                  continue;  // i=1 の場合はスキップする
                 }
                 else{
                 fH1TriggerTimes[iCh]->Fill(fTime[0][iCh][fDiscriCell[0][iCh]]);
@@ -3571,9 +3524,9 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
               }
         
            
-        }
+        //}
 
-        if(Entry % 1000 == 0){
+        if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
         }
 
@@ -3590,7 +3543,7 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
             }
             gPad->SetLogz();
             gPad->SetGrid();
-            gStyle->SetOptStat(1);
+            gStyle->SetOptStat(0);
         }
     
         for(Int_t iCh=1; iCh<4; iCh++){ //canvas4~6
@@ -3611,103 +3564,8 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
         //     c1->cd(iCh+3);
         //     fH1TriggerTimes[0][iCh]->Draw();
         // }
-    
-
-}
-
-
-void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
-    
-  const int nPads = 16;           // キャンバス内の pad 数
-  const int nPoints = 1024;      // サンプル数（適宜変更）
-  const int nGraphsPerPad = 4;   // 1つの pad に重ねるグラフの数
-
-  Long64_t nentries = fChain->GetEntriesFast();
-  Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
-    
-  int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
-  std::vector<int> validEntries;
-
-
-  TCanvas* canvas = new TCanvas("canvas", "Canvas with 9 Pads", 1200, 900);
-  canvas->Divide(4, 4);  // 3×3 に分割
-
-
-  for (Int_t Entry = 0; Entry < nentries; Entry++) {
-        fChain->GetEntry(Entry);
-
-        x_DiscriTime = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
-        y_DiscriTime = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
-        S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
-        A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
-
-        Double_t S1A1_DiscriTime = abs(S1_DiscriTime - A1_DiscriTime);
-        Double_t S2A1_DiscriTime = abs(x_DiscriTime - A1_DiscriTime);
-
-        // 条件を満たすかチェック
-        if ((100 < x_DiscriTime && x_DiscriTime < 220) && (100 < y_DiscriTime && y_DiscriTime < 220) && (A1_DiscriTime < 135 ) && 
-            (S1A1_DiscriTime < 15) && (S2A1_DiscriTime < 15)) {
-            validEntries.push_back(Entry);  // 条件を満たすイベントを追加
-        }
-
-        if (Entry % 1000 == 0) {
-            printf("\tPoint plot : %d\n", Entry);
-        }
-    }
 
     
-
-// 条件を満たす最初の9つのイベントを描画
-    for (int iPad = 0; iPad < nPads; ++iPad) {
-        canvas->cd(iPad + 1);  // 各 pad を選択
-        int eventNumber = validEntries[iPad];
-        fChain->GetEntry(eventNumber);
-
-
-        // 4つの波形を重ね書き
-        for (int iGraph = 0; iGraph < nGraphsPerPad; ++iGraph) {
-
-            // それぞれの波形データを取得
-            double x[nPoints], y[nPoints];
-            
-            // x波形データとy波形データを それぞれのインデックスで取得し、グラフを作成
-            for (int iCell = 0; iCell < nPoints; ++iCell) {
-                // (0,0) の波形
-                if (iGraph == 0) {
-                    x[iCell] = fTime[0][0][iCell];  // x波形データ (0,0)
-                    y[iCell] = fWaveform[0][0][iCell];  // y波形データ (0,0)
-                }
-                // (0,2) の波形
-                else if (iGraph == 1) {
-                    x[iCell] = fTime[0][2][iCell];  // x波形データ (0,2)
-                    y[iCell] = fWaveform[0][2][iCell];  // y波形データ (0,2)
-                }
-                // (0,3) の波形
-                else if (iGraph == 2) {
-                    x[iCell] = fTime[0][3][iCell];  // x波形データ (0,3)
-                    y[iCell] = fWaveform[0][3][iCell];  // y波形データ (0,3)
-                }
-                // (y_iBoard, y_iCh) の波形
-                else {
-                    x[iCell] = fTime[y_iBoard][y_iCh][iCell];  // x波形データ (y_iBoard, y_iCh)
-                    y[iCell] = fWaveform[y_iBoard][y_iCh][iCell];  // y波形データ (y_iBoard, y_iCh)
-                }
-            }
-
-            // グラフを作成
-            TGraph* graph = new TGraph(nPoints, x, y);
-            graph->SetLineColor(colors[iGraph]);  // 色の設定
-            graph->SetLineWidth(2);
-            graph->GetXaxis()->SetRangeUser(0, 1500);  // x軸範囲を固定
-            graph->GetYaxis()->SetRangeUser(-0.55, 0.05);  // y軸範囲を固定
-
-            if (iGraph == 0) graph->Draw("AL");  // 最初のグラフは軸つきで描画
-            else graph->Draw("L SAME");  // 以降は重ね書き
-        }
-    
-    } 
-    
-
 }
 
 
@@ -6701,22 +6559,181 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
 
     if(fit_flag == 1){
 
-        TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", fit_min, fit_max);
-        gaussian_plus_linear->SetParameters(10000, (fit_max + fit_min) / 2, sigma, 50.0, -5.0);
-        fH1TriggerTimeDifference->Fit(gaussian_plus_linear, "R");
-        gaussian_plus_linear->Draw("LSAME");
+        TF1* gaussian_plus_pedestal = new TF1("gaussian_plus_pedestal", "gaus+pol0(3)", fit_min, fit_max);
+        gaussian_plus_pedestal->SetParameters(10000, (fit_max + fit_min) / 2, sigma, 100.0);
+        fH1TriggerTimeDifference->Fit(gaussian_plus_pedestal, "R");
+        gaussian_plus_pedestal->Draw("LSAME");
 
         TF1* linear = new TF1("linear", "pol1", fit_min, fit_max);
         linear->SetParameters(
             gaussian_plus_linear->GetParameter(3), // 切片
             gaussian_plus_linear->GetParameter(4)  // 傾き
         );
-        linear->SetLineColor(kGreen+1);
-        linear->SetLineStyle(1);
-        linear->Draw("LSAME");
+        pedestal->SetLineColor(kGreen+1);
+        pedestal->SetLineStyle(1);
+        pedestal->Draw("LSAME");
     }
 
 
     c1->Update();
     gStyle->SetOptFit(1);
+}
+
+Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050){
+
+    Long64_t nentries;
+
+    if(entry_flag ==0){
+        nentries = 100000;
+    }
+    if(entry_flag ==1){
+        nentries = fChain->GetEntriesFast();
+    }
+    
+
+    if(fH1TriggerCellDifference != NULL){
+        delete fH1TriggerCellDifference;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", Form("(Board%d:ch%d) - (Board%d:ch%d) discriCell_difference", iBoard1, iCh1, iBoard2, iCh2), 1600, 1200);
+    c1->Draw();
+    gPad->SetGrid();
+
+    Int_t histDiv;
+
+    histDiv = xmax - xmin;
+    
+    fH1TriggerCellDifference = new TH1F("fH1TriggerCellDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriCell_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
+    fH1TriggerCellDifference->SetXTitle("discriCell difference");
+    fH1TriggerCellDifference->SetYTitle(Form("counts per %d Cells", (xmax-xmin)/histDiv));
+
+    Double_t discriCell1, discriCell2, Cell_difference;
+
+    Int_t pedestal_counts = 0;
+    Double_t pedestal = 0.0;
+    Double_t pedestal_sigma_counts = 0.0;
+    Double_t pedestal_sigma = 0.0;
+
+    Int_t ped_nega_lower = -130;
+    Int_t ped_nega_upper = -30;
+    Int_t ped_posi_lower = 30;
+    Int_t ped_posi_upper = 120;
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
+        fChain->GetEntry(jentry);
+        discriCell1 = fDiscriCell[iBoard1][iCh1];
+        discriCell2 = fDiscriCell[iBoard2][iCh2];
+
+        // if(discriCell1 > 3 && discriCell2 > 3){
+            Cell_difference = discriCell1 - discriCell2;
+            fH1TriggerCellDifference->Fill(Cell_difference);
+        
+            if((Cell_difference >= ped_nega_lower && Cell_difference <= ped_nega_upper) || 
+               (Cell_difference >= ped_posi_lower && Cell_difference <= ped_posi_upper)){
+                pedestal_counts++;
+            }
+        // }
+    }
+
+    pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
+
+    Double_t x_minimum = fH1TriggerCellDifference->GetXaxis()->GetXmin();
+    Int_t Bin_min = fH1TriggerCellDifference->FindBin(x_minimum);
+    Double_t x_maximum = fH1TriggerCellDifference->GetXaxis()->GetXmax();
+    Int_t Bin_max = fH1TriggerCellDifference->FindBin(x_maximum);
+    Int_t Bin_counts = 0;
+    Int_t Bin_ped_counts = 0;
+    Double_t coef = 5.0;
+
+    Int_t Bin_ped_nega_upper = fH1TriggerCellDifference->FindBin(ped_nega_upper);
+    Int_t Bin_ped_nega_lower = fH1TriggerCellDifference->FindBin(ped_nega_lower);
+    Int_t Bin_ped_posi_upper = fH1TriggerCellDifference->FindBin(ped_posi_upper);
+    Int_t Bin_ped_posi_lower = fH1TriggerCellDifference->FindBin(ped_posi_lower);
+
+    for (Long64_t bin_index_nega = Bin_ped_nega_lower; bin_index_nega <= Bin_ped_nega_upper; bin_index_nega++){
+        Int_t bin_content_nega = fH1TriggerCellDifference->GetBinContent(bin_index_nega);
+        pedestal_sigma_counts += pow(pedestal - bin_content_nega, 2);
+        Bin_ped_counts++;
+    }
+
+    for (Long64_t bin_index_posi = Bin_ped_posi_lower; bin_index_posi <= Bin_ped_posi_upper; bin_index_posi++){
+        Int_t bin_content_posi = fH1TriggerCellDifference->GetBinContent(bin_index_posi);
+        pedestal_sigma_counts += pow(pedestal - bin_content_posi, 2);
+        Bin_ped_counts++;
+    }
+
+    pedestal_sigma = sqrt(pedestal_sigma_counts / (Bin_ped_counts - 1));
+    Double_t threshold = pedestal + coef * pedestal_sigma;
+
+    Double_t x_minimum_wo_ped = 0.0;
+    Double_t x_maximum_wo_ped = 0.0;
+
+    if(cut_flag == 1){
+
+        for (Long64_t i = Bin_min; i <= Bin_max; i++){
+            Double_t bin_content = fH1TriggerCellDifference->GetBinContent(i);
+                if(bin_content - threshold >= 0){
+                    fH1TriggerCellDifference->SetBinContent(i, bin_content);
+                    Bin_counts++;
+                }
+                else{
+                    fH1TriggerCellDifference->SetBinContent(i, 0);
+                    Bin_counts++;
+                }
+
+                if(fH1TriggerCellDifference->GetBinContent(i) >= threshold &&
+                   fH1TriggerCellDifference->GetBinContent(i-1) >= threshold &&
+                   fH1TriggerCellDifference->GetBinContent(i-2) == 0){
+                    x_minimum_wo_ped = fH1TriggerCellDifference->GetBinLowEdge(i-1);
+                }
+
+                if(fH1TriggerCellDifference->GetBinContent(i) == 0 && 
+                   fH1TriggerCellDifference->GetBinContent(i-1) == 0 && 
+                   fH1TriggerCellDifference->GetBinContent(i-2) >= threshold){
+                    x_maximum_wo_ped = (xmax-xmin)/histDiv + fH1TriggerCellDifference->GetBinLowEdge(i-2);
+                }
+
+        }
+
+        fH1TriggerCellDifference->Draw();
+    }
+
+    
+
+    if(cut_flag == 0){
+
+        fH1TriggerCellDifference->Draw();
+        TF1* line = new TF1("line", "pol0", ped_nega_lower, ped_posi_upper);
+        line->SetParameters(pedestal);
+        line->SetLineColor(kRed);
+        line->SetLineWidth(2);
+        line->SetLineStyle(1);
+        // line->Draw("LSAME");
+    }
+
+    c1->Update();
+
+    // TString folderPath = Makedir_Date();
+
+    // TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    // filename_figure.ReplaceAll(".", "_");
+    // TString filename_figure_pdf = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.pdf", iBoard1, iCh1, iBoard2, iCh2, coef);
+    // TString filename_figure_png = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.png", iBoard1, iCh1, iBoard2, iCh2, coef);
+    // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
+
+    // IfFile_duplication(folderPath, filename_figure_pdf);
+    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+
+    // IfFile_duplication(folderPath, filename_figure_png);
+    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_[%i][%i]-[%i][%i]_3.pdf", iBoard1, iCh1, iBoard2, iCh2));
+    c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_[%i][%i]-[%i][%i]_3.png", iBoard1, iCh1, iBoard2, iCh2));
+
+    std::cout << "pedestal = " << pedestal << std::endl;
+    std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
+    std::cout << "x_minimum_wo_ped = " << x_minimum_wo_ped << std::endl;
+    std::cout << "x_maximum_wo_ped = " << x_maximum_wo_ped << std::endl;
+
+    return fChain->GetEntriesFast();
 }
