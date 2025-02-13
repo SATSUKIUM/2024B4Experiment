@@ -30,7 +30,7 @@
 #include <TChainElement.h>
 #include <TObjArray.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.dat"){
     // 入力ファイルを開く
