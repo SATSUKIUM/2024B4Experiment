@@ -3332,7 +3332,13 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
 
           x_error = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
           y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+          
+          
+          x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+          x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
 
+          x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+          x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
 
           if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 256 - 3 * x_error < x_energy ) && (x_energy < 256 + 3 * x_error) ){
            
@@ -3348,6 +3354,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
                   //std::cout << "x_energy: " << x_energy << std::endl;
                   //std::cout << "y_energy: " << y_energy << std::endl;
                   //std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
+
+                  
 
                   
                   fH2Energy_PMTs->Fill(x_energy, y_energy);
