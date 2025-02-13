@@ -30,7 +30,7 @@
 #include <TChainElement.h>
 #include <TObjArray.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.dat"){
     // 入力ファイルを開く
@@ -82,13 +82,10 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                     }
                     pedeslta_sum += fWaveform[iBoard][iCh][iCell];
                     counter++;
-                    // if(DEBUG){
-                    //     std::cout << fWaveform[iBoard][iCh][iCell] << std::endl;
-                    // }
                 }
-                if(DEBUG){
-                    std::cout << counter << std::endl;
-                }
+                // if(DEBUG){
+                //     std::cout << counter << std::endl;
+                // }
                 pedeslta_sum = pedeslta_sum/counter;
                 if(iBoard == 0){
                     if(iCh == 1){
@@ -97,7 +94,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                             if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 180.0){
                                 adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
                                 if(DEBUG){
-                                    std::cout << adcSum_crystals[iBoard][iCh] << std::endl;
+                                    std::cout << Form("adcSum_crystals : %f", adcSum_crystals[iBoard][iCh]) << std::endl;
                                 }
                             }
                             else if(fTime[iBoard][iCh][iCell] > discriTime + 180.0){
