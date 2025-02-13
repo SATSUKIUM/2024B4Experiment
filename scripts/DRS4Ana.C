@@ -6103,6 +6103,12 @@ void DRS4Ana::Discricut(){
         //     hists[5]->Fill(energy_buf3); 
 
         // }
+        if (DiscriCell1>0 && DiscriCell2>0 && DiscriCell3>0){   
+        }else{
+            continue;
+        }
+
+
 
         if (21 >=gap_huruno1_sato  && gap_huruno1_sato >= -14) {
             if (18 >=gap_huruno1_huruno2  && gap_huruno1_huruno2 >= -22){
@@ -6127,7 +6133,7 @@ void DRS4Ana::Discricut(){
 
 
 
-    for (Int_t i = 0; i < 6; i++) {
+    for (Int_t i = 0; i < 8; i++) {
         c2->cd(i+1);
         hists[i]->Draw();
         gPad->SetGrid();
