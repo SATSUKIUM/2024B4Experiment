@@ -3487,7 +3487,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     
     std::cout << "all events : " << allcounter << std::endl;
     std::cout << "timecut events : " << timecutcounter << std::endl;
-    std::cout << "energycut events : " << energycutcounter << std::endl;
+    std::cout << "scattercut events : " << scattercutcounter << std::endl;
     std::cout << "valid events :" << validcounter << std::endl;
 
     return 0;
