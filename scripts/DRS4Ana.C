@@ -3326,8 +3326,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
         
        
 
-        if((100 < y_DiscriTime && y_DiscriTime < 220) && (170 < A1_DiscriTime && A1_DiscriTime < 190) 
-             && ( 180 < S1_DiscriTime && S1_DiscriTime < 200 ) && ( 190 < x_DiscriTime && x_DiscriTime < 200)){
+        if((100 < y_DiscriTime && y_DiscriTime < 220) && ( A1_DiscriTime < 135)){
 
           
           //std::cout << "最大値: " << max_DiscriTime << std::endl;
@@ -3612,6 +3611,101 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
         //     c1->cd(iCh+3);
         //     fH1TriggerTimes[0][iCh]->Draw();
         // }
+    
+
+}
+
+
+void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    
+  const int nPads = 16;           // キャンバス内の pad 数
+  const int nPoints = 1024;      // サンプル数（適宜変更）
+  const int nGraphsPerPad = 4;   // 1つの pad に重ねるグラフの数
+
+  Long64_t nentries = fChain->GetEntriesFast();
+  Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
+    
+  int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
+  std::vector<int> validEntries;
+
+
+  TCanvas* canvas = new TCanvas("canvas", "Canvas with 9 Pads", 1200, 900);
+  canvas->Divide(4, 4);  // 3×3 に分割
+
+
+  for (Int_t Entry = 0; Entry < nentries; Entry++) {
+        fChain->GetEntry(Entry);
+
+        x_DiscriTime = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        y_DiscriTime = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
+        A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
+
+        Double_t S1A1_DiscriTime = abs(S1_DiscriTime - A1_DiscriTime);
+        Double_t S2A1_DiscriTime = abs(x_DiscriTime - A1_DiscriTime);
+
+        // 条件を満たすかチェック
+        if ((100 < x_DiscriTime && x_DiscriTime < 220) && (100 < y_DiscriTime && y_DiscriTime < 220) && (A1_DiscriTime < 135 ) && 
+            (S1A1_DiscriTime < 15) && (S2A1_DiscriTime < 15)) {
+            validEntries.push_back(Entry);  // 条件を満たすイベントを追加
+        }
+
+        if (Entry % 1000 == 0) {
+            printf("\tPoint plot : %d\n", Entry);
+        }
+    }
+
+    
+
+// 条件を満たす最初の9つのイベントを描画
+    for (int iPad = 0; iPad < nPads; ++iPad) {
+        canvas->cd(iPad + 1);  // 各 pad を選択
+        int eventNumber = validEntries[iPad];
+        fChain->GetEntry(eventNumber);
+
+
+        // 4つの波形を重ね書き
+        for (int iGraph = 0; iGraph < nGraphsPerPad; ++iGraph) {
+
+            // それぞれの波形データを取得
+            double x[nPoints], y[nPoints];
+            
+            // x波形データとy波形データを それぞれのインデックスで取得し、グラフを作成
+            for (int iCell = 0; iCell < nPoints; ++iCell) {
+                // (0,0) の波形
+                if (iGraph == 0) {
+                    x[iCell] = fTime[0][0][iCell];  // x波形データ (0,0)
+                    y[iCell] = fWaveform[0][0][iCell];  // y波形データ (0,0)
+                }
+                // (0,2) の波形
+                else if (iGraph == 1) {
+                    x[iCell] = fTime[0][2][iCell];  // x波形データ (0,2)
+                    y[iCell] = fWaveform[0][2][iCell];  // y波形データ (0,2)
+                }
+                // (0,3) の波形
+                else if (iGraph == 2) {
+                    x[iCell] = fTime[0][3][iCell];  // x波形データ (0,3)
+                    y[iCell] = fWaveform[0][3][iCell];  // y波形データ (0,3)
+                }
+                // (y_iBoard, y_iCh) の波形
+                else {
+                    x[iCell] = fTime[y_iBoard][y_iCh][iCell];  // x波形データ (y_iBoard, y_iCh)
+                    y[iCell] = fWaveform[y_iBoard][y_iCh][iCell];  // y波形データ (y_iBoard, y_iCh)
+                }
+            }
+
+            // グラフを作成
+            TGraph* graph = new TGraph(nPoints, x, y);
+            graph->SetLineColor(colors[iGraph]);  // 色の設定
+            graph->SetLineWidth(2);
+            graph->GetXaxis()->SetRangeUser(0, 1500);  // x軸範囲を固定
+            graph->GetYaxis()->SetRangeUser(-0.55, 0.05);  // y軸範囲を固定
+
+            if (iGraph == 0) graph->Draw("AL");  // 最初のグラフは軸つきで描画
+            else graph->Draw("L SAME");  // 以降は重ね書き
+        }
+    
+    } 
     
 
 }
