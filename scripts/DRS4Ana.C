@@ -3354,16 +3354,14 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
           x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
           x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
 
-          
 
-
-          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 256 + 3 * x_error_upper) ){
+          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 340 + 3 * x_error_upper) ){
            
             distance_from_511_line = abs(x_energy + y_energy -511) / sqrt(2);
             //x_dash_energy = ( 511-(511-x_energy+distance_from_511_line/2) ) / 511 * 
             
-            y_upper = -x_energy + 3 * (x_error + y_error) + 511;
-            y_lower = -x_energy - 3 * (x_error + y_error) + 511;
+            y_upper = -x_energy + 3 * sqrt((x_error **2 + y_error **2)) + 511;
+            y_lower = -x_energy - 3 * sqrt((x_error **2 + y_error **2)) + 511;
 
             //x_distance= (511 - x_energy - y_energy);
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
@@ -3380,8 +3378,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
                   //std::cout << "x_energy: " << x_energy << std::endl;
                   //std::cout << "y_energy: " << y_energy << std::endl;
                   //std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
-
-                  
 
                   
                   fH2Energy_PMTs->Fill(x_energy, y_energy);
