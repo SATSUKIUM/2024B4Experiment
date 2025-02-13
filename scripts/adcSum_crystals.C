@@ -77,9 +77,10 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                 for(Int_t iCell=0; iCell<1024; iCell++){
                     if(fTime[0][0][iCell] > fPedestalTmax){
                     break;
-                }
+                    }
                     pedeslta_sum += fWaveform[iBoard][iCh][iCell];
                 }
+                printf("\n\tDEBUG\n");
                 pedeslta_sum = pedeslta_sum/counter;
                 if(iBoard == 0){
                     if(iCh == 1){
