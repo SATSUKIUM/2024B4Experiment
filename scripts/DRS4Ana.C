@@ -5772,17 +5772,17 @@ void DRS4Ana::DiscriAna2(Int_t Scell = 100 , Int_t Fcell = 120){
 void DRS4Ana::Discricut(){
 
     TCanvas* c2 = new TCanvas("c2", "DiscriTime Range", 1200, 1500);
-    c2->Divide(2, 3); 
+    c2->Divide(2, 4); 
 
-    TH1D* hists[6];
+    TH1D* hists[8];
 
     std::vector<std::string> strVec = {"huruno1", "huruno2", "sato"};
 
     for (Int_t i = 0; i < 3; i++) {
         hists[i] = new TH1D(Form("%s_Trigger",strVec[i].c_str()),
                                    Form("%s_Trigger",strVec[i].c_str()),
-                                   201, 50, 250);
-        hists[i]->SetXTitle("Time [ns]");
+                                   151, 0, 150);
+        hists[i]->SetXTitle("DiscriCell");
         hists[i]->SetYTitle("counts");
     }
 
@@ -5794,6 +5794,14 @@ void DRS4Ana::Discricut(){
         hists[i]->SetYTitle("counts");
     }
 
+    for (Int_t i = 6; i < 8; i++) {
+        hists[i] = new TH1D(Form("huruno1_huruno2_gap"),
+                                   Form("huruno1_sato_gap"),
+                                   101, 0, 100);
+        hists[i]->SetXTitle("DiscriCell_gap");
+        hists[i]->SetYTitle("counts");
+    }
+
         // エネルギー較正データの読み込み
     TString key = "0204";
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
@@ -5801,7 +5809,7 @@ void DRS4Ana::Discricut(){
     
     // データ取得 & フィル
     Long64_t nentries = fChain->GetEntriesFast();
-    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3;
+    Double_t DiscriTime1,DiscriTime2,DiscriTime3,energy_buf1,energy_buf2,energy_buf3,DiscriCell1,DiscriCell2,DiscriCell3;
 
     for (Long64_t Entry = 0; Entry < nentries; Entry++) {
         fChain->GetEntry(Entry);
@@ -5811,6 +5819,10 @@ void DRS4Ana::Discricut(){
         Double_t chargeIntegral1 = GetChargeIntegral(0, 0, 20, DiscriTime1 - 50, DiscriTime1 + 600);
         Double_t chargeIntegral2 = GetChargeIntegral(0, 3, 20, DiscriTime2 - 50, DiscriTime2 + 600);
         Double_t chargeIntegral3 = GetChargeIntegral(0, 2, 20, DiscriTime3 - 50, DiscriTime3 + 600);
+        DiscriCell1=fDiscriCell[0][0];
+        DiscriCell2=fDiscriCell[0][3];
+        DiscriCell3=fDiscriCell[0][2];
+
 
         if (chargeIntegral1 > -9999.9) {
             energy_buf1 = p0[0][0] + p1[0][0] * (-chargeIntegral1);
@@ -5824,58 +5836,81 @@ void DRS4Ana::Discricut(){
             energy_buf3 = p0[0][2] + p1[0][2] * (-chargeIntegral3);
         }
 
-        // 範囲による分岐
-        if (120 >= DiscriTime1 && DiscriTime1 >=50)  {
-            if (DiscriTime2<=160 && DiscriTime2 >=50){
-                if(DiscriTime3<=150 && DiscriTime3 >=50){
-                    hists[0]->Fill(DiscriTime1);  
-                    hists[1]->Fill(DiscriTime2); 
-                    hists[2]->Fill(DiscriTime3); 
-                    hists[3]->Fill(energy_buf1);  
-                    hists[4]->Fill(energy_buf2); 
-                    hists[5]->Fill(energy_buf3); 
-                }
-            }
-        }else if(140 >= DiscriTime1 && DiscriTime1 >120){
-            if (DiscriTime2<=172 && DiscriTime2 >=50){
-                if(DiscriTime3<=165 && DiscriTime3 >=50){
-                    hists[0]->Fill(DiscriTime1);  
-                    hists[1]->Fill(DiscriTime2); 
-                    hists[2]->Fill(DiscriTime3); 
-                    hists[3]->Fill(energy_buf1);  
-                    hists[4]->Fill(energy_buf2); 
-                    hists[5]->Fill(energy_buf3); 
-                }
-            }
-        }else if(160 >= DiscriTime1 && DiscriTime1 >140){
-            if (DiscriTime2<=183 && DiscriTime2 >=50){
-                if(DiscriTime3<=176 && DiscriTime3 >=50){
-                    hists[0]->Fill(DiscriTime1);  
-                    hists[1]->Fill(DiscriTime2); 
-                    hists[2]->Fill(DiscriTime3); 
-                    hists[3]->Fill(energy_buf1);  
-                    hists[4]->Fill(energy_buf2); 
-                    hists[5]->Fill(energy_buf3); 
-                }
-            }
-        }else if(180 >= DiscriTime1 && DiscriTime1 >160){
-            if(DiscriTime3<=190 && DiscriTime3 >=50){
-                hists[0]->Fill(DiscriTime1);  
-                hists[1]->Fill(DiscriTime2); 
-                hists[2]->Fill(DiscriTime3); 
-                hists[3]->Fill(energy_buf1);  
-                hists[4]->Fill(energy_buf2); 
-                hists[5]->Fill(energy_buf3); 
-            }
-        }else if(200 >= DiscriTime1 && DiscriTime1 >180){
-            hists[0]->Fill(DiscriTime1);  
-            hists[1]->Fill(DiscriTime2); 
-            hists[2]->Fill(DiscriTime3); 
-            hists[3]->Fill(energy_buf1);  
-            hists[4]->Fill(energy_buf2); 
-            hists[5]->Fill(energy_buf3); 
 
+        Double_t gap_huruno1_huruno2 = DiscriCell1 - DiscriCell2;
+        Double_t gap_huruno1_sato = DiscriCell1 - DiscriCell3;
+
+        // 範囲による分岐
+        // if (120 >= DiscriTime1 && DiscriTime1 >=50)  {
+        //     if (DiscriTime2<=160 && DiscriTime2 >=50){
+        //         if(DiscriTime3<=150 && DiscriTime3 >=50){
+        //             hists[0]->Fill(DiscriTime1);  
+        //             hists[1]->Fill(DiscriTime2); 
+        //             hists[2]->Fill(DiscriTime3); 
+        //             hists[3]->Fill(energy_buf1);  
+        //             hists[4]->Fill(energy_buf2); 
+        //             hists[5]->Fill(energy_buf3); 
+        //         }
+        //     }
+        // }else if(140 >= DiscriTime1 && DiscriTime1 >120){
+        //     if (DiscriTime2<=172 && DiscriTime2 >=50){
+        //         if(DiscriTime3<=165 && DiscriTime3 >=50){
+        //             hists[0]->Fill(DiscriTime1);  
+        //             hists[1]->Fill(DiscriTime2); 
+        //             hists[2]->Fill(DiscriTime3); 
+        //             hists[3]->Fill(energy_buf1);  
+        //             hists[4]->Fill(energy_buf2); 
+        //             hists[5]->Fill(energy_buf3); 
+        //         }
+        //     }
+        // }else if(160 >= DiscriTime1 && DiscriTime1 >140){
+        //     if (DiscriTime2<=183 && DiscriTime2 >=50){
+        //         if(DiscriTime3<=176 && DiscriTime3 >=50){
+        //             hists[0]->Fill(DiscriTime1);  
+        //             hists[1]->Fill(DiscriTime2); 
+        //             hists[2]->Fill(DiscriTime3); 
+        //             hists[3]->Fill(energy_buf1);  
+        //             hists[4]->Fill(energy_buf2); 
+        //             hists[5]->Fill(energy_buf3); 
+        //         }
+        //     }
+        // }else if(180 >= DiscriTime1 && DiscriTime1 >160){
+        //     if(DiscriTime3<=190 && DiscriTime3 >=50){
+        //         hists[0]->Fill(DiscriTime1);  
+        //         hists[1]->Fill(DiscriTime2); 
+        //         hists[2]->Fill(DiscriTime3); 
+        //         hists[3]->Fill(energy_buf1);  
+        //         hists[4]->Fill(energy_buf2); 
+        //         hists[5]->Fill(energy_buf3); 
+        //     }
+        // }else if(200 >= DiscriTime1 && DiscriTime1 >180){
+        //     hists[0]->Fill(DiscriTime1);  
+        //     hists[1]->Fill(DiscriTime2); 
+        //     hists[2]->Fill(DiscriTime3); 
+        //     hists[3]->Fill(energy_buf1);  
+        //     hists[4]->Fill(energy_buf2); 
+        //     hists[5]->Fill(energy_buf3); 
+
+        // }
+
+        if (21 >=gap_huruno1_sato  && gap_huruno1_sato >= -14) {
+            if (18 >=gap_huruno1_huruno2  && gap_huruno1_huruno2 >= -22){
+
+            }else{
+                continue;
+            }
+        }else{
+            continue;
         }
+
+        hists[0]->Fill(DiscriCell1);
+        hists[1]->Fill(DiscriCell2);
+        hists[2]->Fill(DiscriCell3);
+        hists[3]->Fill(energy_buf1);
+        hists[4]->Fill(energy_buf2);
+        hists[5]->Fill(energy_buf3);
+        hists[6]->Fill(gap_huruno1_huruno2);
+        hists[7]->Fill(gap_huruno1_sato);
     }
 
 
@@ -6625,14 +6660,14 @@ Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, I
     Int_t ped_nega_lower = -130;
     Int_t ped_nega_upper = -30;
     Int_t ped_posi_lower = 30;
-    Int_t ped_posi_upper = 120;
+    Int_t ped_posi_upper = 130;
 
     for (Long64_t jentry = 0; jentry < nentries; jentry++){
         fChain->GetEntry(jentry);
         discriCell1 = fDiscriCell[iBoard1][iCh1];
         discriCell2 = fDiscriCell[iBoard2][iCh2];
 
-        // if(discriCell1 > 3 && discriCell2 > 3){
+        if(discriCell1 > 3 && discriCell2 > 3){
             Cell_difference = discriCell1 - discriCell2;
             fH1TriggerCellDifference->Fill(Cell_difference);
         
@@ -6640,7 +6675,7 @@ Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, I
                (Cell_difference >= ped_posi_lower && Cell_difference <= ped_posi_upper)){
                 pedestal_counts++;
             }
-        // }
+        }
     }
 
     pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
@@ -6737,6 +6772,175 @@ Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, I
 
     c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_[%i][%i]-[%i][%i]_3.pdf", iBoard1, iCh1, iBoard2, iCh2));
     c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_[%i][%i]-[%i][%i]_3.png", iBoard1, iCh1, iBoard2, iCh2));
+
+    std::cout << "pedestal = " << pedestal << std::endl;
+    std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
+    std::cout << "x_minimum_wo_ped = " << x_minimum_wo_ped << std::endl;
+    std::cout << "x_maximum_wo_ped = " << x_maximum_wo_ped << std::endl;
+
+    return fChain->GetEntriesFast();
+}
+
+Double_t DRS4Ana::PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050){
+
+    Long64_t nentries;
+
+    if(entry_flag ==0){
+        nentries = 100000;
+    }
+    if(entry_flag ==1){
+        nentries = fChain->GetEntriesFast();
+    }
+    
+
+    if(fH1TriggerCellDifference != NULL){
+        delete fH1TriggerCellDifference;
+    }
+
+    TCanvas *c1 = new TCanvas("c1", Form("(Board%d:ch%d) - (Board%d:ch%d) discriCell_difference", iBoard1, iCh1, iBoard2, iCh2), 1600, 1200);
+    c1->Draw();
+    gPad->SetGrid();
+
+    Int_t histDiv;
+
+    histDiv = xmax - xmin;
+    
+    fH1TriggerCellDifference = new TH1F("fH1TriggerCellDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriCell_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
+    fH1TriggerCellDifference->SetXTitle("discriCell difference");
+    fH1TriggerCellDifference->SetYTitle(Form("counts per %d Cells", (xmax-xmin)/histDiv));
+
+    Double_t discriCell1, discriCell2, Cell_difference;
+    Double_t discriCellS1, discriCellS2, discriCellA1;
+
+    Int_t pedestal_counts = 0;
+    Double_t pedestal = 0.0;
+    Double_t pedestal_sigma_counts = 0.0;
+    Double_t pedestal_sigma = 0.0;
+
+    Int_t ped_nega_lower = -130;
+    Int_t ped_nega_upper = -30;
+    Int_t ped_posi_lower = 30;
+    Int_t ped_posi_upper = 130;
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
+        fChain->GetEntry(jentry);
+        discriCell1 = fDiscriCell[iBoard1][iCh1];
+        discriCell2 = fDiscriCell[iBoard2][iCh2];
+        discriCellS1 = fDiscriCell[0][0];
+        discriCellS2 = fDiscriCell[0][3];
+        discriCellA1 = fDiscriCell[0][2];
+
+        if (discriCell1 > 10 && 
+            discriCell2 > 10 &&
+            discriCellS1 - discriCellS2 >= -22 &&
+            discriCellS1 - discriCellS2 <= 18 &&
+            discriCellS1 - discriCellA1 >= -14 &&
+            discriCellS1 - discriCellA1 <= 21){
+
+            Cell_difference = discriCell1 - discriCell2;
+            fH1TriggerCellDifference->Fill(Cell_difference);
+        
+            if((Cell_difference >= ped_nega_lower && Cell_difference <= ped_nega_upper) || 
+               (Cell_difference >= ped_posi_lower && Cell_difference <= ped_posi_upper)){
+                pedestal_counts++;
+            }
+        }
+    }
+
+    pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
+
+    Double_t x_minimum = fH1TriggerCellDifference->GetXaxis()->GetXmin();
+    Int_t Bin_min = fH1TriggerCellDifference->FindBin(x_minimum);
+    Double_t x_maximum = fH1TriggerCellDifference->GetXaxis()->GetXmax();
+    Int_t Bin_max = fH1TriggerCellDifference->FindBin(x_maximum);
+    Int_t Bin_counts = 0;
+    Int_t Bin_ped_counts = 0;
+    Double_t coef = 5.0;
+
+    Int_t Bin_ped_nega_upper = fH1TriggerCellDifference->FindBin(ped_nega_upper);
+    Int_t Bin_ped_nega_lower = fH1TriggerCellDifference->FindBin(ped_nega_lower);
+    Int_t Bin_ped_posi_upper = fH1TriggerCellDifference->FindBin(ped_posi_upper);
+    Int_t Bin_ped_posi_lower = fH1TriggerCellDifference->FindBin(ped_posi_lower);
+
+    for (Long64_t bin_index_nega = Bin_ped_nega_lower; bin_index_nega <= Bin_ped_nega_upper; bin_index_nega++){
+        Int_t bin_content_nega = fH1TriggerCellDifference->GetBinContent(bin_index_nega);
+        pedestal_sigma_counts += pow(pedestal - bin_content_nega, 2);
+        Bin_ped_counts++;
+    }
+
+    for (Long64_t bin_index_posi = Bin_ped_posi_lower; bin_index_posi <= Bin_ped_posi_upper; bin_index_posi++){
+        Int_t bin_content_posi = fH1TriggerCellDifference->GetBinContent(bin_index_posi);
+        pedestal_sigma_counts += pow(pedestal - bin_content_posi, 2);
+        Bin_ped_counts++;
+    }
+
+    pedestal_sigma = sqrt(pedestal_sigma_counts / (Bin_ped_counts - 1));
+    Double_t threshold = pedestal + coef * pedestal_sigma;
+
+    Double_t x_minimum_wo_ped = 0.0;
+    Double_t x_maximum_wo_ped = 0.0;
+
+    if(cut_flag == 1){
+
+        for (Long64_t i = Bin_min; i <= Bin_max; i++){
+            Double_t bin_content = fH1TriggerCellDifference->GetBinContent(i);
+                if(bin_content - threshold >= 0){
+                    fH1TriggerCellDifference->SetBinContent(i, bin_content);
+                    Bin_counts++;
+                }
+                else{
+                    fH1TriggerCellDifference->SetBinContent(i, 0);
+                    Bin_counts++;
+                }
+
+                if(fH1TriggerCellDifference->GetBinContent(i) >= threshold &&
+                   fH1TriggerCellDifference->GetBinContent(i-1) >= threshold &&
+                   fH1TriggerCellDifference->GetBinContent(i-2) == 0){
+                    x_minimum_wo_ped = fH1TriggerCellDifference->GetBinLowEdge(i-1);
+                }
+
+                if(fH1TriggerCellDifference->GetBinContent(i) == 0 && 
+                   fH1TriggerCellDifference->GetBinContent(i-1) == 0 && 
+                   fH1TriggerCellDifference->GetBinContent(i-2) >= threshold){
+                    x_maximum_wo_ped = (xmax-xmin)/histDiv + fH1TriggerCellDifference->GetBinLowEdge(i-2);
+                }
+
+        }
+
+        fH1TriggerCellDifference->Draw();
+    }
+
+    
+
+    if(cut_flag == 0){
+
+        fH1TriggerCellDifference->Draw();
+        TF1* line = new TF1("line", "pol0", ped_nega_lower, ped_posi_upper);
+        line->SetParameters(pedestal);
+        line->SetLineColor(kRed);
+        line->SetLineWidth(2);
+        line->SetLineStyle(1);
+        // line->Draw("LSAME");
+    }
+
+    c1->Update();
+
+    // TString folderPath = Makedir_Date();
+
+    // TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    // filename_figure.ReplaceAll(".", "_");
+    // TString filename_figure_pdf = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.pdf", iBoard1, iCh1, iBoard2, iCh2, coef);
+    // TString filename_figure_png = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.png", iBoard1, iCh1, iBoard2, iCh2, coef);
+    // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
+
+    // IfFile_duplication(folderPath, filename_figure_pdf);
+    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+
+    // IfFile_duplication(folderPath, filename_figure_png);
+    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_w_cut_[%i][%i]-[%i][%i]_4.pdf", iBoard1, iCh1, iBoard2, iCh2));
+    c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_w_cut_[%i][%i]-[%i][%i]_4.png", iBoard1, iCh1, iBoard2, iCh2));
 
     std::cout << "pedestal = " << pedestal << std::endl;
     std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
