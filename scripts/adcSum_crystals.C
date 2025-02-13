@@ -30,7 +30,7 @@
 #include <TChainElement.h>
 #include <TObjArray.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.dat"){
     // 入力ファイルを開く
@@ -76,6 +76,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
             for(Int_t iCh=0; iCh<4; iCh++){
                 pedeslta_sum = 0;
                 counter = 0;
+                adcSum_crystals[iBoard][iCh] = 0.0;
                 for(Int_t iCell=0; iCell<1024; iCell++){
                     if(fTime[0][0][iCell] > fPedestalTmax){
                     break;
