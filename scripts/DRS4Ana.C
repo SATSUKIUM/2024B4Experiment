@@ -3337,12 +3337,15 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
           x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
           x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
 
-          x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
-          x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
 
-          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 256 - 3 * x_error < x_energy ) && (x_energy < 256 + 3 * x_error) ){
+          if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 340 + 3 * x_error_upper) ){
            
-            //distance_from_511_line = x_energy + y_energy - 511.0 / sqrt(2.0);
+            distance_from_511_line = abs(x_energy + y_energy -511) / sqrt(2);
+            //x_dash_energy = ( 511-(511-x_energy+distance_from_511_line/2) ) / 511 * 
+            
+            y_upper = -x_energy + 3 * sqrt((x_error **2 + y_error **2)) + 511;
+            y_lower = -x_energy - 3 * sqrt((x_error **2 + y_error **2)) + 511;
+
             //x_distance= (511 - x_energy - y_energy);
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
             
@@ -3354,8 +3357,6 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
                   //std::cout << "x_energy: " << x_energy << std::endl;
                   //std::cout << "y_energy: " << y_energy << std::endl;
                   //std::cout << "x+y energy: " << x_energy + y_energy << std::endl;
-
-                  
 
                   
                   fH2Energy_PMTs->Fill(x_energy, y_energy);
@@ -3574,6 +3575,189 @@ void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard =
         // }
 
     
+}
+
+
+void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+    
+  const int nPoints = 1024;      // サンプル数（適宜変更）
+  const int nGraphsPerPad = 4;   // 1つの pad に重ねるグラフの数
+  const int maxPads = 16;        // 最大 pad 数（16分割まで対応）
+  std::vector<int> validEntries;
+  
+    
+
+  Long64_t nentries = fChain->GetEntriesFast();
+
+    TString key_Crystal_y;
+    TString key = "0204";
+
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
+
+    Double_t x_energy, y_energy, S1_energy, A1_energy;
+    Double_t x_error, y_error, S1_error, A1_error, x_error_upper, x_error_lower;
+    Double_t x_charge_buf, y_charge_buf, S1_charge_buf, A1_charge_buf;
+    Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
+    Double_t y_upper, y_lower;
+
+    x_p0_buf = p0[x_iBoard][x_iCh];
+    x_p1_buf = p1[x_iBoard][x_iCh];
+    y_p0_buf = p0[y_iBoard][y_iCh];
+    y_p1_buf = p1[y_iBoard][y_iCh];
+    
+    Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
+    Double_t x_adcSum_timerange, y_adcSum_timerange;
+    Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
+    Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+    
+    x_adcSum_timerange = 600;
+
+
+    if ((y_iBoard == 0 && y_iCh == 1) || (y_iBoard == 1)) {
+    y_adcSum_timerange = 180;
+    key_Crystal_y = "GSO";
+    }
+    else if (y_iBoard == 0 && y_iCh == 2) {
+    y_adcSum_timerange = 600; 
+    key_Crystal_y = "NaI";
+    }
+    else{
+        printf("\t\ny axis || type of crystal is invalid\n");
+    }
+
+
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_ukai, 0.0, 511.0, 2);  
+    TF1 *curve_lower = new TF1("curve_lower", CurveLower_ukai, 0.0, 511.0, 2); 
+
+
+
+  for (Int_t Entry = 0; Entry < nentries; Entry++) {
+        fChain->GetEntry(Entry);
+
+        x_DiscriTime = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
+        y_DiscriTime = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
+        A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
+
+        Double_t S1A1_DiscriTime = abs(S1_DiscriTime - A1_DiscriTime);
+        Double_t S2A1_DiscriTime = abs(x_DiscriTime - A1_DiscriTime);
+
+        S1_charge_buf = -GetChargeIntegral(0, 0, 20, S1_DiscriTime - 50, S1_DiscriTime + 600);
+        A1_charge_buf = -GetChargeIntegral(0, 2, 20, A1_DiscriTime - 50, A1_DiscriTime + 600);
+
+        S1_energy = p0[0][0] + p1[0][0]* S1_charge_buf;
+        A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
+        S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+
+        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
+        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
+
+        x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
+        y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
+
+        x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+        y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+          
+        x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
+
+        y_upper = curve_upper->Eval(x_energy);
+        y_lower = curve_lower->Eval(x_energy);
+
+
+        // 条件を満たすかチェック
+        if ( (100 < y_DiscriTime && y_DiscriTime < 220) && ( 135 < A1_DiscriTime ) 
+              && (10 < y_energy)
+              && ( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 256 + 3 * x_error_upper) 
+              //&& (y_lower <= y_energy && y_energy <= y_upper)) 
+        ){
+            validEntries.push_back(Entry);  // 条件を満たすイベントを追加
+        }
+
+        if (Entry % 1000 == 0) {
+            printf("\tPoint plot : %d\n", Entry);
+        }
+    }
+
+      
+  int colors[] = {kOrange, kBlue-4, kRed-7, kGreen};
+  
+  // 条件を満たすイベント数に応じてキャンバス分割数を決定
+    int nValidEntries = validEntries.size();
+    int nPads = std::min(nValidEntries, maxPads);  // 最大 maxPads 個まで描画
+    int nDiv = ceil(sqrt(nPads));  // 分割数を動的に決定（例: 9個なら 3×3, 4個なら 2×2）
+
+
+  TCanvas* canvas = new TCanvas("canvas", "Canvas with 9 Pads", 1200, 900);
+  canvas->Divide(nDiv, nDiv);
+
+
+// 条件を満たす最初の9つのイベントを描画
+    for (int iPad = 0; iPad < nPads; ++iPad) {
+        canvas->cd(iPad + 1);  // 各 pad を選択
+
+        // 条件を満たすデータが足りない場合、そのパッドを空白にする
+        if (iPad >= validEntries.size()) {
+            std::cout << "Pad " << iPad + 1 << " is empty due to insufficient valid entries." << std::endl;
+            continue;  // そのパッドをスキップして次の pad に進む
+        }
+
+        int eventNumber = validEntries[iPad];
+        fChain->GetEntry(eventNumber);
+
+
+        // 4つの波形を重ね書き
+        for (int iGraph = 0; iGraph < nGraphsPerPad; ++iGraph) {
+
+            // それぞれの波形データを取得
+            double x[nPoints], y[nPoints];
+            
+            // x波形データとy波形データを それぞれのインデックスで取得し、グラフを作成
+            for (int iCell = 0; iCell < nPoints; ++iCell) {
+                // (0,0) の波形
+                if (iGraph == 0) {
+                    x[iCell] = fTime[0][0][iCell];  // x波形データ (0,0)
+                    y[iCell] = fWaveform[0][0][iCell];  // y波形データ (0,0)
+                }
+                // (0,2) の波形
+                else if (iGraph == 1) {
+                    x[iCell] = fTime[0][2][iCell];  // x波形データ (0,2)
+                    y[iCell] = fWaveform[0][2][iCell];  // y波形データ (0,2)
+                }
+                // (0,3) の波形
+                else if (iGraph == 2) {
+                    x[iCell] = fTime[0][3][iCell];  // x波形データ (0,3)
+                    y[iCell] = fWaveform[0][3][iCell];  // y波形データ (0,3)
+                }
+                // (y_iBoard, y_iCh) の波形
+                else {
+                    x[iCell] = fTime[y_iBoard][y_iCh][iCell];  // x波形データ (y_iBoard, y_iCh)
+                    y[iCell] = fWaveform[y_iBoard][y_iCh][iCell];  // y波形データ (y_iBoard, y_iCh)
+                }
+            }
+
+            // グラフを作成
+            TGraph* graph = new TGraph(nPoints, x, y);
+            graph->SetLineColor(colors[iGraph]);  // 色の設定
+            graph->SetLineWidth(2);
+
+            // graph->GetXaxis()->SetTitle("Time [ns]");    // X軸のタイトル
+            // graph->GetYaxis()->SetTitle("Waveform [V]"); // Y軸のタイトル
+
+            graph->SetTitle(Form("event %d;Time [ns];Voltage [V]",eventNumber));
+
+            graph->GetXaxis()->SetRangeUser(0, 1500);  // x軸範囲を固定
+            graph->GetYaxis()->SetRangeUser(-0.55, 0.05);  // y軸範囲を固定
+
+            if (iGraph == 0) graph->Draw("AL");  // 最初のグラフは軸つきで描画
+            else graph->Draw("L SAME");  // 以降は重ね書き
+        }
+    
+    } 
+    
+
 }
 
 
