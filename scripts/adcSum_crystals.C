@@ -132,7 +132,6 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
             }
         }
         newBranch->Fill();
-        tree->Fill();
         if(i % 10000 == 0){
             printf("\tevent processed... %lld\n",i);
         }
@@ -140,6 +139,8 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
 
     // 既存のツリーを削除して新しいツリーを保存
     // ツリーをファイルに保存
+    tree->Fill();
+    tree->Print();
     tree->Write("", TObject::kOverwrite);
 
     file->Close();
