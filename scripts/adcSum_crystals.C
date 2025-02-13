@@ -30,6 +30,7 @@
 #include <TChainElement.h>
 #include <TObjArray.h>
 
+
 #define DEBUG 0
 
 void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES2/Run_004.dat"){
@@ -58,6 +59,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES2/Run_004.
     // 新しいブランチの変数を定義
     Double_t adcSum_crystals[2][4];
     TBranch *newBranch = tree->Branch("adcSum_crystals", adcSum_crystals, "adcSum_crystals[2][4]/D");
+    TBranch *newBranch2 = tree->Branch("adcSum_crystals2", adcSum_crystals, "adcSum_crystals2[2][4]/D");
 
 
     Double_t fPedestalTmin, fPedestalTmax;
@@ -128,7 +130,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES2/Run_004.
                 }
             }
         }
-        newBranch->Fill();
+        newBranch2->Fill();
         if(i % 10000 == 0){
             printf("\tevent processed... %lld\n",i);
             for(Int_t iBoard=0; iBoard<2; iBoard++){
