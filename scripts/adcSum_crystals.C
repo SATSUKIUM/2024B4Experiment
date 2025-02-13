@@ -81,9 +81,12 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                     break;
                     }
                     pedeslta_sum += fWaveform[iBoard][iCh][iCell];
-                    if(DEBUG){
-                        std::cout << fWaveform[iBoard][iCh][iCell] << std::endl;
-                    }
+                    // if(DEBUG){
+                    //     std::cout << fWaveform[iBoard][iCh][iCell] << std::endl;
+                    // }
+                }
+                if(DEBUG){
+                    std::cout << counter << std::endl;
                 }
                 pedeslta_sum = pedeslta_sum/counter;
                 if(iBoard == 0){
