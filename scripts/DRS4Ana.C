@@ -7158,3 +7158,106 @@ Double_t DRS4Ana::PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iC
 
     return fChain->GetEntriesFast();
 }
+
+Double_t DRS4Ana::PlotEnergy2(TString key = "0204", Int_t iBoard = 0, Int_t iCh = 0, Double_t xmin = 0, Double_t xmax = 600.0){
+    fChain->SetBranchStatus("waveform",0);
+    fChain->SetBranchStatus("time",0);
+
+   Int_t flag_SlaveOnly = 0;
+    std::cout << Form("\n\tnumOfBoards : %d", fNumOfBoards) << std::endl;
+    if(fNumOfBoards == 1){
+        std::cout << Form("Board info\n\tmaster board : %d\n", fSerialNumber[0]) << std::endl;
+        if(fSerialNumber[0] == 32814){
+            flag_SlaveOnly = 1;
+        }
+    }
+    else if(fNumOfBoards == 2){
+        std::cout << Form("Boards info\n\tmaster board : %d\n\tslave board : %d", fSerialNumber[0], fSerialNumber[1]) << std::endl;
+    }
+
+
+    std::cout << "iBoard:" << " " << iBoard << std::endl;
+    std::cout << "iCh:" << " " <<iCh << std::endl;
+    std::cout << "xmin:" << " " <<xmin << std::endl;
+    std::cout << "xmax:" << " " <<xmax << std::endl;
+
+
+    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t counter = 0;
+
+    TCanvas *c1 = new TCanvas("c1", Form("%d:ch%d Plot Energy", iBoard, iCh), 1600, 1200);
+    c1->Draw();
+    //gStyle->SetOptStat(0);
+    gPad->SetGrid();
+
+    if (fH1ChargeIntegral != NULL)
+    {
+        delete fH1ChargeIntegral;
+    }
+
+    Int_t histDiv = 200;
+    fH1ChargeIntegral = new TH1F("fH1ChargeIntegral", Form("%s || Board %d, CH %d", fRootFile.Data(), iBoard, iCh), histDiv, xmin, xmax);
+    fH1ChargeIntegral->SetXTitle("Energy [keV]");
+    fH1ChargeIntegral->SetYTitle(Form("counts per %f keV", (xmax-xmin)/histDiv));
+
+    Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], dummy1[2][4], dummy2[2][4];
+    Load_EnergycalbData(key, p0, p0e, p1, p1e, dummy1, dummy2);
+
+    Double_t energy_buf, chargeIntegral;
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++){
+        fChain->GetEntry(jentry);
+        chargeIntegral = fAdcSum_crystals[iBoard][iCh];
+        if (chargeIntegral > -9999.9)
+        {
+            energy_buf = p0[iBoard+flag_SlaveOnly][iCh] + p1[iBoard+flag_SlaveOnly][iCh]*(-chargeIntegral);
+            counter++;
+            fH1ChargeIntegral->Fill(energy_buf);
+        }
+    }
+
+    
+    fH1ChargeIntegral->Draw();
+
+    TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", 440, 580);
+    gaussian_plus_linear->SetParameters(7000, 500, 1.0, 50.0, -5.0);
+    fH1ChargeIntegral -> Fit(gaussian_plus_linear, "R");
+    gaussian_plus_linear -> Draw("same");
+
+    // TF1* gauss1 = new TF1("gauss1", "gaus", 440, 580);
+    // gauss1->SetParameters(
+    //     gaussian_plus_linear->GetParameter(0), // 振幅
+    //     gaussian_plus_linear->GetParameter(1), // 中心
+    //     gaussian_plus_linear->GetParameter(2)  // 幅
+    // );
+    // gauss1->SetLineColor(kOrange+7);
+    // gauss1->SetLineStyle(1);
+    // gauss1->Draw("LSAME");
+
+    TF1* linear = new TF1("linear", "pol1", 440, 580);
+    linear->SetParameters(
+        gaussian_plus_linear->GetParameter(3), // 切片
+        gaussian_plus_linear->GetParameter(4)  // 傾き
+    );
+    linear->SetLineColor(kGreen+1);
+    linear->SetLineStyle(1);
+    linear->Draw("same");
+
+
+
+    c1->Update();
+    gStyle->SetOptFit(1);
+
+    //保存用のディレクトリを作る
+    TString folderPath = Makedir_Date();
+
+    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    filename_figure.ReplaceAll(".", "_");
+    filename_figure += "_energy_spectrum.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+
+    IfFile_duplication(folderPath, filename_figure);
+    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+
+    return (Double_t)counter;
+}
