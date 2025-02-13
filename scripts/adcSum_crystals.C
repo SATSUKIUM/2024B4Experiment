@@ -85,7 +85,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                 if(iBoard == 0){
                     if(iCh == 1){
                         discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-                        for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCh++){
+                        for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCell++){
                             if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 180.0){
                                 adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
                             }
@@ -96,7 +96,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                     }
                     else{
                         discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-                        for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCh++){
+                        for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCell++){
                             if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 600.0){
                                 adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
                             }
@@ -109,7 +109,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                 }
                 else{
                     discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
-                    for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCh++){
+                    for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCell++){
                         if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 180.0){
                             adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
                         }
