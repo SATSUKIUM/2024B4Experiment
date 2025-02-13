@@ -3205,7 +3205,7 @@ Double_t CurveLower_ukai(Double_t *x, Double_t *par){
           
 
 
-Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
+Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
 , bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
     
     Long64_t nentries = fChain->GetEntriesFast();
