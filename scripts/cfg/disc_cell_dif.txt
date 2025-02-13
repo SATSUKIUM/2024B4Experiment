@@ -26,3 +26,18 @@ huruno1 - huruno2
 
 pedestal = 5
 pedestal_sigma = 2.21844
+
+all events
+huruno1 - sato
+
+pedestal = 3658
+pedestal_sigma = 127.771
+x_minimum_wo_ped = -14
+x_maximum_wo_ped = 21
+
+huruno1 - huruno2
+
+pedestal = 257
+pedestal_sigma = 21.2584
+x_minimum_wo_ped = -22
+x_maximum_wo_ped = 18
