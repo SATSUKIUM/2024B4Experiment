@@ -80,7 +80,6 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                     }
                     pedeslta_sum += fWaveform[iBoard][iCh][iCell];
                 }
-                printf("\n\tDEBUG\n");
                 pedeslta_sum = pedeslta_sum/counter;
                 if(iBoard == 0){
                     if(iCh == 1){
@@ -105,7 +104,6 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                             }
                         }
                     }
-                    printf("\n\tDEBUG\n");
                 }
                 else{
                     discriTime = fTime[iBoard][iCh][fDiscriCell[iBoard][iCh]];
