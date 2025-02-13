@@ -6621,7 +6621,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     gStyle->SetOptFit(1);
 }
 
-void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Double_t coef = 3.0, Int_t cut_flag = 0){
+Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050){
 
     Long64_t nentries;
 
@@ -6641,12 +6641,9 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     c1->Draw();
     gPad->SetGrid();
 
-    Int_t histDiv, xmin, xmax;
+    Int_t histDiv;
 
-    histDiv = 300;
-    xmin = -150;
-    xmax = 150;
-    
+    histDiv = xmax - xmin;
     
     fH1TriggerCellDifference = new TH1F("fH1TriggerCellDifference", Form("(Board%d:ch%d) - (Board%d:ch%d) discriCell_difference", iBoard1, iCh1, iBoard2, iCh2), histDiv, xmin, xmax);
     fH1TriggerCellDifference->SetXTitle("discriCell difference");
@@ -6659,8 +6656,8 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     Double_t pedestal_sigma_counts = 0.0;
     Double_t pedestal_sigma = 0.0;
 
-    Int_t ped_nega_lower = -120;
-    Int_t ped_nega_upper = -20;
+    Int_t ped_nega_lower = -130;
+    Int_t ped_nega_upper = -30;
     Int_t ped_posi_lower = 30;
     Int_t ped_posi_upper = 120;
 
@@ -6669,7 +6666,7 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         discriCell1 = fDiscriCell[iBoard1][iCh1];
         discriCell2 = fDiscriCell[iBoard2][iCh2];
 
-        if(discriCell1 > 3 && discriCell2 > 3){
+        // if(discriCell1 > 3 && discriCell2 > 3){
             Cell_difference = discriCell1 - discriCell2;
             fH1TriggerCellDifference->Fill(Cell_difference);
         
@@ -6677,7 +6674,7 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
                (Cell_difference >= ped_posi_lower && Cell_difference <= ped_posi_upper)){
                 pedestal_counts++;
             }
-        }
+        // }
     }
 
     pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
@@ -6688,7 +6685,7 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     Int_t Bin_max = fH1TriggerCellDifference->FindBin(x_maximum);
     Int_t Bin_counts = 0;
     Int_t Bin_ped_counts = 0;
-    // Double_t coef = 3.0;
+    Double_t coef = 5.0;
 
     Int_t Bin_ped_nega_upper = fH1TriggerCellDifference->FindBin(ped_nega_upper);
     Int_t Bin_ped_nega_lower = fH1TriggerCellDifference->FindBin(ped_nega_lower);
@@ -6710,7 +6707,8 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     pedestal_sigma = sqrt(pedestal_sigma_counts / (Bin_ped_counts - 1));
     Double_t threshold = pedestal + coef * pedestal_sigma;
 
-    Double_t x_minimum_wo_ped, x_maximum_wo_ped = 0;
+    Double_t x_minimum_wo_ped = 0.0;
+    Double_t x_maximum_wo_ped = 0.0;
 
     if(cut_flag == 1){
 
@@ -6740,11 +6738,6 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         }
 
         fH1TriggerCellDifference->Draw();
-
-        std::cout << "pedestal = " << pedestal << std::endl;
-        std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
-        std::cout << "x_minimum_wo_ped = " << x_minimum_wo_ped << std::endl;
-        std::cout << "x_maximum_wo_ped = " << x_maximum_wo_ped << std::endl;
     }
 
     
@@ -6752,30 +6745,37 @@ void DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     if(cut_flag == 0){
 
         fH1TriggerCellDifference->Draw();
-        TF1* line = new TF1("line", "pol0", -120, 120);
+        TF1* line = new TF1("line", "pol0", ped_nega_lower, ped_posi_upper);
         line->SetParameters(pedestal);
         line->SetLineColor(kRed);
         line->SetLineWidth(2);
         line->SetLineStyle(1);
-        line->Draw("LSAME");
-
-        std::cout << "pedestal = " << pedestal << std::endl;
-        std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
+        // line->Draw("LSAME");
     }
 
     c1->Update();
 
-    TString folderPath = Makedir_Date();
+    // TString folderPath = Makedir_Date();
 
-    TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
-    filename_figure.ReplaceAll(".", "_");
-    TString filename_figure_pdf = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.pdf", iBoard1, iCh1, iBoard2, iCh2, coef);
-    TString filename_figure_png = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.png", iBoard1, iCh1, iBoard2, iCh2, coef);
-    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
+    // TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
+    // filename_figure.ReplaceAll(".", "_");
+    // TString filename_figure_pdf = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.pdf", iBoard1, iCh1, iBoard2, iCh2, coef);
+    // TString filename_figure_png = filename_figure + Form("_discriCell_difference_[%i][%i]-[%i][%i]_%.0fsigma.png", iBoard1, iCh1, iBoard2, iCh2, coef);
+    // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
-    IfFile_duplication(folderPath, filename_figure_pdf);
-    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+    // IfFile_duplication(folderPath, filename_figure_pdf);
+    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
 
-    IfFile_duplication(folderPath, filename_figure_png);
-    c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+    // IfFile_duplication(folderPath, filename_figure_png);
+    // c1->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+
+    c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_[%i][%i]-[%i][%i]_3.pdf", iBoard1, iCh1, iBoard2, iCh2));
+    c1->SaveAs(Form("./figure/20250213/chains456_disc_dif_[%i][%i]-[%i][%i]_3.png", iBoard1, iCh1, iBoard2, iCh2));
+
+    std::cout << "pedestal = " << pedestal << std::endl;
+    std::cout << "pedestal_sigma = " << pedestal_sigma << std::endl;
+    std::cout << "x_minimum_wo_ped = " << x_minimum_wo_ped << std::endl;
+    std::cout << "x_maximum_wo_ped = " << x_maximum_wo_ped << std::endl;
+
+    return fChain->GetEntriesFast();
 }
