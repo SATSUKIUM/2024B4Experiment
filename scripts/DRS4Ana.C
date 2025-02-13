@@ -6139,7 +6139,7 @@ void DRS4Ana::Discricut(){
         gPad->SetGrid();
         gStyle->SetOptStat(1);
     }
-    waveform(nentries);
+    // waveform(nentries);
 
     c2->Update();
 }
