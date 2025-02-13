@@ -6891,7 +6891,7 @@ Double_t DRS4Ana::PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, I
         }
     }
 
-    pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
+    pedestal = static_cast<Double_t>(pedestal_counts) / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
 
     Double_t x_minimum = fH1TriggerCellDifference->GetXaxis()->GetXmin();
     Int_t Bin_min = fH1TriggerCellDifference->FindBin(x_minimum);
@@ -7056,7 +7056,7 @@ Double_t DRS4Ana::PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iC
         }
     }
 
-    pedestal = pedestal_counts / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
+    pedestal = static_cast<Double_t>(pedestal_counts) / ((ped_nega_upper - ped_nega_lower + 1) + (ped_posi_upper - ped_posi_lower + 1));
 
     Double_t x_minimum = fH1TriggerCellDifference->GetXaxis()->GetXmin();
     Int_t Bin_min = fH1TriggerCellDifference->FindBin(x_minimum);
