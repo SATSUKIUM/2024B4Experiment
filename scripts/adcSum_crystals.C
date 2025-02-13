@@ -119,6 +119,9 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
             }
         }
         newBranch->Fill();
+        if(i % 10000 == 0){
+            printf("\tevent processed... %lld\n",i);
+        }
     }
 
     // 既存のツリーを削除して新しいツリーを保存
