@@ -29,6 +29,9 @@
 #include <TApplication.h>
 #include <TChainElement.h>
 #include <TObjArray.h>
+
+#define DEBUG 1
+
 void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.dat"){
     // 入力ファイルを開く
     TFile *file = TFile::Open(filepath, "UPDATE");
@@ -61,7 +64,6 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
     fPedestalTmin = fTime[0][0][0];
     fPedestalTmax = fTime[0][0][1023] / 40.0;
 
-    printf("\n\tDEBUG\n");
     Double_t pedeslta_sum;
     // イベントループ
     Long64_t nentries = tree->GetEntries();
@@ -87,6 +89,9 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                         for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCell++){
                             if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 180.0){
                                 adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
+                                if(DEBUG){
+                                    std::cout << adcSum_crystals[iBoard][iCh] << std::endl;
+                                }
                             }
                             else if(fTime[iBoard][iCh][iCell] > discriTime + 180.0){
                                 break;
