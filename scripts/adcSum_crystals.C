@@ -83,9 +83,6 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                     pedeslta_sum += fWaveform[iBoard][iCh][iCell];
                     counter++;
                 }
-                // if(DEBUG){
-                //     std::cout << counter << std::endl;
-                // }
                 pedeslta_sum = pedeslta_sum/counter;
                 if(iBoard == 0){
                     if(iCh == 1){
@@ -93,13 +90,13 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                         for(Int_t iCell = fDiscriCell[iBoard][iCh];;iCell++){
                             if(fTime[iBoard][iCh][iCell] > discriTime - 50.0 && fTime[iBoard][iCh][iCell] < discriTime + 180.0){
                                 adcSum_crystals[iBoard][iCh] += fWaveform[iBoard][iCh][iCell] - pedeslta_sum;
-                                if(DEBUG){
-                                    std::cout << Form("adcSum_crystals : %f", adcSum_crystals[iBoard][iCh]) << std::endl;
-                                }
                             }
                             else if(fTime[iBoard][iCh][iCell] > discriTime + 180.0){
                                 break;
                             }
+                        }
+                        if(DEBUG){
+                                    std::cout << Form("adcSum_crystals[%d][%d] : %f", iBoard, iCh, adcSum_crystals[iBoard][iCh]) << std::endl;
                         }
                     }
                     else{
@@ -112,6 +109,9 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                                 break;
                             }
                         }
+                        if(DEBUG){
+                                    std::cout << Form("adcSum_crystals[%d][%d] : %f", iBoard, iCh, adcSum_crystals[iBoard][iCh]) << std::endl;
+                        }
                     }
                 }
                 else{
@@ -123,6 +123,9 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES/Run_005.d
                         else if(fTime[iBoard][iCh][iCell] > discriTime + 180.0){
                             break;
                         }
+                    }
+                    if(DEBUG){
+                    std::cout << Form("adcSum_crystals[%d][%d] : %f", iBoard, iCh, adcSum_crystals[iBoard][iCh]) << std::endl;
                     }
                 }
             }
