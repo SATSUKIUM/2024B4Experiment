@@ -3343,8 +3343,8 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x
             distance_from_511_line = abs(x_energy + y_energy -511) / sqrt(2);
             //x_dash_energy = ( 511-(511-x_energy+distance_from_511_line/2) ) / 511 * 
             
-            y_upper = -x_energy + 3 * sqrt((x_error **2 + y_error **2)) + 511;
-            y_lower = -x_energy - 3 * sqrt((x_error **2 + y_error **2)) + 511;
+            y_upper = -x_energy + 3 * sqrt((x_error ** 2 + y_error ** 2)) + 511;
+            y_lower = -x_energy - 3 * sqrt((x_error ** 2 + y_error ** 2)) + 511;
 
             //x_distance= (511 - x_energy - y_energy);
             //y_distance = pow((511.0+x_energy-y_energy)/2.0 - x_energy, 2.0) + pow((511.0-x_energy+y_energy)/2.0 - (511.0-x_energy), 2.0);
