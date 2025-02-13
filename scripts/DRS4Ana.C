@@ -6607,10 +6607,10 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         fH1TriggerTimeDifference->Fit(gaussian_plus_pedestal, "R");
         gaussian_plus_pedestal->Draw("LSAME");
 
-        TF1* linear = new TF1("linear", "pol1", fit_min, fit_max);
-        linear->SetParameters(
-            gaussian_plus_linear->GetParameter(3), // 切片
-            gaussian_plus_linear->GetParameter(4)  // 傾き
+        TF1* pedestal = new TF1("linear", "pol1", fit_min, fit_max);
+        pedestal->SetParameters(
+            gaussian_plus_pedestal->GetParameter(3), // 切片
+            gaussian_plus_pedestal->GetParameter(4)  // 傾き
         );
         pedestal->SetLineColor(kGreen+1);
         pedestal->SetLineStyle(1);
