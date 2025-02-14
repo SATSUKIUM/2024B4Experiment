@@ -331,6 +331,13 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     Double_t time[numOfBoards][4][1024];
     Double_t adcSum[numOfBoards][4];
     Double_t pedestal[numOfBoards][4];
+    Double_t adcSum_crystals[2][4];
+
+    Int_t counter;
+    Double_t discriTime;
+    Double_t pedeslta_sum;
+    Double_t fPedestalTmin, fPedestalTmax;
+    Double_t adcSum_crystals_buf;
 
     //--------------------------------------------------
     // Define a tree for board infomation
@@ -366,6 +373,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
     }
     treeDRS4BoardEvent->Branch("pedestal", pedestal, Form("pedestal[%d][4]/D", numOfBoards));
+    treeDRS4BoardEvent->Branch("adcSum_crystals", adcSum_crystals, Form("adcSum_crystals[%d][4]/D", numOfBoards));
     
 
     for(Int_t iBoard=0; iBoard<numOfBoards; iBoard++){
@@ -525,6 +533,57 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
                 pedestal[iBoard][chID] = pedestal[iBoard][chID]/30.0; // pedestal: average voltage of first 30 cells
                 adcSum[iBoard][chID] += -pedestal[iBoard][chID]*1024.0; // adcSum - dcoffset
                 DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
+
+                //adcSum_crystalsの計算
+                pedeslta_sum = 0;
+                counter = 0;
+                adcSum_crystals_buf = 0.0;
+
+                if(n==0){
+                    fPedestalTmin = time[0][0][0];
+                    fPedestalTmax = time[0][0][1023]/ 40.0;
+                }
+                for(Int_t iCell=0; iCell<1024; iCell++){
+                    if(fPedestalTmin <= time[iBoard][chID][iCell] && time[iBoard][chID][iCell] <= fPedestalTmax){
+                        pedeslta_sum += waveform[iBoard][chID][iCell];
+                        counter++;
+                    }                   
+                }
+                pedeslta_sum = pedeslta_sum/counter;
+                discriTime = time[iBoard][chID][discriCell[iBoard][chID]];
+                if(iBoard == 0){
+                    if(chID == 1){
+                        for(Int_t iCell = discriCell[iBoard][chID];;iCell++){
+                            if(time[iBoard][chID][iCell] >= discriTime - 50.0 && time[iBoard][chID][iCell] <= discriTime + 180.0){
+                                adcSum_crystals_buf += waveform[iBoard][chID][iCell] - pedeslta_sum;
+                            }
+                            else if(time[iBoard][chID][iCell] > discriTime + 180.0){
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        for(Int_t iCell = discriCell[iBoard][chID];;iCell++){
+                            if(time[iBoard][chID][iCell] >= discriTime - 50.0 && time[iBoard][chID][iCell] <= discriTime + 600.0){
+                                adcSum_crystals_buf += waveform[iBoard][chID][iCell] - pedeslta_sum;
+                            }
+                            else if(time[iBoard][chID][iCell] > discriTime + 180.0){
+                                break;
+                            }
+                        }
+                    }
+                }
+                else{
+                    for(Int_t iCell = discriCell[iBoard][chID];;iCell++){
+                        if(time[iBoard][chID][iCell] >= discriTime - 50.0 && time[iBoard][chID][iCell] <= discriTime + 180.0){
+                            adcSum_crystals_buf += waveform[iBoard][chID][iCell] - pedeslta_sum;
+                        }
+                        else if(time[iBoard][chID][iCell] > discriTime + 180.0){
+                            break;
+                        }
+                    }
+                }
+                adcSum_crystals[iBoard][chID] = adcSum_crystals_buf;
             }
         }
         
