@@ -7555,11 +7555,15 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-    filename_figure += "_fH2Energy_PMTs.pdf";
-    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+    TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
+    TString filename_figure_pnf = filename_figure + "_fH2Energy_PMTs.png";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
-    IfFile_duplication(folderPath, filename_figure);
-    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    IfFile_duplication(folderPath, filename_figure_pdf);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_pnf);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pnf.Data()));
     
     
     std::cout << "all events : " << allcounter << std::endl;
