@@ -3206,7 +3206,7 @@ Double_t CurveLower_ukai(Double_t *x, Double_t *par){
 
 
 Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
-, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true, Double_t sigma = 3){
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
@@ -3265,6 +3265,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     cut7 : s1,a1 energy
     */
     bool TimeCutPassed, ScatterCutPassed, EnergyCutPassed;
+
 
     x_adcSum_timerange = 600;
    
@@ -3370,8 +3371,8 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
             }
         
 
-        cut4 = ( 256 - 3 * S1_error < S1_energy ) && (S1_energy < 256 + 3 * S1_error);
-        cut5 = ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 340 + 3 * x_error_upper);
+        cut4 = ( 256 - sigma * S1_error < S1_energy ) && (S1_energy < 256 + sigma * S1_error);
+        cut5 = ( 170 - sigma * x_error_lower < x_energy ) && (x_energy < 340 + sigma * x_error_upper);
 
     
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
