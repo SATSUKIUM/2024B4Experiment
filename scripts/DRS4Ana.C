@@ -3250,6 +3250,9 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
 
     Int_t TimeCut, ScatterCut, EnergyCut, AllCut;
     bool cut0,cut1,cut2,cut3,cut4,cut5,cut6,cut7;
+    /*
+    cut0 : 
+    */
     bool TimeCutPassed, ScatterCutPassed, EnergyCutPassed;
 
     x_adcSum_timerange = 600;
@@ -3341,7 +3344,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
 
         cut3 = false;
         if (y_iBoard == 0){
-            cut3 =  (-2 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 2);
+            cut3 =  (-2 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 22);
         }else if (y_iBoard == 1 && y_iCh == 0){
             cut3 =  (6 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 34);
 
