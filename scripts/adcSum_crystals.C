@@ -60,7 +60,7 @@ void adcSum_crystals(TString filepath = "../data/PhysicsRun/ROOT_FILES2/Run_004.
     // 新しいブランチの変数を定義
     Double_t adcSum_crystals[2][4];
     Double_t adcSum_crystals_buf;
-    TBranch *newBranch = tree->Branch("adcSum_crystals", adcSum_crystals, "adcSum_crystals[2][4]/D");
+    TBranch *newBranch = tree->Branch("adcSum_crystals2", adcSum_crystals, "adcSum_crystals2[2][4]/D");
 
     Double_t fPedestalTmin, fPedestalTmax;
     fPedestalTmin = fTime[0][0][0];
