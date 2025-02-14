@@ -3340,10 +3340,10 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
         x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
         x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
 
-        A1_upper = -A1_energy + 3 * sqrt(pow(S1_error, 2) + pow(A1_error,2)) + 511;
-        A1_lower = -A1_energy - 3 * sqrt(pow(S1_error, 2) + pow(A1_error,2)) + 511;
-        y_upper = -x_energy + 3 * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
-        y_lower = -x_energy - 3 * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
+        A1_upper = -A1_energy + sigma * sqrt(pow(S1_error, 2) + pow(A1_error,2)) + 511;
+        A1_lower = -A1_energy - sigma * sqrt(pow(S1_error, 2) + pow(A1_error,2)) + 511;
+        y_upper = -x_energy + sigma * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
+        y_lower = -x_energy - sigma * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
 
 
     // void ApplyCuts(bool applyTimeCut, bool applyScatterCut, bool applyEnergyCut) {
@@ -3759,23 +3759,23 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
             for (int iCell = 0; iCell < nPoints; ++iCell) {
                 // (0,0) の波形
                 if (iGraph == 0) {
-                    x[iCell] = fTime[0][0][iCell];  // x波形データ (0,0)
-                    y[iCell] = fWaveform[0][0][iCell];  // y波形データ (0,0)
+                    x[iCell] = fTime[0][0][iCell];
+                    y[iCell] = fWaveform[0][0][iCell]; 
                 }
                 // (0,2) の波形
                 else if (iGraph == 1) {
-                    x[iCell] = fTime[0][2][iCell];  // x波形データ (0,2)
-                    y[iCell] = fWaveform[0][2][iCell];  // y波形データ (0,2)
+                    x[iCell] = fTime[0][2][iCell];  
+                    y[iCell] = fWaveform[0][2][iCell]; 
                 }
                 // (0,3) の波形
                 else if (iGraph == 2) {
-                    x[iCell] = fTime[0][3][iCell];  // x波形データ (0,3)
-                    y[iCell] = fWaveform[0][3][iCell];  // y波形データ (0,3)
+                    x[iCell] = fTime[0][3][iCell];  
+                    y[iCell] = fWaveform[0][3][iCell]; 
                 }
                 // (y_iBoard, y_iCh) の波形
                 else {
-                    x[iCell] = fTime[y_iBoard][y_iCh][iCell];  // x波形データ (y_iBoard, y_iCh)
-                    y[iCell] = fWaveform[y_iBoard][y_iCh][iCell];  // y波形データ (y_iBoard, y_iCh)
+                    x[iCell] = fTime[y_iBoard][y_iCh][iCell]; 
+                    y[iCell] = fWaveform[y_iBoard][y_iCh][iCell];
                 }
             }
 
@@ -3784,16 +3784,13 @@ void DRS4Ana::osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, 
             graph->SetLineColor(colors[iGraph]);  // 色の設定
             graph->SetLineWidth(2);
 
-            // graph->GetXaxis()->SetTitle("Time [ns]");    // X軸のタイトル
-            // graph->GetYaxis()->SetTitle("Waveform [V]"); // Y軸のタイトル
-
             graph->SetTitle(Form("event %d;Time [ns];Voltage [V]",eventNumber));
 
-            graph->GetXaxis()->SetRangeUser(0, 1500);  // x軸範囲を固定
-            graph->GetYaxis()->SetRangeUser(-0.55, 0.05);  // y軸範囲を固定
+            graph->GetXaxis()->SetRangeUser(0, 1500); 
+            graph->GetYaxis()->SetRangeUser(-0.55, 0.05);
 
-            if (iGraph == 0) graph->Draw("AL");  // 最初のグラフは軸つきで描画
-            else graph->Draw("L SAME");  // 以降は重ね書き
+            if (iGraph == 0) graph->Draw("AL");  
+            else graph->Draw("L SAME");  
         }
     
     } 
