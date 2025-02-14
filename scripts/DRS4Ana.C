@@ -3207,6 +3207,10 @@ Double_t CurveLower_ukai(Double_t *x, Double_t *par){
 
 Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
 , bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+    fChain->SetBranchStatus("fSec",0);
+    fChain->SetBranchStatus("fNanoSec",0);
+    fChain->SetBranchStatus("fTriggerCell",0);
+    fChain->SetBranchStatus("adcSum",0);
     
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t allcounter = 0;
@@ -7175,6 +7179,10 @@ Double_t DRS4Ana::PlotdiscriCell_difference_S2A2(Int_t iBoard1 = 0, Int_t iCh1 =
 Double_t DRS4Ana::PlotEnergy2(TString key = "0204", Int_t iBoard = 0, Int_t iCh = 0, Double_t xmin = 0, Double_t xmax = 600.0){
     fChain->SetBranchStatus("waveform",0);
     fChain->SetBranchStatus("time",0);
+    fChain->SetBranchStatus("fSec",0);
+    fChain->SetBranchStatus("fNanoSec",0);
+    fChain->SetBranchStatus("fTriggerCell",0);
+    fChain->SetBranchStatus("adcSum",0);
 
    Int_t flag_SlaveOnly = 0;
     std::cout << Form("\n\tnumOfBoards : %d", fNumOfBoards) << std::endl;
