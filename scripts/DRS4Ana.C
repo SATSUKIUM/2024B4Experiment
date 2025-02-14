@@ -7288,6 +7288,8 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
     fChain->SetBranchStatus("adcSum",0);
+    fChain->SetBranchStatus("waveform",0);
+    fChain->SetBranchStatus("time",0);
     
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t allcounter = 0;
@@ -7295,7 +7297,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     Long64_t timecutcounter = 0;
     Long64_t scattercutcounter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "title", 2000, 4000);
+    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 2000, 4000);
     canvas->Divide(2,2);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -7313,11 +7315,9 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     Double_t x_energy, y_energy, S1_energy, A1_energy;
     Double_t x_error, y_error, S1_error, A1_error;
     Double_t x_error_upper, x_error_lower;
-    Double_t x_charge_buf, y_charge_buf, S1_charge_buf, A1_charge_buf;
     Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
     Double_t y_upper, y_lower, A1_lower, A1_upper;
 
-    
     x_p0_buf = p0[x_iBoard][x_iCh];
     x_p1_buf = p1[x_iBoard][x_iCh];
     y_p0_buf = p0[y_iBoard][y_iCh];
@@ -7328,6 +7328,9 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     Double_t x_adcSum_timerange, y_adcSum_timerange;
     Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
     Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+
+    Double_t S1_charge_buf, A1_charge_buf;
+    Double_t x_charge_buf, y_charge_buf;
 
     Int_t TimeCut, ScatterCut, EnergyCut, AllCut;
     bool cut0,cut1,cut2,cut3,cut4,cut5,cut6,cut7;
@@ -7343,21 +7346,6 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     */
     bool TimeCutPassed, ScatterCutPassed, EnergyCutPassed;
 
-    x_adcSum_timerange = 600;
-   
-    if ((y_iBoard == 0 && y_iCh == 1) || (y_iBoard == 1)) {
-    y_adcSum_timerange = 180;
-    key_Crystal_y = "GSO";
-    }
-    else if (y_iBoard == 0 && y_iCh == 2) {
-    y_adcSum_timerange = 600; 
-    key_Crystal_y = "NaI";
-    }
-    else{
-        printf("\t\ny axis || type of crystal is invalid\n");
-    }
-
-
     TH1D *fH1EnergySpectra[3];
 
     fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI", x_iBoard, x_iCh), nBins, minEnergy, maxEnergy);
@@ -7366,11 +7354,9 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), nBins, minEnergy, maxEnergy);
     fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", y_iBoard, y_iCh, key_Crystal_y.Data(), (maxEnergy-minEnergy)/nBins));
     
-    
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 100, 0, 600);
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh,(maxEnergy-minEnergy)/nBins));
 
-    
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
     fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d Ch%d energy [keV];Board%d CH%d energy [keV]", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
     canvas->cd(1);
@@ -7396,16 +7382,16 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
         S1_DiscriCell = fDiscriCell[0][0];
         A1_DiscriCell = fDiscriCell[0][2];
         
-        S1_charge_buf = -GetChargeIntegral(0, 0, 20, S1_DiscriTime - 50, S1_DiscriTime + 600);
-        A1_charge_buf = -GetChargeIntegral(0, 2, 20, A1_DiscriTime - 50, A1_DiscriTime + 600);
+        S1_charge_buf = -fAdcSum_crystals[0][0];
+        A1_charge_buf = -fAdcSum_crystals[0][2];
 
         S1_energy = p0[0][0] + p1[0][0]* S1_charge_buf;
         A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
         S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
         A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
 
-        x_charge_buf = -GetChargeIntegral(x_iBoard, x_iCh, 20, x_DiscriTime - 50, x_DiscriTime + x_adcSum_timerange);
-        y_charge_buf = -GetChargeIntegral(y_iBoard, y_iCh, 20, y_DiscriTime - 50, y_DiscriTime + y_adcSum_timerange);
+        x_charge_buf = -fAdcSum_crystals[x_iBoard][x_iCh];
+        y_charge_buf = -fAdcSum_crystals[y_iBoard][y_iCh];
 
         x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
         y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
