@@ -3251,7 +3251,14 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     Int_t TimeCut, ScatterCut, EnergyCut, AllCut;
     bool cut0,cut1,cut2,cut3,cut4,cut5,cut6,cut7;
     /*
-    cut0 : 
+    cut0 : all DC > 0
+    cut1 : S1, A1, simultaneously
+    cut2 : S1, S1, simultaneously
+    cut3 : S2, A2_any deg, simultaneously
+    cut4 : 256 - 3sigma < E_S1 < 256 + 3sigma(これもっと強くして良いんじゃないか)
+    cut5 : 170 - 3sigma < E_S2 < 340 + 3sigma(これももっと強くして良いんじゃないか)
+    cut6 : 511 - 3(sqrt(sigma^2 + sigma^2)) < E_S2 + E_A2 < ::
+    cut7 : s1,a1 energy
     */
     bool TimeCutPassed, ScatterCutPassed, EnergyCutPassed;
 
