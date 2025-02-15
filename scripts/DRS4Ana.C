@@ -7316,7 +7316,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     Long64_t timecutcounter = 0;
     Long64_t scattercutcounter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 1500, 2000);
+    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 4000, 3000);
     canvas->Divide(2,2);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -7605,7 +7605,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     Long64_t timecutcounter = 0;
     Long64_t scattercutcounter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 1500, 2000);
+    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 4000, 3000);
     canvas->Divide(2,2);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
