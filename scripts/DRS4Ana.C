@@ -3272,8 +3272,7 @@ Double_t CurveLower_y(Double_t *x, Double_t *par){
 
 
 
-Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
-, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true, Double_t sigma = 3){
+Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true, Double_t sigma = 3){
     
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
@@ -3371,8 +3370,8 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     
 
     std::vector<Double_t> S1, x, S1_error, A1_error, x_error, y_error;
-    Double_t par_S1[3] = {S1_p0_res, A1_p0_res, sigma};
-    Double_t par_x[3] = {x_p0_res, y_p0_res, sigma};
+    Double_t par_S1[3] = {S1_p0_res, A1_p0_res, sigma}; //sigmaはargumentで指定する数
+    Double_t par_x[3] = {x_p0_res, y_p0_res, sigma}; //sigmaはargumentで指定する数
     PrecomputeErrors(par_S1, S1, S1_error, A1_error);
     PrecomputeErrors(par_x, x, x_error, y_error);
     
@@ -7316,8 +7315,7 @@ Double_t DRS4Ana::PlotEnergy2(TString key = "0204", Int_t iBoard = 0, Int_t iCh 
 }
 
 
-Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
-, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
@@ -7610,8 +7608,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 }
 
 
-Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
-, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
