@@ -7895,5 +7895,13 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     std::cout << "scattercut events : " << scattercutcounter << std::endl;
     std::cout << "valid events :" << validcounter << std::endl;
 
+    std::ofstream ofs;
+    ofs.open("./output/ES_eff.txt", std::ios::app);
+    auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
+    std::tm local_tm = *std::localtime(&now_c);
+    ofs << std::endl << "================================================================" << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl << Form("x_iB %d,x_iC %d,y_iB %d,x_iC %d", x_iBoard, x_iCh, y_iBoard, y_iCh) << std::endl << "\tall events : " << allcounter << std::endl  << "\ttimecut events : " << timecutcounter << std::endl << "\tscattercut events : " << scattercutcounter << std::endl << "\tvalid events :" << validcounter << std::endl;
+    ofs.close();
+
     return 0;
 }
