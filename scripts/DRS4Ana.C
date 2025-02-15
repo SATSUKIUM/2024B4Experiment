@@ -3189,7 +3189,7 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
 
 
 
-void PrecomputeErrors(Double_t *par, vector<Double_t>& x, vector<Double_t>& x_sigma, vector<Double_t>& y_sigma) {
+void PrecomputeErrors(Double_t *par, std::vector<Double_t>& x, std::vector<Double_t>& x_sigma, std::vector<Double_t>& y_sigma) {
     // y = -x + 511 
     for (Double_t x_val = 0; x_val <= 511; x_val += 0.05) {
         Double_t x_err = par[0] * par[2] * sqrt(x_val) * 0.01 / (2 * sqrt(2 * log(2)));
@@ -3203,7 +3203,7 @@ void PrecomputeErrors(Double_t *par, vector<Double_t>& x, vector<Double_t>& x_si
 
 
 
-Double_t GetCurveUpper_y(Double_t x_energy, Double_t *par, vector<Double_t>& x, vector<Double_t>& x_sigma, vector<Double_t>& y_sigma){
+Double_t GetCurveUpper_y(Double_t x_energy, Double_t *par, std::vector<Double_t>& x, std::vector<Double_t>& x_sigma, std::vector<Double_t>& y_sigma){
    
         
     // vector<Double_t> x_plus_sigma;
@@ -3235,7 +3235,7 @@ Double_t GetCurveUpper_y(Double_t x_energy, Double_t *par, vector<Double_t>& x, 
     return - x_energy + ( 2 * x_sigma[index] + y_sigma[index] ) + 511;
 }
 
-Double_t GetCurveLower_y(Double_t x_energy, Double_t *par, vector<Double_t>& x, vector<Double_t>& x_sigma, vector<Double_t>& y_sigma){
+Double_t GetCurveLower_y(Double_t x_energy, Double_t *par, std::vector<Double_t>& x, std::vector<Double_t>& x_sigma, std::vector<Double_t>& y_sigma){
 
    
 
