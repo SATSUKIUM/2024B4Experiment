@@ -3352,13 +3352,8 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     gStyle->SetOptStat(0);
     
 
-<<<<<<< HEAD
-    std::vector<Double_t> S1, x, S1_error, A1_error, x_error, y_error;
-    Double_t S1_energy_vec[0], x_energy_vec[0];
-=======
     std::vector<Double_t> S1_error, A1_error, x_error, y_error;
     Double_t S1_energy_vec[1], x_energy_vec[1];
->>>>>>> ceaa02c93b0a9c0b9d80113b1ebbb6c6a33053da
     Double_t par_S1[3] = {S1_p0_res, A1_p0_res, sigma};
     Double_t par_x[3] = {x_p0_res, y_p0_res, sigma};
     
@@ -3405,20 +3400,11 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
        
         //A1_upper = GetCurveUpper_y(A1_energy, par_S1);
         //A1_lower = GetCurveLower_y(A1_energy, par_S1);
-<<<<<<< HEAD
-        A1_upper = CurveUpper_y(S1_energy_vec[1], par_S1);
-        A1_lower = CurveLower_y(S1_energy_vec[1], par_S1);
-        
-        y_upper = CurveUpper_y(x_energy_vec[1], par_x);
-        y_lower = CurveLower_y(x_energy_vec[1], par_x);
-
-=======
         A1_upper = CurveUpper_y(S1_energy_vec, par_S1);
         A1_lower = CurveLower_y(S1_energy_vec, par_S1);
         
         y_upper = CurveUpper_y(x_energy_vec, par_x);
         y_lower = CurveLower_y(x_energy_vec, par_x);
->>>>>>> ceaa02c93b0a9c0b9d80113b1ebbb6c6a33053da
 
 
     // Time Cut
@@ -7902,8 +7888,6 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     std::cout << "scattercut events : " << scattercutcounter << std::endl;
     std::cout << "valid events :" << validcounter << std::endl;
 
-<<<<<<< HEAD
-=======
     std::ofstream ofs;
     ofs.open("./output/ES2_eff.txt", std::ios::app);
     auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
@@ -7912,6 +7896,5 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     ofs << std::endl << "================================================================" << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl << Form("x_iB %d,x_iC %d,y_iB %d,x_iC %d", x_iBoard, x_iCh, y_iBoard, y_iCh) << std::endl << "\tall events : " << allcounter << std::endl  << "\ttimecut events : " << timecutcounter << std::endl << "\tscattercut events : " << scattercutcounter << std::endl << "\tvalid events :" << validcounter << std::endl;
     ofs.close();
 
->>>>>>> ceaa02c93b0a9c0b9d80113b1ebbb6c6a33053da
     return 0;
 }
