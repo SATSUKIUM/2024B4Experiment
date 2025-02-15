@@ -7587,7 +7587,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     ofs << std::endl << "================================================================" << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl << Form("x_iB %d,x_iC %d,y_iB %d,x_iC %d", x_iBoard, x_iCh, y_iBoard, y_iCh) << std::endl << "\tall events : " << allcounter << std::endl  << "\ttimecut events : " << timecutcounter << std::endl << "\tscattercut events : " << scattercutcounter << std::endl << "\tvalid events :" << validcounter << std::endl;
     ofs.close();
 
-    return 0;
+    return 0; //　これはreturn 0;でok
 }
 
 
