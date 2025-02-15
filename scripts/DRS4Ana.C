@@ -7302,7 +7302,7 @@ Double_t DRS4Ana::PlotEnergy2(TString key = "0204", Int_t iBoard = 0, Int_t iCh 
 }
 
 
-Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma =2, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true){
+Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true){
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
@@ -7355,8 +7355,10 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     Double_t x_charge_buf, y_charge_buf;
 
     Double_t S1_energy_vec[1], x_energy_vec[1];
-    Double_t par_S1[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma};
-    Double_t par_x[3] = {x_p0_res_buf, y_p0_res_buf, sigma};
+    Double_t par_S1_lower[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_lower};
+    Double_t par_S1_upper[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_upper};
+    Double_t par_x_lower[3] = {x_p0_res_buf, y_p0_res_buf, sigma6_GSO_lower};
+    Double_t par_x_upper[3] = {x_p0_res_buf, y_p0_res_buf, sigma6_GSO_upper};
     
 
     Int_t TimeCut, ScatterCut, EnergyCut, AllCut;
@@ -7424,13 +7426,13 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 
         S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
         
-        x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        x_error_upper = x_p0_res_buf * sqrt(340) * 0.01 / (2 * sqrt(2 * log(2)));
         x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
 
-        A1_upper = CurveUpper_y(S1_energy_vec, par_S1);
-        A1_lower = CurveLower_y(S1_energy_vec, par_S1);
-        y_upper = CurveUpper_y(x_energy_vec, par_x);
-        y_lower = CurveLower_y(x_energy_vec, par_x);
+        A1_upper = CurveUpper_y(S1_energy_vec, par_S1_upper);
+        A1_lower = CurveLower_y(S1_energy_vec, par_S1_lower);
+        y_upper = CurveUpper_y(x_energy_vec, par_x_upper);
+        y_lower = CurveLower_y(x_energy_vec, par_x_lower);
 
 
     // Time Cut
@@ -7455,8 +7457,8 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
             }
         
     // Scatter Cut
-        cut4 = ( 256 - sigma * S1_error < S1_energy ) && (S1_energy < 256 + sigma * S1_error);
-        cut5 = ( 170 - sigma * x_error_lower < x_energy ) && (x_energy < 340 + sigma * x_error_upper);
+        cut4 = ( 256 - sigma4_S1 * S1_error < S1_energy ) && (S1_energy < 256 + sigma4_S1 * S1_error);
+        cut5 = ( 170 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 340 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
@@ -7511,8 +7513,8 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     line->Draw("SAME");
 
 
-    Double_t x1 = 170 - sigma * x_error_lower;
-    Double_t x2 = 340 + sigma * x_error_upper;
+    Double_t x1 = 170 - sigma5_S2 * x_error_lower;
+    Double_t x2 = 340 + sigma5_S2 * x_error_upper;
     TLine *line1 = new TLine(x1, 0, x1, 511);
     TLine *line2 = new TLine(x2, 0, x2, 511);
     line1->SetLineColor(kBlue);
@@ -7520,12 +7522,12 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     line1->Draw("SAME");
     line2->Draw("SAME");
 
-    curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma); 
+    curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_upper); 
     curve_upper->SetLineColor(kBlue);
     curve_upper->Draw("SAME");
 
     
-    curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
+    curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_lower);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
     curve_lower->SetLineColor(kBlue);
     curve_lower->Draw("SAME");
 
@@ -7589,7 +7591,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 }
 
 
-Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma = 3, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true){
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
@@ -7642,8 +7644,10 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     Double_t x_charge_buf, y_charge_buf;
 
     Double_t S1_energy_vec[1], x_energy_vec[1];
-    Double_t par_S1[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma};
-    Double_t par_x[3] = {x_p0_res_buf, y_p0_res_buf, sigma};
+    Double_t par_S1_lower[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_lower};
+    Double_t par_S1_upper[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_upper};
+    Double_t par_x_lower[3] = {x_p0_res_buf, y_p0_res_buf, sigma6_GSO_lower};
+    Double_t par_x_upper[3] = {x_p0_res_buf, y_p0_res_buf, sigma6_GSO_upper};
 
     Int_t TimeCut, ScatterCut, EnergyCut, AllCut;
     bool cut0,cut1,cut2,cut3,cut4_eff,cut5,cut6,cut7;
@@ -7708,14 +7712,14 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
         x_energy_vec[0] =  {x_energy};
         S1_energy_vec[0] = {S1_energy};
     
-        x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (sigma * sqrt(2 * log(2))); //散乱カット用のエラー
-        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (sigma * sqrt(2 * log(2)));
-        S1_error_eff = p0_res[0][0] * sqrt(256) * 0.01 / (sigma * sqrt(2 * log(2))); //90°散乱カット用のエラー
+        x_error_upper = x_p0_res_buf * sqrt(340) * 0.01 / (sqrt(2 * log(2))); //散乱カット用のエラー
+        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (sqrt(2 * log(2)));
+        S1_error_eff = p0_res[0][0] * sqrt(511) * 0.01 / (sqrt(2 * log(2))); //90°散乱カット用のエラー
 
-        y_upper = CurveUpper_y(x_energy_vec, par_x);
-        y_lower = CurveLower_y(x_energy_vec, par_x);
-        A1_upper = CurveUpper_y(S1_energy_vec, par_S1);
-        A1_lower = CurveLower_y(S1_energy_vec, par_S1);
+        A1_upper = CurveUpper_y(S1_energy_vec, par_S1_upper);
+        A1_lower = CurveLower_y(S1_energy_vec, par_S1_lower);
+        y_upper = CurveUpper_y(x_energy_vec, par_x_upper);
+        y_lower = CurveLower_y(x_energy_vec, par_x_lower);
 
  
     // Time Cut
@@ -7740,8 +7744,8 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
             }
         
     // Scatter Cut
-        cut4_eff = ( 511 - sigma * S1_error_eff < S1_energy ) && (S1_energy < 511 + sigma * S1_error_eff);
-        cut5 = ( 170 - sigma * x_error_lower < x_energy ) && (x_energy < 340 + sigma * x_error_upper);
+        cut4_eff = ( 511 - sigma4_S1 * S1_error_eff < S1_energy ) && (S1_energy < 511 + sigma4_S1 * S1_error_eff);
+        cut5 = ( 170 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 340 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
