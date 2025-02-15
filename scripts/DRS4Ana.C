@@ -7512,13 +7512,14 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     line->SetLineWidth(2);
     line->Draw("SAME");
 
-
-    Double_t x1 = 170 - sigma5_S2 * x_error_lower;
-    Double_t x2 = 340 + sigma5_S2 * x_error_upper;
+    Double_t x1 = 194.2 - sigma5_S2 * x_error_lower;
+    Double_t x2 = 267.8 + sigma5_S2 * x_error_upper;
     TLine *line1 = new TLine(x1, 0, x1, 511);
     TLine *line2 = new TLine(x2, 0, x2, 511);
     line1->SetLineColor(kBlue);
     line2->SetLineColor(kBlue);
+    line1->SetLineWidth(2);
+    line2->SetLineWidth(2);
     line1->Draw("SAME");
     line2->Draw("SAME");
 
