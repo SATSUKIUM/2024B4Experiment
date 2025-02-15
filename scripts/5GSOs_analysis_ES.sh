@@ -3,16 +3,15 @@
 # ROOTスクリプトを実行する関数
 run_root() {
     XX=$1
-    YY=$2
     root -l <<EOF
 .L DRS4Ana.C
 listChains("456")
 DRS4Ana obj
-obj.EventSelection2("0204", 0, 3, $XX, $YY)
+obj.EventSelection2("0204", 0, 3, $XX)
 EOF
 }
 
 export -f run_root
 
 # 並列実行（XX, YY の組み合わせ）
-parallel run_root ::: $(printf "0 1\n1 0\n1 1\n1 2\n1 3")
+parallel run_root ::: "0,1" "1,0" "1,1" "1,2" "1,3"

@@ -7775,7 +7775,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
             
         }
 
-        if(Entry % 5000 == 0){
+        if(Entry % 50000 == 0){
             printf("\tPoint plot : %d\n", Entry);
         }
         allcounter++;
@@ -7839,11 +7839,15 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-    filename_figure += "_fH2Energy_PMTs.pdf";
-    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
+    // TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
+    TString filename_figure_png = filename_figure + Form("_EventSelection__eff_y_iB%diC%d_.png", y_iBoard, y_iCh);
+    // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
-    IfFile_duplication(folderPath, filename_figure);
-    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
+    // IfFile_duplication(folderPath, filename_figure_pdf);
+    // canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+
+    IfFile_duplication(folderPath, filename_figure_png);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
     
     
     std::cout << "all events : " << allcounter << std::endl;
