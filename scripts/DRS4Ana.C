@@ -7812,7 +7812,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
         //  timecutcounter++;
         // }
 
-        if(Entry % 5000 == 0){
+        if(Entry % 50000 == 0){
             printf("\tPoint plot : %d\n", Entry);
         }
         allcounter++;
