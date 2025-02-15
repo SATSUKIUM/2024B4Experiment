@@ -3375,7 +3375,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     PrecomputeErrors(par_S1, S1, S1_error, A1_error);
     PrecomputeErrors(par_x, x, x_error, y_error);
     
-    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 2
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 3
     TF1 *curve_lower = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 3); 
 
 
