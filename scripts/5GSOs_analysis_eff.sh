@@ -3,7 +3,7 @@
 # ROOTスクリプトを実行する関数
 run_root() {
     XX=$1
-    root -l -b <<EOF
+    root -l <<EOF
 .L DRS4Ana.C
 addGlobalChain("../data/PhysicsRun/EFFCIENCY/Run023.dat_2.root")
 addGlobalChain("../data/PhysicsRun/evacuation/Run021.dat_2.root")
