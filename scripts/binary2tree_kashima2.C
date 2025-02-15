@@ -359,14 +359,10 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
     auto treeDRS4BoardEvent = new TTree("treeDRS4BoardEvent", "a tree for events of each DRS4 boards");
     // treeDRS4BoardEvent->Branch("numOfBoards", &numOfBoards, "numOfBoards/I"); //Infoにあるからいらないよね。
     TTimeStamp *eventTime = new TTimeStamp;
-    treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
     //
-
-    treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
     if(DISCR_FLAG){
         treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
     }
-    treeDRS4BoardEvent->Branch("pedestal", pedestal, Form("pedestal[%d][4]/D", numOfBoards));
     treeDRS4BoardEvent->Branch("adcSum_crystals", adcSum_crystals, Form("adcSum_crystals[%d][4]/D", numOfBoards));
     
 
@@ -561,7 +557,7 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
                             if(time[iBoard][chID][iCell] >= discriTime - 50.0 && time[iBoard][chID][iCell] <= discriTime + 600.0){
                                 adcSum_crystals_buf += waveform[iBoard][chID][iCell] - pedeslta_sum;
                             }
-                            else if(time[iBoard][chID][iCell] > discriTime + 180.0){
+                            else if(time[iBoard][chID][iCell] > discriTime + 600.0){
                                 break;
                             }
                         }
