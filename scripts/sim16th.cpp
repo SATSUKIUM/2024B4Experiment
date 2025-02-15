@@ -417,11 +417,11 @@ Double_t Integrand_dividend(Double_t theta_prime){
     return (gamma_factor(90) - 1) * (gamma_factor(theta_prime) - pow(sin(theta_prime * M_PI / 180), 2)) * pow(2 - cos(theta_prime * M_PI / 180), -2) * (1 - exp(-1.0 * density_GSO * absorb_val * A2_hight / sin(theta_prime * M_PI / 180)));
 }
 
-Double_t GetKappa(TString input_Folder = "./cfg/"){
+Double_t GetKappa(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
 
     gStyle->SetOptFit(1111);
 
-    TString input_Filepath = Form("%scounts_data.txt",input_Folder.Data());
+    TString input_Filepath = input_Folder;
     std::ifstream ifs(input_Filepath);
 
     TGraphErrors* graph = new TGraphErrors();
