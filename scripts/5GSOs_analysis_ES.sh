@@ -3,7 +3,7 @@
 # ROOTスクリプトを実行する関数
 run_root() {
     XX=$1
-    root -l <<EOF
+    root -l -b <<EOF
 .L DRS4Ana.C
 listChains("456")
 DRS4Ana obj
