@@ -7752,10 +7752,8 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
         cut7 = (A1_lower <= A1_energy && A1_energy <= A1_upper);
 
         TimeCutPassed = !applyTimeCut || (cut0 && cut2 && cut3);
-        // ScatterCutPassed = !applyScatterCut || (cut4_eff && cut5);
-        // EnergyCutPassed = !applyEnergyCut || (cut6);
-        ScatterCutPassed = true;
-        EnergyCutPassed = true;
+        ScatterCutPassed = !applyScatterCut || (cut4_eff && cut5);
+        EnergyCutPassed = !applyEnergyCut || (cut6);
 
         // if (TimeCutPassed && ScatterCutPassed && EnergyCutPassed) {
         // fH2Energy_PMTs->Fill(x_energy, y_energy);
