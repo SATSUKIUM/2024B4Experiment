@@ -352,6 +352,7 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
     //--------------------------------------------------
     auto treeDRS4BoardEvent = new TTree("treeDRS4BoardEvent", "a tree for events of each DRS4 boards");
     // treeDRS4BoardEvent->Branch("numOfBoards", &numOfBoards, "numOfBoards/I"); //Infoにあるからいらないよね。
+    TTimeStamp *eventTime = new TTimeStamp;
     //
     if(DISCR_FLAG){
         treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
