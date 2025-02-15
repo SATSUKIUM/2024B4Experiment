@@ -7731,7 +7731,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
 
     // bool applyTimeCut, applyScatterCut, applyEnergyCut;
 
-        cut0 =  (0 < S1_DiscriCell) && (0 < A1_DiscriCell) && (0 < x_DiscriCell) && (0 < y_DiscriCell);
+        cut0 =  (0 < S1_DiscriCell) && (0 < x_DiscriCell) && (0 < y_DiscriCell);
         cut1 =  (-17 <= S1_DiscriCell - A1_DiscriCell) && (S1_DiscriCell - A1_DiscriCell <= 22);
         cut2 =  (-22 <= S1_DiscriCell - x_DiscriCell) && (S1_DiscriCell - x_DiscriCell <= 15);
 
