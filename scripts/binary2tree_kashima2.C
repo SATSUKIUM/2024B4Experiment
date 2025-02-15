@@ -325,8 +325,14 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
 
     Double_t timeBinWidth[numOfBoards][4][1024];
 
-    Int_t discriCell[numOfBoards][4], triggerCell[numOfBoards];
-    Double_t adcSum_crystals[2][4], time[numOfBoards][4][1024];
+    Int_t triggerCell[numOfBoards];
+    Int_t discriCell[numOfBoards][4];
+    UInt_t scaler[numOfBoards][4];
+    Double_t waveform[numOfBoards][4][1024];
+    Double_t time[numOfBoards][4][1024];
+    Double_t adcSum[numOfBoards][4];
+    Double_t pedestal[numOfBoards][4];
+    Double_t adcSum_crystals[2][4];
 
     Int_t counter;
     Double_t discriTime;
@@ -390,6 +396,13 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
         if(eventHeader.event_serial_number%10000 == 0){
             printf("Found event #%d %d %d\n", eventHeader.event_serial_number, eventHeader.second, eventHeader.millisecond);
         }
+        
+        if (debug_frag >= 1)
+            PrintEventHeader(&eventHeader);
+        eventTime->Set((Int_t)eventHeader.year, (Int_t)eventHeader.month, (Int_t)eventHeader.day,
+                       (Int_t)eventHeader.hour, (Int_t)eventHeader.minute, (Int_t)eventHeader.second,
+                       (Int_t)eventHeader.millisecond * 1E6,
+                       1, 0); // last 1,0-> UTC true, offset zero
 
         //--------------------------------------------------
         // Loop over all boards in data file for event data
@@ -420,7 +433,7 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
             else
             {
                 DEBUG_PRINT(1, "   Trigger cell: %d\n", triggerCellHeader.trigger_cell);
-                // triggerCell[iBoard] = triggerCellHeader.trigger_cell; // Set Tree data
+                triggerCell[iBoard] = triggerCellHeader.trigger_cell; // Set Tree data
             }
             if (numOfBoards > 1)
             {
@@ -444,6 +457,8 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
                 fread(&scaler_buf, sizeof(int), 1, f); //scaler means ??
                 fread(voltage, sizeof(short), 1024, f); //Voltage Bin is data encoded in 2-Byte(16bits) integars. 0=RC-0.5V and 65535=RC+0.5V
 
+                adcSum[iBoard][chID] = 0;
+                pedestal[iBoard][chID] = 0;
                 discriCell[iBoard][chID] = 0;
                 Int_t flag_discriCell = 0;// "3回連続"で-20 mVを下回った時にぴったり3になるフラグ
                 Int_t flag_found_discriCell = 0;// 初めて3回連続のフラグが立つまで0のままで、そのフラグが立ったら1になるフラグ
@@ -476,6 +491,9 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
                         flag_found_discriCell = 1;// 閾値を超えたタイミングがわかったので、フラグを立てておく
                         discriCell[iBoard][chID] = icell - 2;// "3回連続"を貸しているので、実際はicellの2つ前が閾値を超えたタイミング
                     }
+                    
+                    waveform[iBoard][chID][icell] =  voltage_buf; //set tree data
+                    // waveform[iboard][chID][icell] = waveform_buf[iboard][chID][icell]; // Set Tree data
 
                     if(TIME_FLAG){
                         cumulative_time_buf = cumulative_time_bin[iBoard][chID][(icell+triggerCell[iBoard])%1024] - cumulative_time_bin[iBoard][chID][triggerCell[iBoard]];
@@ -495,9 +513,16 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
                         // }
                         // // time[iboard][chID][icell] = time_buf[iboard][chID][icell]; // Set Tree data
                     }
-
+                    
+                    adcSum[iBoard][chID] += waveform[iBoard][chID][icell];     // Set Tree data
+                    if(icell<30){
+                        pedestal[iBoard][chID] += waveform[iBoard][chID][icell];
+                    }
                     DEBUG_PRINT(3, "bd%d ch%d cell%d:, v=%f, sum=%f\n", iBoard, chID, icell, waveform[iBoard][chID][icell], adcSum[iBoard][chID]);
                 }
+                pedestal[iBoard][chID] = pedestal[iBoard][chID]/30.0; // pedestal: average voltage of first 30 cells
+                adcSum[iBoard][chID] += -pedestal[iBoard][chID]*1024.0; // adcSum - dcoffset
+                DEBUG_PRINT(2, "bd%d ch%d, adcSum=%f\n", iBoard, chID, adcSum[iBoard][chID]);
 
                 //adcSum_crystalsの計算
                 pedeslta_sum = 0;
