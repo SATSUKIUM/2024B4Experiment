@@ -7677,8 +7677,8 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 2);  // パラメータ数は 2
-    TF1 *curve_lower = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 2); 
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 2
+    TF1 *curve_lower = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 3); 
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
@@ -7693,36 +7693,30 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
         S1_DiscriCell = fDiscriCell[0][0];
         A1_DiscriCell = fDiscriCell[0][2];
         
-        S1_charge_buf = -fAdcSum_crystals[0][0];
-        A1_charge_buf = -fAdcSum_crystals[0][2];
-
-        S1_energy = p0[0][0] + p1[0][0]* S1_charge_buf;
-        A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
-        S1_error_eff = p0_res[0][0] * sqrt(511) * 0.01 / (2 * sqrt(2 * log(2)));
-        A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-
         x_charge_buf = -fAdcSum_crystals[x_iBoard][x_iCh];
         y_charge_buf = -fAdcSum_crystals[y_iBoard][y_iCh];
-
+        S1_charge_buf = -fAdcSum_crystals[0][0];
+        A1_charge_buf = -fAdcSum_crystals[0][2];
+        
         x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
         y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
+        S1_energy = p0[0][0] + p1[0][0]* S1_charge_buf;
+        A1_energy = p0[0][2] + p1[0][2]* A1_charge_buf;
 
-        x_error = x_p0_res_buf * sqrt(x_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-        y_error = y_p0_res_buf * sqrt(y_energy) * 0.01 / (2 * sqrt(2 * log(2)));
-          
-        x_error_upper = x_p0_res_buf * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
-        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
+        x_energy_vec[0] =  {x_energy};
+        S1_energy_vec[0] = {S1_energy};
+    
+        x_error_upper = x_p0_res * sqrt(256) * 0.01 / (sigma * sqrt(2 * log(2))); //散乱カット用のエラー
+        x_error_lower = x_p0_res * sqrt(170) * 0.01 / (sigma * sqrt(2 * log(2)));
+        S1_error_90 = p0_res[0][0] * sqrt(256) * 0.01 / (sigma * sqrt(2 * log(2))); //90°散乱カット用のエラー
 
-        A1_upper = -A1_energy + 3 * sqrt(pow(S1_error_eff, 2) + pow(A1_error,2)) + 511;
-        A1_lower = -A1_energy - 3 * sqrt(pow(S1_error_eff, 2) + pow(A1_error,2)) + 511;
-        y_upper = -x_energy + 3 * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
-        y_lower = -x_energy - 3 * sqrt(pow(x_error, 2) + pow(y_error,2)) + 511;
+        y_upper = CurveUpper_y(x_energy_vec, par_x);
+        y_lower = CurveLower_y(x_energy_vec, par_x);
+        A1_upper = CurveUpper_y(S1_energy_vec, par_S1);
+        A1_lower = CurveLower_y(S1_energy_vec, par_S1);
 
-
-    // void ApplyCuts(bool applyTimeCut, bool applyScatterCut, bool applyEnergyCut) {
-
-    // bool applyTimeCut, applyScatterCut, applyEnergyCut;
-
+ 
+    // Time Cut
         cut0 =  (0 < S1_DiscriCell) && (0 < A1_DiscriCell) && (0 < x_DiscriCell) && (0 < y_DiscriCell);
         cut1 =  (-17 <= S1_DiscriCell - A1_DiscriCell) && (S1_DiscriCell - A1_DiscriCell <= 22);
         cut2 =  (-22 <= S1_DiscriCell - x_DiscriCell) && (S1_DiscriCell - x_DiscriCell <= 15);
@@ -7743,11 +7737,11 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
             cut3 =  (12 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 33);
             }
         
-
+    // Scatter Cut
         cut4_eff = ( 511 - 3 * S1_error_eff < S1_energy ) && (S1_energy < 511 + 3 * S1_error_eff);
         cut5 = ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 340 + 3 * x_error_upper);
 
-    
+    // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
         cut7 = (A1_lower <= A1_energy && A1_energy <= A1_upper);
 
@@ -7778,31 +7772,6 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
             }
             
         }
-
-
-    // }
-    
-    // if((100 < y_DiscriTime && y_DiscriTime < 220) && ( A1_DiscriTime < 135)){
-
-        // if(( 256 - 3 * S1_error < S1_energy )&& (S1_energy < 256 + 3 * S1_error) && ( 170 - 3 * x_error_lower < x_energy ) && (x_energy < 340 + 3 * x_error_upper) ){
-        
-            //   if((y_lower <= y_energy && y_energy <= y_upper)){
-                // && ( 100 < A1_energy )
-                  
-                //   fH2Energy_PMTs->Fill(x_energy, y_energy);
-                //   fH1EnergySpectra[0]->Fill(x_energy);
-                //   fH1EnergySpectra[1]->Fill(y_energy);
-                //   fH1EnergySpectra[2]->Fill(x_energy + y_energy);
-
-                //   validcounter++;
-            
-            //    }
-            // energycutcounter++;
-            
-        // }
-        
-        //  timecutcounter++;
-        // }
 
         if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
