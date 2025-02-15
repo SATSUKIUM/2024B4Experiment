@@ -3371,6 +3371,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     
 
     std::vector<Double_t> S1, x, S1_error, A1_error, x_error, y_error;
+    Double_t S1_energy_vec[0], x_energy_vec[0];
     Double_t par_S1[3] = {S1_p0_res, A1_p0_res, sigma};
     Double_t par_x[3] = {x_p0_res, y_p0_res, sigma};
     // PrecomputeErrors(par_S1, S1, S1_error, A1_error);
@@ -3414,11 +3415,11 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
        
         //A1_upper = GetCurveUpper_y(A1_energy, par_S1);
         //A1_lower = GetCurveLower_y(A1_energy, par_S1);
-        A1_upper = CurveUpper_y(S1_energy, par_S1);
-        A1_lower = CurveLower_y(S1_energy, par_S1);
+        A1_upper = CurveUpper_y(S1_energy_vec[1], par_S1);
+        A1_lower = CurveLower_y(S1_energy_vec[1], par_S1);
         
-        y_upper = CurveUpper_y(x_energy, par_x);
-        y_lower = CurveLower_y(x_energy, par_x);
+        y_upper = CurveUpper_y(x_energy_vec[1], par_x);
+        y_lower = CurveLower_y(x_energy_vec[1], par_x);
 
 
 
@@ -7894,14 +7895,6 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     std::cout << "timecut events : " << timecutcounter << std::endl;
     std::cout << "scattercut events : " << scattercutcounter << std::endl;
     std::cout << "valid events :" << validcounter << std::endl;
-
-    std::ofstream ofs;
-    ofs.open("./output/ES_eff.txt", std::ios::app);
-    auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
-    std::tm local_tm = *std::localtime(&now_c);
-    ofs << std::endl << "================================================================" << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl << Form("x_iB %d,x_iC %d,y_iB %d,x_iC %d", x_iBoard, x_iCh, y_iBoard, y_iCh) << std::endl << "\tall events : " << allcounter << std::endl  << "\ttimecut events : " << timecutcounter << std::endl << "\tscattercut events : " << scattercutcounter << std::endl << "\tvalid events :" << validcounter << std::endl;
-    ofs.close();
 
     return 0;
 }
