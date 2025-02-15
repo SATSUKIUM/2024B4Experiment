@@ -15,4 +15,4 @@ EOF
 export -f run_root
 
 # 並列実行（XX, YY の組み合わせ）
-parallel run_root ::: 0 1 1 1 1 ::: 1 0 1 2 3
+parallel run_root ::: "0 1" "1 0" "1 1" "1 2" "1 3"
