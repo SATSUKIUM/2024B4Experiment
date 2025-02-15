@@ -3201,8 +3201,25 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
 //     }
 // }
 
+
+
 // Double_t GetCurveUpper_y(Double_t x_energy, Double_t *par, vector<Double_t>& x, vector<Double_t>& x_sigma, vector<Double_t>& y_sigma){
    
+        
+//     // vector<Double_t> x_plus_sigma;
+//     // vector<Double_t> x_sigma;
+//     // vector<Double_t> y_sigma;
+    
+//     // for (Double_t x_val = 0; x_val <= 511; x_val += 0.1) {
+//     //     Double_t x_error = par[0] *  par[2] * sqrt(x_val) * 0.01 / (2 * sqrt(2 * log(2)));
+//     //     Double_t y_error = par[1] *  par[2] * sqrt(abs(511 - x_val)) * 0.01 / (2 * sqrt(2 * log(2)));
+
+        
+//     //     x_sigma.push_back(x_error);
+//     //     y_sigma.push_back(y_error);
+
+//     // }
+
 //     Double_t min_diff = 1000;
 //     size_t index = 0;
 
@@ -3238,24 +3255,27 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
 // }
           
 Double_t CurveUpper_y(Double_t *x, Double_t *par){
-             Double_t x_error = par[0] *  par[2] * sqrt(x[0]) * 0.01 / (2 * sqrt(2 * log(2)));
-             Double_t y_error = par[1] *  par[2] * sqrt(abs(511 - x[0])) * 0.01 / (2 * sqrt(2 * log(2)));
+             Double_t S1_energy = x[0];
+             Double_t S1_error = par[0] *  par[2] * sqrt(S1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+             Double_t A1_error = par[1] *  par[2] * sqrt(abs(511 - S1_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
 
              //return (- x_energy + sigma * sqrt((pow(x_error,2) + pow(y_error,2))) ) + 511 ;
-             return - x[0] + y_error + 511 ;
+             return - S1_energy + ( S1_error + A1_error ) + 511 ;
             }
 
 Double_t CurveLower_y(Double_t *x, Double_t *par){
-             Double_t x_error = par[0] *  par[2] * sqrt(x[0]) * 0.01 / (2 * sqrt(2 * log(2)));
-             Double_t y_error = par[1] *  par[2] * sqrt(abs(511 - x[0])) * 0.01 / (2 * sqrt(2 * log(2)));
+             Double_t S1_energy = x[0];
+             Double_t S1_error = par[0] *  par[2] * sqrt(S1_energy) * 0.01 / (2 * sqrt(2 * log(2)));
+             Double_t A1_error = par[1] *  par[2] * sqrt(abs(511 - S1_energy)) * 0.01 / (2 * sqrt(2 * log(2)));
 
             //  return  (- x_energy - sigma * sqrt((pow(x_error,2) + pow(y_error,2))) )  + 511;
-             return  - x[0] - y_error + 511;
+             return  - S1_energy - ( S1_error + A1_error ) + 511;
             }
 
 
 
-Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true, Double_t sigma = 3){
+Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
+, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true, Double_t sigma = 3){
     
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
@@ -3352,16 +3372,15 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     gStyle->SetOptStat(0);
     
 
-    std::vector<Double_t> S1_error, A1_error, x_error, y_error;
-    Double_t S1_energy_vec[1], x_energy_vec[1];
+    std::vector<Double_t> S1, x, S1_error, A1_error, x_error, y_error;
     Double_t par_S1[3] = {S1_p0_res, A1_p0_res, sigma};
     Double_t par_x[3] = {x_p0_res, y_p0_res, sigma};
-    
     // PrecomputeErrors(par_S1, S1, S1_error, A1_error);
     // PrecomputeErrors(par_x, x, x_error, y_error);
     
-    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 3
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 2
     TF1 *curve_lower = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 3); 
+
 
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -3387,24 +3406,22 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
         S1_energy = p0[0][0] + p1[0][0] * S1_charge_buf;
         A1_energy = p0[0][2] + p1[0][2] * A1_charge_buf;
 
-        S1_energy_vec[0] = {S1_energy};
-        x_energy_vec[0] =  {x_energy};
-
-        S1_error_90 = p0_res[0][0] * sqrt(256) * 0.01 / (sigma * sqrt(2 * log(2))); //90°散乱カット用のエラー
-        // A1_error = p0_res[0][2] * sqrt(A1_energy) * 0.01 / (sigma * sqrt(2 * log(2))); 
-        // y_error = p0_res[y_iBoard][y_iCh] * sqrt(y_energy) * 0.01 / (sigma * sqrt(2 * log(2))); 
+        S1_error_90 = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2))); //90°散乱カット用のエラー
    
-        x_error_upper = x_p0_res * sqrt(256) * 0.01 / (sigma * sqrt(2 * log(2))); //散乱カット用のエラー
-        x_error_lower = x_p0_res * sqrt(170) * 0.01 / (sigma * sqrt(2 * log(2)));
+        x_error_upper = x_p0_res * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2))); //散乱カット用のエラー
+        x_error_lower = x_p0_res * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
+
+
 
        
         //A1_upper = GetCurveUpper_y(A1_energy, par_S1);
         //A1_lower = GetCurveLower_y(A1_energy, par_S1);
-        A1_upper = CurveUpper_y(S1_energy_vec, par_S1);
-        A1_lower = CurveLower_y(S1_energy_vec, par_S1);
+        A1_upper = CurveUpper_y(S1_energy, par_S1);
+        A1_lower = CurveLower_y(S1_energy, par_S1);
         
-        y_upper = CurveUpper_y(x_energy_vec, par_x);
-        y_lower = CurveLower_y(x_energy_vec, par_x);
+        y_upper = CurveUpper_y(x_energy, par_x);
+        y_lower = CurveLower_y(x_energy, par_x);
+
 
 
     // Time Cut
@@ -7301,7 +7318,8 @@ Double_t DRS4Ana::PlotEnergy2(TString key = "0204", Int_t iBoard = 0, Int_t iCh 
 }
 
 
-Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
+, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
@@ -7594,7 +7612,8 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 }
 
 
-Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
+Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1
+, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut = true){
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
@@ -7677,8 +7696,8 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 2);  // パラメータ数は 2
-    TF1 *curve_lower = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 2); 
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_ukai, 0.0, 511.0, 2);  // パラメータ数は 2
+    TF1 *curve_lower = new TF1("curve_lower", CurveLower_ukai, 0.0, 511.0, 2); 
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
@@ -7866,15 +7885,11 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-   // TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
-    TString filename_figure_png = filename_figure + Form("_EventSelection_eff_y_iB%diC%d_.png", y_iBoard, y_iCh);
-    // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
+    filename_figure += "_fH2Energy_PMTs.pdf";
+    printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure.Data());
 
-    // IfFile_duplication(folderPath, filename_figure_pdf);
-    // canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
-
-    IfFile_duplication(folderPath, filename_figure_png);
-    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
+    IfFile_duplication(folderPath, filename_figure);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure.Data()));
     
     
     std::cout << "all events : " << allcounter << std::endl;
