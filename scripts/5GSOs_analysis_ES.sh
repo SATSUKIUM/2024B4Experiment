@@ -3,11 +3,11 @@
 # ROOTスクリプトを実行する関数
 run_root() {
     XX=$1
-    root -l -b <<EOF
+    root -l <<EOF
 .L DRS4Ana.C
 listChains("456")
 DRS4Ana obj
-obj.EventSelection2("0204", 0, 3, $XX, 1,1,1,1)
+obj.EventSelection2("0204", 0, 3, $XX, 1,1, 2,2, 2,2, 1,1,1)
 EOF
 }
 

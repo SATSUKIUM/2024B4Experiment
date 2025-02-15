@@ -7316,7 +7316,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     Long64_t timecutcounter = 0;
     Long64_t scattercutcounter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 2000, 4000);
+    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 4000, 3000);
     canvas->Divide(2,2);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -7457,8 +7457,8 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
             }
         
     // Scatter Cut
-        cut4 = ( 256 - sigma4_S1 * S1_error < S1_energy ) && (S1_energy < 256 + sigma4_S1 * S1_error);
-        cut5 = ( 170 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 340 + sigma5_S2 * x_error_upper);
+        cut4 = ( 243.4 - sigma4_S1 * S1_error < S1_energy ) && (S1_energy < 268.9 + sigma4_S1 * S1_error);
+        cut5 = ( 194.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 267.8 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
@@ -7587,7 +7587,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     ofs << std::endl << "================================================================" << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl << Form("x_iB %d,x_iC %d,y_iB %d,x_iC %d", x_iBoard, x_iCh, y_iBoard, y_iCh) << std::endl << "\tall events : " << allcounter << std::endl  << "\ttimecut events : " << timecutcounter << std::endl << "\tscattercut events : " << scattercutcounter << std::endl << "\tvalid events :" << validcounter << std::endl;
     ofs.close();
 
-    return 0;
+    return 0; //　これはreturn 0;でok
 }
 
 
@@ -7605,7 +7605,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     Long64_t timecutcounter = 0;
     Long64_t scattercutcounter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 2000, 4000);
+    TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 4000, 3000);
     canvas->Divide(2,2);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -7745,7 +7745,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
         
     // Scatter Cut
         cut4_eff = ( 511 - sigma4_S1 * S1_error_eff < S1_energy ) && (S1_energy < 511 + sigma4_S1 * S1_error_eff);
-        cut5 = ( 170 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 340 + sigma5_S2 * x_error_upper);
+        cut5 = ( 194.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 267.8 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
@@ -7799,12 +7799,12 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     line->SetLineWidth(2);
     line->Draw("SAME");
 
-    curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf); 
+    curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_upper); 
     curve_upper->SetLineColor(kBlue);
     curve_upper->Draw("SAME");
 
     
-    curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
+    curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_lower);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
     curve_lower->SetLineColor(kBlue);
     curve_lower->Draw("SAME");
 

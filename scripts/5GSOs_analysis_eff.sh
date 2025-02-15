@@ -3,12 +3,12 @@
 # ROOTスクリプトを実行する関数
 run_root() {
     XX=$1
-    root -l -b <<EOF
+    root -l <<EOF
 .L DRS4Ana.C
 addGlobalChain("../data/PhysicsRun/EFFCIENCY/Run023.dat_2.root")
 addGlobalChain("../data/PhysicsRun/evacuation/Run021.dat_2.root")
 DRS4Ana obj
-obj.EventSelection2_eff("0204", 0, 3, $XX, 1, 1,1,1)
+obj.EventSelection2_eff("0204", 0, 3, $XX, 1,1, 2,2, 2,2, 1,1,1)
 EOF
 }
 
