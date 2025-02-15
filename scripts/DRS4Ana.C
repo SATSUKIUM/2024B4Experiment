@@ -68,7 +68,7 @@ void addGlobalChain(const TString fRootFile_par){
         globalChain_Event->Add(fRootFile_par);
         globalChain_Info->Add(fRootFile_par);
         fRootFile_pars.push_back(fRootFile_par);
-        DRS4Ana::fRootFile += fRootFile_par;
+        DRS4Ana::fRootFile += "_" + fRootFile_par;
     }
 }
 void listChains(const TString key = "456"){
