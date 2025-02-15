@@ -7561,12 +7561,12 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-    // TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
+    TString filename_figure_pdf = filename_figure + Form("_EventSelection_y_iB%diC%d.pdf", y_iBoard, y_iCh);
     TString filename_figure_png = filename_figure + Form("_EventSelection_y_iB%diC%d.png", y_iBoard, y_iCh);
     // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
-    // IfFile_duplication(folderPath, filename_figure_pdf);
-    // canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+    /IfFile_duplication(folderPath, filename_figure_pdf);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
 
     IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));

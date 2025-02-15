@@ -7,7 +7,7 @@ run_root() {
 .L DRS4Ana.C
 listChains("456")
 DRS4Ana obj
-obj.EventSelection2("0204", 0, 3, $XX)
+obj.EventSelection2("0204", 0, 3, $X, 2)
 EOF
 }
 
