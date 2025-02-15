@@ -561,7 +561,7 @@ int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", c
                             if(time[iBoard][chID][iCell] >= discriTime - 50.0 && time[iBoard][chID][iCell] <= discriTime + 600.0){
                                 adcSum_crystals_buf += waveform[iBoard][chID][iCell] - pedeslta_sum;
                             }
-                            else if(time[iBoard][chID][iCell] > discriTime + 180.0){
+                            else if(time[iBoard][chID][iCell] > discriTime + 600.0){
                                 break;
                             }
                         }
