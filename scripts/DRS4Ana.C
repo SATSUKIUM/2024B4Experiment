@@ -3238,20 +3238,20 @@ Double_t DRS4Ana::Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_
 // }
           
 Double_t CurveUpper_y(Double_t *x, Double_t *par){
-             Double_t x_error = par[0] *  par[2] * sqrt(x[0]) * 0.01 / (2 * sqrt(2 * log(2)));
-             Double_t y_error = par[1] *  par[2] * sqrt(abs(511 - x[0])) * 0.01 / (2 * sqrt(2 * log(2)));
+        Double_t x_error = par[0] *  par[2] * sqrt(x[0]) * 0.01 / (2 * sqrt(2 * log(2)));
+        Double_t y_error = par[1] *  par[2] * sqrt(abs(511 - x[0])) * 0.01 / (2 * sqrt(2 * log(2)));
 
              //return (- x_energy + sigma * sqrt((pow(x_error,2) + pow(y_error,2))) ) + 511 ;
-             return - x[0] + y_error + 511 ;
-            }
+        return - x[0] + y_error + 511 ;
+    }
 
 Double_t CurveLower_y(Double_t *x, Double_t *par){
-             Double_t x_error = par[0] *  par[2] * sqrt(x[0]) * 0.01 / (2 * sqrt(2 * log(2)));
-             Double_t y_error = par[1] *  par[2] * sqrt(abs(511 - x[0])) * 0.01 / (2 * sqrt(2 * log(2)));
+        Double_t x_error = par[0] *  par[2] * sqrt(x[0]) * 0.01 / (2 * sqrt(2 * log(2)));
+        Double_t y_error = par[1] *  par[2] * sqrt(abs(511 - x[0])) * 0.01 / (2 * sqrt(2 * log(2)));
 
-            //  return  (- x_energy - sigma * sqrt((pow(x_error,2) + pow(y_error,2))) )  + 511;
-             return  - x[0] - y_error + 511;
-            }
+    //  return  (- x_energy - sigma * sqrt((pow(x_error,2) + pow(y_error,2))) )  + 511;
+        return  - x[0] - y_error + 511;
+    }
 
 
 
@@ -3352,7 +3352,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     gStyle->SetOptStat(0);
     
 
-    vector<Double_t> S1_error, A1_error, x_error, y_error;
+    std::vector<Double_t> S1_error, A1_error, x_error, y_error;
     Double_t S1_energy_vec[1], x_energy_vec[1];
     Double_t par_S1[3] = {S1_p0_res, A1_p0_res, sigma};
     Double_t par_x[3] = {x_p0_res, y_p0_res, sigma};
