@@ -6,7 +6,7 @@ run_root() {
     YY=$2
     root -l <<EOF
 .L DRS4Ana.C
-addGlobalChain("../data/PhysicsRun/EFFICIENCY/Run023.dat_2.root")
+addGlobalChain("../data/PhysicsRun/EFFCIENCY/Run023.dat_2.root")
 DRS4Ana obj
 obj.EventSelection2_eff("0204", 0, 3, $XX, $YY)
 EOF
