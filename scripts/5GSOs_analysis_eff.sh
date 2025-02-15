@@ -8,7 +8,7 @@ run_root() {
 addGlobalChain("../data/PhysicsRun/EFFCIENCY/Run023.dat_2.root")
 addGlobalChain("../data/PhysicsRun/evacuation/Run021.dat_2.root")
 DRS4Ana obj
-obj.EventSelection2_eff("0204", 0, 3, $XX)
+obj.EventSelection2_eff("0204", 0, 3, $XX, 0,1,1)
 EOF
 }
 
