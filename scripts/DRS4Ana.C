@@ -7691,8 +7691,8 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_ukai, 0.0, 511.0, 2);  // パラメータ数は 2
-    TF1 *curve_lower = new TF1("curve_lower", CurveLower_ukai, 0.0, 511.0, 2); 
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 2);  // パラメータ数は 2
+    TF1 *curve_lower = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 2); 
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
