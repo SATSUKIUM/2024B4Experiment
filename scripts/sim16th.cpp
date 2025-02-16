@@ -437,7 +437,7 @@ Double_t GetKappa(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
     }
     ifs.close();
 
-    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 0.3); // 範囲変えて
+    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 0.6); // 範囲変えて
     hh->SetStats(0);
     hh->SetTitle("The number of valid events;#phi[degree];Counts");
     hh->Draw();
