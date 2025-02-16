@@ -7322,16 +7322,9 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     Long64_t scattercutcounter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "EventSelection2", 4000, 3000);
-    TCanvas *canvas2 = new TCanvas("canvas2", "huruno1 and sato", 4000, 3000);
-    
     canvas->Divide(2,2);
-    canvas2->Divide(2,2);
-
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
-    }
-    if(fH2Energy_PMTs2 != NULL){
-        delete fH2Energy_PMTs2;
     }
     Double_t minEnergy, maxEnergy;
     Int_t nBins = 100;
@@ -7388,35 +7381,20 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     bool TimeCutPassed, ScatterCutPassed, EnergyCutPassed;
 
     TH1D *fH1EnergySpectra[3];
-    TH1D *fH1EnergySpectra2[3];
 
     fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI", x_iBoard, x_iCh), nBins, minEnergy, maxEnergy);
     fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, (maxEnergy-minEnergy)/nBins));
-
-    fH1EnergySpectra2[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI", 0, 0), nBins, minEnergy, maxEnergy);
-    fH1EnergySpectra2[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI;energy [keV]; count per %.2f keV", 0, 0, (maxEnergy-minEnergy)/nBins));
     
     fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), nBins, minEnergy, maxEnergy);
     fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", y_iBoard, y_iCh, key_Crystal_y.Data(), (maxEnergy-minEnergy)/nBins));
-
-    fH1EnergySpectra2[1] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s", 0, 2, key_Crystal_y.Data()), nBins, minEnergy, maxEnergy);
-    fH1EnergySpectra2[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", 0, 2, key_Crystal_y.Data(), (maxEnergy-minEnergy)/nBins));
     
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 100, 0, 600);
     fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh,(maxEnergy-minEnergy)/nBins));
 
-    fH1EnergySpectra2[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 100, 0, 600);
-    fH1EnergySpectra2[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", 0, 0, 0, 2,(maxEnergy-minEnergy)/nBins));
-
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
-    fH2Energy_PMTs2 = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
-
     fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d Ch%d energy [keV];Board%d CH%d energy [keV]", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
-    fH2Energy_PMTs2->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d Ch%d energy [keV];Board%d CH%d energy [keV]", key.Data(), 0, 0, 0, 2));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
-    canvas2->cd(1);
-    fH2Energy_PMTs2->Draw();
 
     gPad->SetGrid();
     gPad->SetLogz();
@@ -7512,11 +7490,6 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
                     fH1EnergySpectra[0]->Fill(x_energy);
                     fH1EnergySpectra[1]->Fill(y_energy);
                     fH1EnergySpectra[2]->Fill(x_energy + y_energy);
-
-                    fH2Energy_PMTs2->Fill(S1_energy, A1_energy);
-                    fH1EnergySpectra2[0]->Fill(S1_energy);
-                    fH1EnergySpectra2[1]->Fill(A1_energy);
-                    fH1EnergySpectra2[2]->Fill(S1_energy + A1_energy);
                 }
             }
             
@@ -7571,47 +7544,6 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     curve_lower->SetLineColor(kBlack);
     curve_lower->Draw("SAME");
 
-// Pad1: 2Dヒストグラム(sato)
-    TF1 *curve_upper2 = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 3
-    TF1 *curve_lower2 = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 3); 
-    canvas2->cd(1);
-    gPad->SetLogz();
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
-    gStyle->SetPalette(kSolar);
-    gPad->Update();
-    // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
-    fH2Energy_PMTs2->Draw();
-    TLine *line2 = new TLine(0, 511, 511,0);
-    line2->SetLineColor(kRed);
-    line2->SetLineWidth(2);
-    line2->Draw("SAME");
-
-    // Double_t x1 = 194.2 - sigma5_S2 * x_error_lower;
-    // Double_t x2 = 267.8 + sigma5_S2 * x_error_upper;
-    Double_t x1_2 = 243.4 - sigma4_S1 * S1_error;
-    Double_t x2_2 = 268.9 + sigma4_S1 * S1_error;
-    TLine *line1_2 = new TLine(x1, 0, x1, 600);
-    TLine *line2_2 = new TLine(x2, 0, x2, 600);
-    line1_2->SetLineStyle(2); //破線
-    line2_2->SetLineStyle(2); //破線
-    line1_2->SetLineColor(kBlack);
-    line2_2->SetLineColor(kBlack);
-    line1_2->SetLineWidth(2);
-    line2_2->SetLineWidth(2);
-    line1_2->Draw("SAME");
-    line2_2->Draw("SAME");
-
-    curve_upper2->SetParameters(S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_upper);
-    curve_upper2->SetLineStyle(2);
-    curve_upper2->SetLineColor(kBlack);
-    curve_upper2->Draw("SAME");
-
-    
-    curve_lower2->SetParameters(S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_lower);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
-    curve_lower2->SetLineStyle(2);
-    curve_lower2->SetLineColor(kBlack);
-    curve_lower2->Draw("SAME");
    
 // Pad2: y_energy ヒストグラム
     canvas->cd(2);
@@ -7619,36 +7551,17 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     gPad->SetGrid();
     fH1EnergySpectra[1]->Draw();
 
-// Pad2: y_energy ヒストグラム(sato)
-    canvas2->cd(2);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
-    fH1EnergySpectra2[1]->Draw();
-
 // Pad3: x_energy ヒストグラム
     canvas->cd(3);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
     fH1EnergySpectra[0]->Draw();
 
-// Pad3: x_energy ヒストグラム(sato)
-    canvas2->cd(3);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
-    fH1EnergySpectra2[0]->Draw();
-
 // Pad4: x_energy + y_energy ヒストグラム
     canvas->cd(4);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
     fH1EnergySpectra[2]->Draw();
-
-// Pad4: x_energy + y_energy ヒストグラム(sato)
-    canvas2->cd(4);
-    gPad->SetLeftMargin(0.15);  // 左の余白を広げる
-    gPad->SetGrid();
-    fH1EnergySpectra2[2]->Draw();
-
     // hs->Draw("hist stack");
     // hs->GetHistogram()->Draw("axis same");
     // gPad->Update();
@@ -7657,7 +7570,6 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     //hs->GetYaxis()->SetRangeUser(0, 4000);
    
     canvas->Update();
-    canvas2->Update();
 
     //保存用のディレクトリを作る
     TString folderPath = Makedir_Date();
@@ -7666,8 +7578,6 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     filename_figure.ReplaceAll(".", "_");
     TString filename_figure_pdf = filename_figure + Form("_EventSelection_y_iB%diC%d_.pdf", y_iBoard, y_iCh);
     TString filename_figure_png = filename_figure + Form("_EventSelection_y_iB%diC%d_.png", y_iBoard, y_iCh);
-    TString filename_figure_pdf_sato = filename_figure + Form("_EventSelection_y_iB%diC%d_sato_.pdf", y_iBoard, y_iCh);
-    TString filename_figure_png_sato = filename_figure + Form("_EventSelection_y_iB%diC%d_sato_.png", y_iBoard, y_iCh);
     // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
     IfFile_duplication(folderPath, filename_figure_pdf);
@@ -7675,12 +7585,6 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 
     IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
-
-    IfFile_duplication(folderPath, filename_figure_pdf_sato);
-    canvas2->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf_sato.Data()));
-
-    IfFile_duplication(folderPath, filename_figure_png_sato);
-    canvas2->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png_sato.Data()));
     
     
     std::cout << "all events : " << allcounter << std::endl;
