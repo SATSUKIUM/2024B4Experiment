@@ -3533,7 +3533,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
 }
 
 
-void DRS4Ana::waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
+void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
     TCanvas *c1 = new TCanvas("title", "name", 1200, 2400);
     c1->Divide(3,2);
     TH2D* hists[3][3];
