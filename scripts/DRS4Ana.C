@@ -7509,12 +7509,12 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     gPad->SetLogz();
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-    gStyle->SetPalette(kRainBow);
+    gStyle->SetPalette(kDeepSea);
     gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
     TLine *line = new TLine(0, 511, 511,0);
-    line->SetLineColor(kBlack);
+    line->SetLineColor(kRed);
     line->SetLineWidth(2);
     line->Draw("SAME");
 
@@ -7526,8 +7526,8 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     TLine *line2 = new TLine(x2, 0, x2, 600);
     line1->SetLineStyle(2); //破線
     line2->SetLineStyle(2); //破線
-    line1->SetLineColor(kBlack);
-    line2->SetLineColor(kBlack);
+    line1->SetLineColor(kOrange);
+    line2->SetLineColor(kOrange);
     line1->SetLineWidth(2);
     line2->SetLineWidth(2);
     line1->Draw("SAME");
@@ -7535,13 +7535,13 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
 
     curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_upper);
     curve_upper->SetLineStyle(2);
-    curve_upper->SetLineColor(kBlack);
+    curve_upper->SetLineColor(kOrange);
     curve_upper->Draw("SAME");
 
     
     curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_lower);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
     curve_lower->SetLineStyle(2);
-    curve_lower->SetLineColor(kBlack);
+    curve_lower->SetLineColor(kOrange);
     curve_lower->Draw("SAME");
 
    
@@ -7803,12 +7803,12 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-    gStyle->SetPalette(kRainBow);
+    gStyle->SetPalette(kDeepSea);
     gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
     TLine *line = new TLine(0, 511, 511,0);
-    line->SetLineColor(kBlack);
+    line->SetLineColor(kRed);
     line->SetLineWidth(2);
     line->Draw("SAME");
 
@@ -7818,21 +7818,21 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     TLine *line2 = new TLine(x2, 0, x2, 600);
     line1->SetLineStyle(2); //破線
     line2->SetLineStyle(2); //破線
-    line1->SetLineColor(kBlack);
-    line2->SetLineColor(kBlack);
+    line1->SetLineColor(kOrange);
+    line2->SetLineColor(kOrange);
     line1->SetLineWidth(2);
     line2->SetLineWidth(2);
     line1->Draw("SAME");
     line2->Draw("SAME");
 
     curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_upper); 
-    curve_upper->SetLineColor(kBlack);
+    curve_upper->SetLineColor(kOrange);
     curve_upper->SetLineStyle(2); //破線
     curve_upper->Draw("SAME");
 
     
     curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma6_GSO_lower);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
-    curve_lower->SetLineColor(kBlack);
+    curve_lower->SetLineColor(kOrange);
     curve_lower->SetLineStyle(2); //破線
     curve_lower->Draw("SAME");
 
