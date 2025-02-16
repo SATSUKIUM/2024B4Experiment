@@ -182,6 +182,7 @@ public:
     TH2F *fH2Waveform0 = NULL;
     TH2F *fH2Waveform1 = NULL;
     TH2F *fH2Energy_PMTs = NULL;
+    TH2F *fH2Energy_PMTs2 = NULL;
     TH1F *fH1SumChargeIntegral = NULL;
     TH1F *fH1TriggerTime = NULL;
     TH1F *fH1Energy_PMTs = NULL;
