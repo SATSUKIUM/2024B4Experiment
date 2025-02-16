@@ -7463,7 +7463,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
         
     // Scatter Cut
         cut4 = ( 243.4 - sigma4_S1 * S1_error < S1_energy ) && (S1_energy < 268.9 + sigma4_S1 * S1_error);
-        cut5 = ( 194.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 267.8 + sigma5_S2 * x_error_upper);
+        cut5 = ( 173.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 281.5 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
