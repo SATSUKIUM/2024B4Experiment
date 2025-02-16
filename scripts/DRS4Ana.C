@@ -8022,7 +8022,7 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
 
         TimeCutPassed = !applyTimeCut || (cut0 && cut1);
-        ScatterCutPassed != applyScatterCut || cut2;
+        ScatterCutPassed = !applyScatterCut || cut2;
         EnergyCutPassed = !applyEnergyCut || (cut6);
         // if (TimeCutPassed && ScatterCutPassed && EnergyCutPassed) {
         // fH2Energy_PMTs->Fill(x_energy, y_energy);
