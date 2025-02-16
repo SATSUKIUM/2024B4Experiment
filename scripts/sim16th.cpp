@@ -417,26 +417,27 @@ Double_t Integrand_dividend(Double_t theta_prime){
     return (gamma_factor(90) - 1) * (gamma_factor(theta_prime) - pow(sin(theta_prime * M_PI / 180), 2)) * pow(2 - cos(theta_prime * M_PI / 180), -2) * (1 - exp(-1.0 * density_GSO * absorb_val * A2_hight / sin(theta_prime * M_PI / 180)));
 }
 
-Double_t GetKappa(TString input_Folder = "./cfg/"){
+Double_t GetKappa(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
 
     gStyle->SetOptFit(1111);
 
-    TString input_Filepath = Form("%scounts_data.txt",input_Folder.Data());
+    TString input_Filepath = input_Folder;
     std::ifstream ifs(input_Filepath);
 
     TGraphErrors* graph = new TGraphErrors();
 
     Int_t index_data = 0;
-    Double_t counts;
+    Double_t counts, EFFICIENCY;
 
-    while(ifs >> counts){
-        graph->SetPoint(index_data, index_data * 45, counts);
-        graph->SetPointError(index_data, 0, sqrt(counts));
+    while(ifs >> counts >> EFFICIENCY){
+        Double_t sigma_tatejiku = sqrt(pow(counts / (pow(EFFICIENCY, 2.0)), 2.0) * pow(sqrt(EFFICIENCY), 2.0) + pow(1 / EFFICIENCY, 2.0) * pow(sqrt(counts), 2.0));
+        graph->SetPoint(index_data, index_data * 45, counts/EFFICIENCY);
+        graph->SetPointError(index_data, 0, sigma_tatejiku);
         index_data++;
     }
     ifs.close();
 
-    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 80, 250); // 範囲変えて
+    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 0.3); // 範囲変えて
     hh->SetStats(0);
     hh->SetTitle("The number of valid events;#phi[degree];Counts");
     hh->Draw();

@@ -137,7 +137,7 @@ public:
     virtual Double_t PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", Int_t cutting_option = 0, Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 1, Int_t iCh2 = 0, Double_t xmax = 1000);
     virtual Double_t Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
    
-    virtual Double_t EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
+    virtual Double_t EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true, Double_t sigma = 3);
     virtual void NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual void osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     
@@ -164,6 +164,9 @@ public:
     virtual void PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 25.0, Double_t sigma = 2.0);
     virtual Double_t PlotDiscriCell_difference_NaIs(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t figure_option = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130);
     virtual Double_t PlotdiscriCell_difference_S2A2(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t figure_option = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130);
+
+    virtual Double_t EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
+    virtual Double_t EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
 
 
     TH2F *fH2Waveform = NULL;

@@ -1,12 +1,13 @@
 /*======================================================================================================
- Name:           binary2tree_kashima.C
+ Name:           binary2tree_kashima2.C
  Created by:     Akira Sato<sato@phys.sci.osaka-u.ac.jp>
  Modified by:    Shunichi Kashima <>
- Date:           Dec 10, 2024
+ Date:           Febrary 10, 2025
 
  Purpose:        Example macro to convert a binary data file saved by DRSOsc to a root tree file.
 
  Notion:         mainly optimmized the calculation in time[numOfBoards][4][1024]. Extremely faster.
+                 time, and waveform deleted.
  */
 /*======================================================================================================
  Name:           binary2tree_sato4.C
@@ -159,7 +160,7 @@ void PrintChannelHeader(ChannelHeader *p)
 #include "TTimeStamp.h"
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0, Int_t numOfEvent = 10000000)
+int binary2tree_kashima2(const Char_t *binaryDataFile = "../data/test001.dat", const Double_t thr_V = 0.0, const Int_t debug_frag = 0, Int_t numOfEvent = 10000000)
 {
     Int_t flag_b4exp_event_selection = 0;
     Int_t flag_b4exp_trig = 0;
@@ -201,7 +202,7 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
         outputFilename = Form("%s_EventSelection.root", binaryDataFile);
     }
     else{
-        outputFilename = Form("%s.root", binaryDataFile);
+        outputFilename = Form("%s_2.root", binaryDataFile);
     }
     TFile f_root(outputFilename, "recreate");
     
@@ -358,21 +359,10 @@ int binary2tree_kashima(const Char_t *binaryDataFile = "../data/test001.dat", co
     auto treeDRS4BoardEvent = new TTree("treeDRS4BoardEvent", "a tree for events of each DRS4 boards");
     // treeDRS4BoardEvent->Branch("numOfBoards", &numOfBoards, "numOfBoards/I"); //Infoにあるからいらないよね。
     TTimeStamp *eventTime = new TTimeStamp;
-    treeDRS4BoardEvent->Branch("eventTime", "TTimeStamp", &eventTime);
     //
-
-    //iBoardについてforループがあったけど、いらないと判断したので削除
-    treeDRS4BoardEvent->Branch("triggerCell", triggerCell, Form("triggerCell[%d]/I", numOfBoards));// readoutの始まったセル。トリガーのかかったセルではないことに注意
-    // treeDRS4BoardEvent->Branch("scaler", scaler, "scaler[numOfBoards][4]/i"); //よくわからないブランチ。値を見てもゼロだった。
-    treeDRS4BoardEvent->Branch("waveform", waveform, Form("waveform[%d][4][1024]/D", numOfBoards));
-    if(TIME_FLAG){
-        treeDRS4BoardEvent->Branch("time", time, Form("time[%d][4][1024]/D", numOfBoards));
-    }
-    treeDRS4BoardEvent->Branch("adcSum", adcSum, Form("adcSum[%d][4]/D", numOfBoards));
     if(DISCR_FLAG){
         treeDRS4BoardEvent->Branch("discriCell", discriCell, Form("discriCell[%d][4]/I", numOfBoards));// 閾値を超えた初めてのセル
     }
-    treeDRS4BoardEvent->Branch("pedestal", pedestal, Form("pedestal[%d][4]/D", numOfBoards));
     treeDRS4BoardEvent->Branch("adcSum_crystals", adcSum_crystals, Form("adcSum_crystals[%d][4]/D", numOfBoards));
     
 
