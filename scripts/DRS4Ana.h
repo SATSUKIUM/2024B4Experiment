@@ -54,6 +54,7 @@ public:
     Double_t fAdcSum[2][4];         //[fNumOfBoards]
     Int_t fDiscriCell[2][4];
     Int_t fSerialNumber[2];
+    Double_t fAdcSum_crystals[2][4];
 
     // List of branches
     TBranch *b_numOfBoards;        //!
@@ -116,6 +117,7 @@ public:
     virtual Double_t Plot_2Dhist_energy_btwn_PMTs(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual Double_t PlotEnergy(TString key, TString key_Crystal, Int_t iBoard, Int_t iCh, Double_t Vcut, Double_t xmin, Double_t xmax);
     virtual Double_t PlotSumEnergy(TString key = "0120", TString key_Crystal1 = "NaI", Int_t iBoard1 = 0, Int_t iCh1 = 0, TString key_Crystal2 = "NaI", Int_t iBoard2 = 0, Int_t iCh2 = 2, Double_t Vcut = 20, Double_t xmin = 0, Double_t xmax = 650);
+    virtual Double_t PlotEnergy2(TString key, Int_t iBoard, Int_t iCh, Double_t xmin, Double_t xmax);
     virtual Double_t PlotWavesWithThreshold(Int_t iBoard, Int_t iCh);
     virtual Double_t automated_peaksearch_SCA_mode(Int_t iBoard = 0, Int_t iCh = 0, Double_t Vcut = 20, Double_t xmin = 0.0, Double_t xmax = 50.0, Int_t numPeaks = 10, Double_t fitRange = 2.0);
     virtual Double_t GSO_peaksearch(Int_t iBoard = 0, Int_t iCh = 0, Double_t adcMin = 0, Double_t adcMax = 250.0, Int_t numPeaks = 10, Double_t fitRange = 3.0, Double_t spec_sigma = 5.0);
@@ -135,7 +137,7 @@ public:
     virtual Double_t PlotSumEnergy_with_cutting(TString key_energy_calib = "0120", Int_t cutting_option = 0, Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 1, Int_t iCh2 = 0, Double_t xmax = 1000);
     virtual Double_t Plot_2Dhist_energy_with_cut(TString key = "0120", TString key_Crystal_x = "NaI", TString key_Crystal_y = "NaI", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
    
-    virtual Double_t Plot_2Dhist_energy_with_cut_ukai(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
+    virtual Double_t EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
     virtual void NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     virtual void osci_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1);
     
@@ -160,8 +162,8 @@ public:
     virtual void Energy_fit(Int_t iBoard , Int_t ich , Int_t xMin=0, Int_t xMax=650, Int_t fitRangeMin=450 , Int_t fitRangeMax=580);
     virtual void PlotTrigger2();
     virtual void PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t fit_flag = 1, Double_t fit_min = -5.0, Double_t fit_max = 25.0, Double_t sigma = 2.0);
-    virtual Double_t PlotdiscriCell_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130);
-    virtual Double_t PlotdiscriCell_difference_with_cut(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t cut_flag = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130);
+    virtual Double_t PlotDiscriCell_difference_NaIs(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t figure_option = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130);
+    virtual Double_t PlotdiscriCell_difference_S2A2(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t figure_option = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130);
 
 
     TH2F *fH2Waveform = NULL;
@@ -299,6 +301,7 @@ void DRS4Ana::Init(TChain *tree_Event)
     fChain->SetBranchAddress("time", fTime, &b_time);
     fChain->SetBranchAddress("adcSum", fAdcSum, &b_adcSum);
     fChain->SetBranchAddress("discriCell", fDiscriCell);
+    fChain->SetBranchAddress("adcSum_crystals", fAdcSum_crystals);
     printf("\tbranch address set\n");
 
     Notify();
@@ -350,6 +353,7 @@ Int_t DRS4Ana::Cut(Long64_t entry)
     // This function may be called from Loop.
     // returns  1 if entry is accepted.
     // returns -1 otherwise.
+
     return 1;
 }
 #endif // #ifdef DRS4Ana_cxx
