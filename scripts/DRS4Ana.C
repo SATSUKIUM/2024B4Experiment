@@ -7509,7 +7509,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     gPad->SetLogz();
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-    gStyle->SetPalette(kSolar);
+    gStyle->SetPalette(kRainBow);
     gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
@@ -7803,7 +7803,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-    gStyle->SetPalette(kSolar);
+    gStyle->SetPalette(kRainBow);
     gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
