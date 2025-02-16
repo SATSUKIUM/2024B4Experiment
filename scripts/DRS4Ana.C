@@ -7758,7 +7758,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
         
     // Scatter Cut
         cut4_eff = ( 511 - sigma4_S1 * S1_error_eff < S1_energy ) && (S1_energy < 511 + sigma4_S1 * S1_error_eff);
-        cut5 = ( 194.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 267.8 + sigma5_S2 * x_error_upper);
+        cut5 = ( 173.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 281.5 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
@@ -7812,8 +7812,8 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     line->SetLineWidth(2);
     line->Draw("SAME");
 
-    Double_t x1 = 194.2 - sigma5_S2 * x_error_lower;
-    Double_t x2 = 267.8 + sigma5_S2 * x_error_upper;
+    Double_t x1 = 173.2 - sigma5_S2 * x_error_lower;
+    Double_t x2 = 281.5 + sigma5_S2 * x_error_upper;
     TLine *line1 = new TLine(x1, 0, x1, 600);
     TLine *line2 = new TLine(x2, 0, x2, 600);
     line1->SetLineStyle(2); //破線
