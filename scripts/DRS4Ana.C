@@ -7308,6 +7308,12 @@ Double_t DRS4Ana::PlotEnergy2(TString key = "0204", Int_t iBoard = 0, Int_t iCh 
 
 Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true){
     
+    fChain->SetBranchStatus("waveform",0);
+    fChain->SetBranchStatus("time",0);
+    fChain->SetBranchStatus("fSec",0);
+    fChain->SetBranchStatus("fNanoSec",0);
+    fChain->SetBranchStatus("fTriggerCell",0);
+    fChain->SetBranchStatus("adcSum",0);
     
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t allcounter = 0;
