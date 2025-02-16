@@ -8016,11 +8016,13 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     // Time Cut
         cut0 =  (0 < x_DiscriCell) && (0 < y_DiscriCell);
         cut1 =  (-17 <= x_DiscriCell - y_DiscriCell) && (x_DiscriCell - y_DiscriCell <= 22);
+        cut2 =  (110 < y_DiscriCell < 140);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
 
         TimeCutPassed = !applyTimeCut || (cut0 && cut1);
+        ScatterCutPassed != applyScatterCut || cut2;
         EnergyCutPassed = !applyEnergyCut || (cut6);
         // if (TimeCutPassed && ScatterCutPassed && EnergyCutPassed) {
         // fH2Energy_PMTs->Fill(x_energy, y_energy);
@@ -8030,7 +8032,7 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
         // }
         if (TimeCutPassed){
             timecutcounter++;
-            if(true){
+            if(ScatterCutPassed){
                 scattercutcounter++;
             
                 if(EnergyCutPassed){
