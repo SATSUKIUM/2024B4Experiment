@@ -167,7 +167,7 @@ public:
 
     virtual Double_t EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
     virtual Double_t EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
-    virtual Double_t EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
+    virtual Double_t EventSelection2_S1A1(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true);
 
 
     TH2F *fH2Waveform = NULL;

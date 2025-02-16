@@ -7896,26 +7896,22 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
 }
 
 
-Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true){
-    Int_t x_iBoard = 0;
-    Int_t x_iCh = 0;
-    Int_t y_iBoard = 0;
-    Int_t y_iCh = 2;
-
+Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Int_t x_iBoard = 0, Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1, Double_t sigma4_S1 = 1.0, Double_t sigma5_S2 = 1.0, Double_t sigma6_GSO_lower = 1.0, Double_t sigma6_GSO_upper = 1.0, Double_t sigma7_sato_lower = 1.0, Double_t sigma7_sato_upper = 1.0, bool applyTimeCut = true, bool applyScatterCut = true, bool applyEnergyCut =true){
+    
+    fChain->SetBranchStatus("waveform",0);
+    fChain->SetBranchStatus("time",0);
     fChain->SetBranchStatus("fSec",0);
     fChain->SetBranchStatus("fNanoSec",0);
     fChain->SetBranchStatus("fTriggerCell",0);
     fChain->SetBranchStatus("adcSum",0);
-    fChain->SetBranchStatus("waveform",0);
-    fChain->SetBranchStatus("time",0);
     
-    Long64_t nentries = fChain->GetEntries();
+    Long64_t nentries = fChain->GetEntriesFast();
     Long64_t allcounter = 0;
     Long64_t validcounter = 0;
     Long64_t timecutcounter = 0;
     Long64_t scattercutcounter = 0;
 
-    TCanvas *canvas = new TCanvas("canvas", "EventSelection2_eff", 4000, 3000);
+    TCanvas *canvas = new TCanvas("canvas", "EventSelection2_S1A1", 4000, 3000);
     canvas->Divide(2,2);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
@@ -7930,8 +7926,8 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
 
-    Double_t x_energy, y_energy;
-    Double_t x_error, y_error;
+    Double_t x_energy, y_energy, S1_energy, A1_energy;
+    Double_t x_error, y_error, S1_error, A1_error;
     Double_t x_error_upper, x_error_lower;
     Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
     Double_t y_upper, y_lower, A1_lower, A1_upper;
@@ -7941,19 +7937,27 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     y_p0_buf = p0[y_iBoard][y_iCh];
     y_p1_buf = p1[y_iBoard][y_iCh];
     
-    Double_t x_DiscriTime, y_DiscriTime;
-    Double_t x_DiscriCell, y_DiscriCell;
+    Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
+    Double_t x_DiscriCell, y_DiscriCell, S1_DiscriCell , A1_DiscriCell;
+    Double_t x_adcSum_timerange, y_adcSum_timerange;
+
     Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
     Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
+    Double_t S1_p0_res_buf = p0_res[0][0];
+    Double_t A1_p0_res_buf = p0_res[0][2];
 
+    Double_t S1_charge_buf, A1_charge_buf;
     Double_t x_charge_buf, y_charge_buf;
 
     Double_t S1_energy_vec[1], x_energy_vec[1];
-    Double_t par_x_lower[3] = {x_p0_res_buf, y_p0_res_buf, sigma7_sato_lower};
-    Double_t par_x_upper[3] = {x_p0_res_buf, y_p0_res_buf, sigma7_sato_upper};
+    Double_t par_S1_lower[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_lower};
+    Double_t par_S1_upper[3] = {S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_upper};
+    Double_t par_x_lower[3] = {x_p0_res_buf, y_p0_res_buf, sigma6_GSO_lower};
+    Double_t par_x_upper[3] = {x_p0_res_buf, y_p0_res_buf, sigma6_GSO_upper};
+    
 
     Int_t TimeCut, ScatterCut, EnergyCut, AllCut;
-    bool cut0,cut1,cut2,cut3,cut4_eff,cut5,cut6,cut7;
+    bool cut0,cut1,cut2,cut3,cut4,cut5,cut6,cut7;
     /*
     cut0 : all DC > 0
     cut1 : S1, A1, simultaneously
@@ -7968,17 +7972,17 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
 
     TH1D *fH1EnergySpectra[3];
 
-    fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI", x_iBoard, x_iCh), nBins, minEnergy, maxEnergy);
-    fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, (maxEnergy-minEnergy)/nBins));
+    fH1EnergySpectra[0] = new TH1D("fH1EnergySpectra", Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI", 0, 0), nBins, minEnergy, maxEnergy);
+    fH1EnergySpectra[0]->SetTitle(Form("x-axis energy spectrum : iBoard %d, iCh %d, crystal NaI;energy [keV]; count per %.2f keV", 0, 0, (maxEnergy-minEnergy)/nBins));
     
-    fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s", y_iBoard, y_iCh, key_Crystal_y.Data()), nBins, minEnergy, maxEnergy);
-    fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", y_iBoard, y_iCh, key_Crystal_y.Data(), (maxEnergy-minEnergy)/nBins));
+    fH1EnergySpectra[1] = new TH1D("fH1EnergySpectra", Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s", 0, 2, key_Crystal_y.Data()), nBins, minEnergy, maxEnergy);
+    fH1EnergySpectra[1]->SetTitle(Form("y-axis energy spectrum : iBoard %d, iCh %d, crystal %s;energy [keV]; count per %.2f keV", 0, 2, key_Crystal_y.Data(), (maxEnergy-minEnergy)/nBins));
     
     fH1EnergySpectra[2] = new TH1D("fH1EnergySpectra", "Sum energy spectrum", 100, 0, 600);
-    fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", x_iBoard, x_iCh, y_iBoard, y_iCh,(maxEnergy-minEnergy)/nBins));
+    fH1EnergySpectra[2]->SetTitle(Form("Sum energy spectrum : iBoard %d, iCh %d, and iBoard %d, iCh %d;energy [keV]; count per %.2f keV", 0, 0, 0, 2,(maxEnergy-minEnergy)/nBins));
 
     fH2Energy_PMTs = new TH2F("name", "title", 200, -50, 600, 200, -50, 600);
-    fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d Ch%d energy [keV];Board%d CH%d energy [keV]", key.Data(), x_iBoard, x_iCh, y_iBoard, y_iCh));
+    fH2Energy_PMTs->SetTitle(Form("energy between two PMTs (data from cfg/%s/data.txt);Board%d Ch%d energy [keV];Board%d CH%d energy [keV]", key.Data(), 0, 0, 0, 2));
     canvas->cd(1);
     fH2Energy_PMTs->Draw();
 
@@ -7986,7 +7990,7 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     gPad->SetLogz();
     gStyle->SetOptStat(0);
 
-    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 2
+    TF1 *curve_upper = new TF1("curve_upper", CurveUpper_y, 0.0, 511.0, 3);  // パラメータ数は 3
     TF1 *curve_lower = new TF1("curve_lower", CurveLower_y, 0.0, 511.0, 3); 
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
@@ -7994,36 +7998,71 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
 
         x_DiscriTime = fTime[x_iBoard][x_iCh][fDiscriCell[x_iBoard][x_iCh]];
         y_DiscriTime = fTime[y_iBoard][y_iCh][fDiscriCell[y_iBoard][y_iCh]];
+        S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
+        A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
         
         x_DiscriCell = fDiscriCell[x_iBoard][x_iCh];
         y_DiscriCell = fDiscriCell[y_iBoard][y_iCh];
+        S1_DiscriCell = fDiscriCell[0][0];
+        A1_DiscriCell = fDiscriCell[0][2];
         
         x_charge_buf = -fAdcSum_crystals[x_iBoard][x_iCh];
         y_charge_buf = -fAdcSum_crystals[y_iBoard][y_iCh];
-        
+        S1_charge_buf = -fAdcSum_crystals[0][0];
+        A1_charge_buf = -fAdcSum_crystals[0][2];
+
         x_energy = x_p0_buf + x_p1_buf * x_charge_buf;
         y_energy = y_p0_buf + y_p1_buf * y_charge_buf;
-
+        S1_energy = p0[0][0] + p1[0][0] * S1_charge_buf;
+        A1_energy = p0[0][2] + p1[0][2] * A1_charge_buf;
+ 
         x_energy_vec[0] =  {x_energy};
-    
-        x_error_upper = x_p0_res_buf * sqrt(340) * 0.01 / (sqrt(2 * log(2))); //散乱カット用のエラー
-        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (sqrt(2 * log(2)));
+        S1_energy_vec[0] = {S1_energy};
 
+        S1_error = p0_res[0][0] * sqrt(256) * 0.01 / (2 * sqrt(2 * log(2)));
+        
+        x_error_upper = x_p0_res_buf * sqrt(340) * 0.01 / (2 * sqrt(2 * log(2)));
+        x_error_lower = x_p0_res_buf * sqrt(170) * 0.01 / (2 * sqrt(2 * log(2)));
+
+        A1_upper = CurveUpper_y(S1_energy_vec, par_S1_upper);
+        A1_lower = CurveLower_y(S1_energy_vec, par_S1_lower);
         y_upper = CurveUpper_y(x_energy_vec, par_x_upper);
         y_lower = CurveLower_y(x_energy_vec, par_x_lower);
 
- 
+
     // Time Cut
-        cut0 =  (0 < x_DiscriCell) && (0 < y_DiscriCell);
-        cut1 =  (-5 <= x_DiscriCell - y_DiscriCell) && (x_DiscriCell - y_DiscriCell <= 22);
-        cut2 =  (120 < y_DiscriCell) && (y_DiscriCell < 135);
+        cut0 =  (0 < S1_DiscriCell) && (0 < A1_DiscriCell) && (0 < x_DiscriCell) && (0 < y_DiscriCell);
+        cut1 =  (-17 <= S1_DiscriCell - A1_DiscriCell) && (S1_DiscriCell - A1_DiscriCell <= 22);
+        cut2 =  (-22 <= S1_DiscriCell - x_DiscriCell) && (S1_DiscriCell - x_DiscriCell <= 15);
+
+        cut3 = false;
+        if (y_iBoard == 0){
+            cut3 =  (-2 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 22);
+        }else if (y_iBoard == 1 && y_iCh == 0){
+            cut3 =  (6 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 34);
+
+        }else if (y_iBoard == 1 && y_iCh == 1){
+            cut3 =  (12 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 35);
+
+        }else if (y_iBoard == 1 && y_iCh == 2){
+            cut3 =  (10 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 39);
+
+        }else if (y_iBoard == 1 && y_iCh == 3){
+            cut3 =  (12 <= x_DiscriCell- y_DiscriCell) && (x_DiscriCell- y_DiscriCell <= 33);
+            }
+        
+    // Scatter Cut
+        cut4 = ( 243.4 - sigma4_S1 * S1_error < S1_energy ) && (S1_energy < 268.9 + sigma4_S1 * S1_error);
+        cut5 = ( 173.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 281.5 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
+        cut7 = (A1_lower <= A1_energy && A1_energy <= A1_upper);
 
-        TimeCutPassed = !applyTimeCut || (cut0 && cut1);
-        ScatterCutPassed = !applyScatterCut || cut2;
-        EnergyCutPassed = !applyEnergyCut || (cut6);
+        TimeCutPassed = !applyTimeCut || (cut0 && cut1 && cut2 && cut3);
+        ScatterCutPassed = !applyScatterCut || (cut4 && cut5);
+        EnergyCutPassed = !applyEnergyCut || (cut6 && cut7);
+
         // if (TimeCutPassed && ScatterCutPassed && EnergyCutPassed) {
         // fH2Energy_PMTs->Fill(x_energy, y_energy);
         // fH1EnergySpectra[0]->Fill(x_energy);
@@ -8037,16 +8076,16 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
             
                 if(EnergyCutPassed){
                     validcounter++;
-                    fH2Energy_PMTs->Fill(x_energy, y_energy);
-                    fH1EnergySpectra[0]->Fill(x_energy);
-                    fH1EnergySpectra[1]->Fill(y_energy);
-                    fH1EnergySpectra[2]->Fill(x_energy + y_energy);
+                    fH2Energy_PMTs->Fill(S1_energy, A1_energy);
+                    fH1EnergySpectra[0]->Fill(S1_energy);
+                    fH1EnergySpectra[1]->Fill(A1_energy);
+                    fH1EnergySpectra[2]->Fill(S1_energy + A1_energy);
                 }
             }
             
         }
 
-        if(Entry % 50000 == 0){
+        if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
         }
         allcounter++;
@@ -8054,10 +8093,10 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     }
 
 
-// 各パッドに描画する
 
 // Pad1: 2Dヒストグラム
     canvas->cd(1);
+    gPad->SetLogz();
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
     gStyle->SetPalette(kSolar);
@@ -8069,8 +8108,10 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     line->SetLineWidth(2);
     line->Draw("SAME");
 
-    Double_t x1 = 243.4 - 0 * x_error_lower;
-    Double_t x2 = 268.9 + 0 * x_error_upper;
+    // Double_t x1 = 194.2 - sigma5_S2 * x_error_lower;
+    // Double_t x2 = 267.8 + sigma5_S2 * x_error_upper;
+    Double_t x1 = 243.4 - sigma4_S1 * S1_error;
+    Double_t x2 = 268.9 + sigma4_S1 * S1_error;
     TLine *line1 = new TLine(x1, 0, x1, 600);
     TLine *line2 = new TLine(x2, 0, x2, 600);
     line1->SetLineStyle(2); //破線
@@ -8082,15 +8123,15 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     line1->Draw("SAME");
     line2->Draw("SAME");
 
-    curve_upper->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma7_sato_upper); 
+    curve_upper->SetParameters(S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_upper);
+    curve_upper->SetLineStyle(2);
     curve_upper->SetLineColor(kBlack);
-    curve_upper->SetLineStyle(2); //破線
     curve_upper->Draw("SAME");
 
     
-    curve_lower->SetParameters(x_p0_res_buf, y_p0_res_buf, sigma7_sato_lower);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
+    curve_lower->SetParameters(S1_p0_res_buf, A1_p0_res_buf, sigma7_sato_lower);  // par[0]=x_p0_res_buf, par[1]=y_p0_res_buf
+    curve_lower->SetLineStyle(2);
     curve_lower->SetLineColor(kBlack);
-    curve_lower->SetLineStyle(2); //破線
     curve_lower->Draw("SAME");
 
    
@@ -8125,12 +8166,12 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
 
     TString filename_figure = fRootFile(fRootFile.Last('/')+1, fRootFile.Length()-fRootFile.Last('/'));
     filename_figure.ReplaceAll(".", "_");
-    // TString filename_figure_pdf = filename_figure + "_fH2Energy_PMTs.pdf";
-    TString filename_figure_png = filename_figure + Form("_huruno1_and_sato_iB%diC%d_.png", y_iBoard, y_iCh);
+    TString filename_figure_pdf = filename_figure + Form("_EventSelection_y_iB%diC%d_sato_.pdf", y_iBoard, y_iCh);
+    TString filename_figure_png = filename_figure + Form("_EventSelection_y_iB%diC%d_sato_.png", y_iBoard, y_iCh);
     // printf("\n\tfigure saved as: %s/%s\n", folderPath.Data(), filename_figure_pdf.Data());
 
-    // IfFile_duplication(folderPath, filename_figure_pdf);
-    // canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
+    IfFile_duplication(folderPath, filename_figure_pdf);
+    canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_pdf.Data()));
 
     IfFile_duplication(folderPath, filename_figure_png);
     canvas->SaveAs(Form("%s/%s", folderPath.Data(), filename_figure_png.Data()));
@@ -8142,12 +8183,12 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     std::cout << "valid events :" << validcounter << std::endl;
 
     std::ofstream ofs;
-    ofs.open("./output/ES2_eff.txt", std::ios::app);
+    ofs.open("./output/ES2.txt", std::ios::app);
     auto now = std::chrono::system_clock::now();                      // 現在時刻を取得
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);    // time_t に変換
     std::tm local_tm = *std::localtime(&now_c);
     ofs << std::endl << "================================================================" << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S") << std::endl << Form("x_iB %d,x_iC %d,y_iB %d,x_iC %d", x_iBoard, x_iCh, y_iBoard, y_iCh) << std::endl << "\tall events : " << allcounter << std::endl  << "\ttimecut events : " << timecutcounter << std::endl << "\tscattercut events : " << scattercutcounter << std::endl << "\tvalid events :" << validcounter << std::endl;
     ofs.close();
 
-    return 0;
+    return 0; //　これはreturn 0;でok
 }
