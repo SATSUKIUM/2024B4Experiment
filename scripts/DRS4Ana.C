@@ -8016,7 +8016,7 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     // Time Cut
         cut0 =  (0 < x_DiscriCell) && (0 < y_DiscriCell);
         cut1 =  (-17 <= x_DiscriCell - y_DiscriCell) && (x_DiscriCell - y_DiscriCell <= 22);
-        cut2 =  (110 < y_DiscriCell < 140);
+        cut2 =  (110 < y_DiscriCell) && (y_DiscriCell < 140);
 
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
