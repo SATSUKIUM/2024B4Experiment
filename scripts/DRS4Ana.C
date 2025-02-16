@@ -7909,7 +7909,7 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     fChain->SetBranchStatus("waveform",0);
     fChain->SetBranchStatus("time",0);
     
-    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t nentries = fChain->GetEntries();
     Long64_t allcounter = 0;
     Long64_t validcounter = 0;
     Long64_t timecutcounter = 0;
@@ -7930,8 +7930,8 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     Double_t p0[2][4], p0e[2][4], p1[2][4], p1e[2][4], p0_res[2][4], p0e_res[2][4];
     Load_EnergycalbData(key, p0, p0e, p1, p1e, p0_res, p0e_res);
 
-    Double_t x_energy, y_energy, S1_energy, A1_energy;
-    Double_t x_error, y_error, S1_error_eff, A1_error;
+    Double_t x_energy, y_energy;
+    Double_t x_error, y_error;
     Double_t x_error_upper, x_error_lower;
     Double_t x_p0_buf, y_p0_buf, x_p1_buf, y_p1_buf;
     Double_t y_upper, y_lower, A1_lower, A1_upper;
@@ -7941,9 +7941,8 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
     y_p0_buf = p0[y_iBoard][y_iCh];
     y_p1_buf = p1[y_iBoard][y_iCh];
     
-    Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
-    Double_t x_DiscriCell, y_DiscriCell, S1_DiscriCell , A1_DiscriCell;
-    Double_t x_adcSum_timerange, y_adcSum_timerange;
+    Double_t x_DiscriTime, y_DiscriTime;
+    Double_t x_DiscriCell, y_DiscriCell;
     Double_t x_p0_res_buf = p0_res[x_iBoard][x_iCh];
     Double_t y_p0_res_buf = p0_res[y_iBoard][y_iCh];
 
@@ -8018,8 +8017,6 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
         cut0 =  (0 < x_DiscriCell) && (0 < y_DiscriCell);
         cut1 =  (-17 <= x_DiscriCell - y_DiscriCell) && (x_DiscriCell - y_DiscriCell <= 22);
 
-        cut3 = false;
-
     // Energy Cut
         cut6 = (y_lower <= y_energy && y_energy <= y_upper);
 
@@ -8033,7 +8030,7 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Double_t sigma7_sat
         // }
         if (TimeCutPassed){
             timecutcounter++;
-            if(ScatterCutPassed){
+            if(true){
                 scattercutcounter++;
             
                 if(EnergyCutPassed){
