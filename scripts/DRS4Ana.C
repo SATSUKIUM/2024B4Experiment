@@ -8224,7 +8224,7 @@ Double_t DRS4Ana::PlotRunPeriods(){
     TObjArray *fileList = fChain->GetListOfFiles();
     if (!fileList) {
         std::cerr << "No files found in the TChain." << std::endl;
-        return;
+        return 0;
     }
 
     // 各ファイルごとの処理
@@ -8270,6 +8270,8 @@ Double_t DRS4Ana::PlotRunPeriods(){
                   << daqDurations[i] << "\t"
                   << eventRates[i] << std::endl;
     }
+
+    return 0;
 
     // //秒数を60で割って、60sあたりのトリガー数を入れたい
     // fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), howLong_DAQ_spent/60.0, 0, howLong_DAQ_spent);
