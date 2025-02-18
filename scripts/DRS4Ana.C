@@ -8319,7 +8319,7 @@ Double_t DRS4Ana::PlotTriggerRate2(){
     //秒数を60で割って、60sあたりのトリガー数を入れたい
     TCanvas *c1 = new TCanvas("title", "DAQ rate", 1200, 800);
     gStyle->SetOptStat(0);
-    fH1TriggerRate = new TH1F("fH1TriggerRate", "DAQ rate in 1hour", howLong_DAQ_spent/(60.0*60), 0, howLong_DAQ_spent);
+    fH1TriggerRate = new TH1F("fH1TriggerRate", "DAQ rate in 10min", howLong_DAQ_spent/(60.0*10), 0, howLong_DAQ_spent);
     fH1TriggerRate->SetXTitle("time [s]");
     fH1TriggerRate->SetYTitle("[counts]/60min");
 
