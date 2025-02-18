@@ -7461,7 +7461,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
             }
         
     // Scatter Cut
-        cut4 = ( 200 - sigma4_S1 * S1_error < S1_energy ) && (S1_energy < 300 + sigma4_S1 * S1_error);
+        cut4 = ( 245.4 - sigma4_S1 * S1_error < S1_energy ) && (S1_energy < 268.9 + sigma4_S1 * S1_error);
         cut5 = ( 173.2 - sigma5_S2 * x_error_lower < x_energy ) && (x_energy < 281.5 + sigma5_S2 * x_error_upper);
 
     // Energy Cut
@@ -7508,7 +7508,7 @@ Double_t DRS4Ana::EventSelection2(TString key = "0204", Int_t x_iBoard = 0, Int_
     gPad->SetLogz();
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-    gStyle->SetPalette(kSolar);
+    gStyle->SetPalette(kRainBow);
     gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
@@ -7802,7 +7802,7 @@ Double_t DRS4Ana::EventSelection2_eff(TString key = "0204", Int_t x_iBoard = 0, 
     canvas->cd(1);
     gPad->SetLeftMargin(0.15);  // 左の余白を広げる
     gPad->SetGrid();
-    gStyle->SetPalette(kSolar);
+    gStyle->SetPalette(kRainBow);
     gPad->Update();
     // gPad->SetBottomMargin(0.15);  // 下の余白を広げる
     fH2Energy_PMTs->Draw();
