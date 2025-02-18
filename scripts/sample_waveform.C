@@ -54,7 +54,7 @@ void sample_waveform(TString filepath = "../data/PhysicsRun/Run_005.dat.root") {
 
     // 9813番目のエントリを取得
     // tree->GetEntry(9813);
-    tree->GetEntry(13853);
+    tree->GetEntry(27201);
 
     // キャンバスを作成
     TCanvas *c1 = new TCanvas("c1", "Waveform Plot", 800, 600);

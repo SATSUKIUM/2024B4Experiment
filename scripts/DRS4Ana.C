@@ -6880,6 +6880,10 @@ Double_t DRS4Ana::PlotDiscriCell_difference_NaIs(Int_t iBoard1 = 0, Int_t iCh1 =
 
     fChain->SetBranchStatus("waveform",0);
     fChain->SetBranchStatus("time",0);
+    fChain->SetBranchStatus("fSec",0);
+    fChain->SetBranchStatus("fNanoSec",0);
+    fChain->SetBranchStatus("fTriggerCell",0);
+    fChain->SetBranchStatus("adcSum",0);
 
     Long64_t nentries;
 
@@ -7030,6 +7034,10 @@ Double_t DRS4Ana::PlotdiscriCell_difference_S2A2(Int_t iBoard1 = 0, Int_t iCh1 =
 
     fChain->SetBranchStatus("waveform",0);
     fChain->SetBranchStatus("time",0);
+    fChain->SetBranchStatus("fSec",0);
+    fChain->SetBranchStatus("fNanoSec",0);
+    fChain->SetBranchStatus("fTriggerCell",0);
+    fChain->SetBranchStatus("adcSum",0);
 
     Long64_t nentries;
 
