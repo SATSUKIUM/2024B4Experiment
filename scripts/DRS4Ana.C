@@ -3273,7 +3273,7 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
     Long64_t scattercutcounter = 0;
 
     TCanvas *canvas = new TCanvas("canvas", "title", 2000, 4000);
-    canvas->Divide(2,2);
+    canvas->Divide(2,4);
     if(fH2Energy_PMTs != NULL){
         delete fH2Energy_PMTs;
     }
@@ -3534,9 +3534,9 @@ Double_t DRS4Ana::EventSelection(TString key = "0204", Int_t x_iBoard = 0, Int_t
 
 
 void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoard = 0, Int_t y_iCh = 1){
-    TCanvas *c1 = new TCanvas("title", "name", 1200, 600);
+    TCanvas *c1 = new TCanvas("title", "name", 1200, 2400);
     c1->Divide(3,2);
-    TH2D* hists[3][4];
+    TH2D* hists[3][3];
     //TH2D* hists[3][2];
 
     // Double_t minEnergy, maxEnergy;
@@ -3549,12 +3549,12 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
     Double_t x_DiscriTime, y_DiscriTime, S1_DiscriTime, A1_DiscriTime;
     
 
-    TH1F* fH1TriggerTimes[4];
+    TH1F* fH1TriggerTimes[3];
     //TH1D *fH1EnergySpectra[3];
    
     for(Int_t iCh=0; iCh<4; iCh++){
         if (iCh == 1) {
-            //continue;  // i が 1 の場合はスキップする
+            continue;  // i が 1 の場合はスキップする
         }
         else{
         hists[0][iCh] = new TH2D(Form("iBoard 0, iCh %d", iCh), Form("iBoard 0, iCh %d",iCh), 500, 0, 1500, 500, -0.55, 0.05);
@@ -3566,6 +3566,7 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
         }
     }
     
+    
 
     for(Int_t Entry=0; Entry<nentries; Entry++){
         fChain->GetEntry(Entry);
@@ -3575,19 +3576,17 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
         S1_DiscriTime = fTime[0][0][fDiscriCell[0][0]];
         A1_DiscriTime = fTime[0][2][fDiscriCell[0][2]];
 
-        Double_t S1A1_DiscriTime = abs(S1_DiscriTime - A1_DiscriTime);
-        Double_t S2A1_DiscriTime = abs(x_DiscriTime - A1_DiscriTime);
+        Double_t difference_DiscriTime = abs(S1_DiscriTime - x_DiscriTime);
 
 
-       if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220)  && (135 < A1_DiscriTime) 
-          && (S1A1_DiscriTime < 15) && ( S2A1_DiscriTime < 15)){
+       //if((100 < x_DiscriTime && S1_DiscriTime && A1_DiscriTime < 220) && (difference_DiscriTime < 5) ){
              //&& ( S1_DiscriTime < A1_DiscriTime ) && ( x_DiscriTime < A1_DiscriTime)){
 
             
               for(Int_t iCh=0; iCh<4; iCh++){
 
                 if (iCh == 1) {
-                  //continue;  // i=1 の場合はスキップする
+                  continue;  // i=1 の場合はスキップする
                 }
                 else{
                 fH1TriggerTimes[iCh]->Fill(fTime[0][iCh][fDiscriCell[0][iCh]]);
@@ -3598,9 +3597,9 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
               }
         
            
-        }
+        //}
 
-        if(Entry % 1000 == 0){
+        if(Entry % 5000 == 0){
             printf("\tPoint plot : %d\n", Entry);
         }
 
@@ -3617,7 +3616,7 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
             }
             gPad->SetLogz();
             gPad->SetGrid();
-            gStyle->SetOptStat(1);
+            gStyle->SetOptStat(0);
         }
     
         for(Int_t iCh=1; iCh<4; iCh++){ //canvas4~6
@@ -3638,8 +3637,8 @@ void DRS4Ana::NaI_waveform_ukai(Int_t x_iBoard = 0,Int_t x_iCh = 0, Int_t y_iBoa
         //     c1->cd(iCh+3);
         //     fH1TriggerTimes[0][iCh]->Draw();
         // }
-    
 
+    
 }
 
 
@@ -6854,19 +6853,19 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
 
     if(fit_flag == 1){
 
-        TF1* gaussian_plus_linear = new TF1("gaussian_plus_linear", "gaus+pol1(3)", fit_min, fit_max);
-        gaussian_plus_linear->SetParameters(10000, (fit_max + fit_min) / 2, sigma, 50.0, -5.0);
-        fH1TriggerTimeDifference->Fit(gaussian_plus_linear, "R");
-        gaussian_plus_linear->Draw("LSAME");
+        TF1* gaussian_plus_pedestal = new TF1("gaussian_plus_pedestal", "gaus+pol0(3)", fit_min, fit_max);
+        gaussian_plus_pedestal->SetParameters(10000, (fit_max + fit_min) / 2, sigma, 100.0);
+        fH1TriggerTimeDifference->Fit(gaussian_plus_pedestal, "R");
+        gaussian_plus_pedestal->Draw("LSAME");
 
-        TF1* linear = new TF1("linear", "pol1", fit_min, fit_max);
-        linear->SetParameters(
-            gaussian_plus_linear->GetParameter(3), // 切片
-            gaussian_plus_linear->GetParameter(4)  // 傾き
+        TF1* pedestal = new TF1("linear", "pol1", fit_min, fit_max);
+        pedestal->SetParameters(
+            gaussian_plus_pedestal->GetParameter(3), // 切片
+            gaussian_plus_pedestal->GetParameter(4)  // 傾き
         );
-        linear->SetLineColor(kGreen+1);
-        linear->SetLineStyle(1);
-        linear->Draw("LSAME");
+        pedestal->SetLineColor(kGreen+1);
+        pedestal->SetLineStyle(1);
+        pedestal->Draw("LSAME");
     }
 
 
