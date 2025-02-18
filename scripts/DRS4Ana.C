@@ -6767,10 +6767,14 @@ void DRS4Ana::PlotTrigger2(){
     for(Int_t iBoard=0; iBoard<2; iBoard++){
         for(Int_t ich=0; ich<4; ich++){
             hists[iBoard][ich] = new TH1D(Form("ib%d_ic%d_Trigger", iBoard, ich),
-                                          Form("Trigger_ib%d_ic%d", iBoard, ich),
-                                          300, 0, 300);
-            hists[iBoard][ich]->SetXTitle("[ns]");
-            hists[iBoard][ich]->SetYTitle("[counts]");
+                                          Form("Trigger Timing_ib%d_ic%d", iBoard, ich),
+                                          300, 1, 300);
+            hists[iBoard][ich]->SetXTitle("trigger timing [ns]");
+            hists[iBoard][ich]->SetYTitle("counts / 1 ns");
+            hists[iBoard][ich]->GetXaxis()->SetTitleSize(0.05);
+            hists[iBoard][ich]->GetYaxis()->SetTitleSize(0.06);
+            hists[iBoard][ich]->GetXaxis()->SetTitleOffset(0.8);
+            hists[iBoard][ich]->GetYaxis()->SetTitleOffset(0.9);
         }
     }
 
