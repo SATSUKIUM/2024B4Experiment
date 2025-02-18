@@ -730,6 +730,7 @@ void DRS4Ana::Output_EventTime(Int_t iCh)
         counter++;
     }
 }
+
 Double_t DRS4Ana::PlotTriggerRate(Int_t iCh = 0){
     fChain->SetBranchStatus("fTriggerCell",0);
     fChain->SetBranchStatus("adcSum",0);
@@ -8199,4 +8200,89 @@ Double_t DRS4Ana::EventSelection2_S1A1(TString key = "0204", Int_t x_iBoard = 0,
     ofs.close();
 
     return 0; //　これはreturn 0;でok
+}
+
+
+Double_t DRS4Ana::PlotRunPeriods(){
+    fChain->SetBranchStatus("fTriggerCell",0);
+    fChain->SetBranchStatus("adcSum",0);
+    fChain->SetBranchStatus("waveform",0);
+    fChain->SetBranchStatus("time",0);
+    Long64_t nentries = fChain->GetEntries();
+    std::cout << "nentries: " << nentries << std::endl;
+
+    Long64_t counter = 0;
+    if(fH1TriggerRate != NULL){
+        delete fH1TriggerRate;
+    }
+
+    std::vector<TString> fileNames;
+    std::vector<Int_t> eventCounts;
+    std::vector<Double_t> daqDurations;
+    std::vector<Double_t> eventRates;
+
+    // ファイルリスト取得
+    TObjArray *fileList = fChain->GetListOfFiles();
+    if (!fileList) {
+        std::cerr << "No files found in the TChain." << std::endl;
+        return;
+    }
+
+    // 各ファイルごとの処理
+    TIter next(fileList);
+    TChainElement *element;
+    Int_t EventInSec, EventInNanoSec;
+    while ((element = (TChainElement *)next())) {
+        const char *fileName = element->GetTitle();
+        TFile file(fileName);
+        if (file.IsZombie()) continue;
+
+        TTree *tree = (TTree *)file.Get("treeDRS4BoardEvent");
+        if (!tree) continue;
+
+        tree->SetBranchAddress("fSec", &EventInSec);
+
+        Long64_t nEntries = tree->GetEntries();
+        if (nEntries == 0) continue;
+
+        // fSec の最小・最大を取得
+        tree->GetEntry(0);
+        Int_t minTime = EventInSec;
+        tree->GetEntry(nEntries - 1);
+        Int_t maxTime = EventInSec;
+
+        Double_t daqTime = maxTime - minTime; // DAQ稼働時間 [秒]
+        Double_t rate = (daqTime > 0) ? (Double_t)nEntries / daqTime : 0.0; // イベントレート [Hz]
+
+        // 結果を保存
+        fileNames.push_back(fileName);
+        eventCounts.push_back(nEntries);
+        daqDurations.push_back(daqTime);
+        eventRates.push_back(rate);
+
+        file.Close();
+    }
+
+    // 結果を表示
+    std::cout << "File Name\tEvents\tDAQ Time [s]\tRate [Hz]" << std::endl;
+    for (size_t i = 0; i < fileNames.size(); ++i) {
+        std::cout << fileNames[i] << "\t"
+                  << eventCounts[i] << "\t"
+                  << daqDurations[i] << "\t"
+                  << eventRates[i] << std::endl;
+    }
+
+    // //秒数を60で割って、60sあたりのトリガー数を入れたい
+    // fH1TriggerRate = new TH1F("fH1TriggerRate", Form("%s:ch%d_Trigger_Rate", fRootFile.Data(), iCh), howLong_DAQ_spent/60.0, 0, howLong_DAQ_spent);
+    // fH1TriggerRate->SetXTitle("time [s]");
+    // fH1TriggerRate->SetYTitle("[counts]/1min");
+
+    // for (Long64_t jentry = 0; jentry < nentries; jentry++)
+    // {
+    //     fChain->GetEntry(jentry);
+    //     fH1TriggerRate->Fill(-eventTime_begin_InSec+fEventTimeInSec+fEventTimeInNanoSec*10e-9);
+    //     counter++;
+    // }
+    // fH1TriggerRate->Draw();
+    return(counter);
 }
