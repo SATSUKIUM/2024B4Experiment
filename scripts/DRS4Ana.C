@@ -8283,5 +8283,4 @@ Double_t DRS4Ana::PlotRunPeriods(){
     //     counter++;
     // }
     // fH1TriggerRate->Draw();
-    return(counter);
 }
