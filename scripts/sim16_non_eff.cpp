@@ -76,10 +76,8 @@ Double_t GetRate(Double_t theta, Double_t phi, Double_t K){
     Double_t time = 60*60*24*14; // [s]
 
 
-    // Double_t delta_theta = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
-    // Double_t delta_phi = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
-    Double_t delta_theta = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがθの微少量とする
-    Double_t delta_phi = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがφの微少量とする　積分精度を落として計算速度を早める
+    Double_t delta_theta = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
+    Double_t delta_phi = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
 
 
     std::ifstream ifs("./cfg/GSO_pe.txt"); // 以下、あるエネルギーでの光電吸収に対する減衰係数を取得
@@ -140,7 +138,7 @@ Double_t GetRate(Double_t theta, Double_t phi, Double_t K){
     // return counts;
 }
 
-void PlotCountIntegral(Double_t days = 1.0, Double_t K = 0.78){
+void PlotRateIntegral(Double_t days = 1.0, Double_t K = 0.78){
 
     TRandom3 randGen(0);
 
@@ -239,94 +237,68 @@ void PlotCountIntegral(Double_t days = 1.0, Double_t K = 0.78){
 
 }
 
-Double_t CountIntegral(Double_t phi, Double_t K) {
+//　sim15th()は無視して
 
-    Double_t A2_length = 12.0;
-    Double_t A2_width = 2.0;
-    Double_t r_S2_to_A2 = 25.0;
+void sim15th() {
 
-    // Double_t delta_theta = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
-    // Double_t delta_phi = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
-    Double_t delta_theta = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがθの微少量とする
-    Double_t delta_phi = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがφの微少量とする　積分精度を落として計算速度を早める
+    double length = 12.0;
+    double width = 2.0;
+    double r_scat_to_detect = 25.0;
+    double degree_x = atan(r_scat_to_detect/length) * 180 / M_PI;
+    double degree_y = atan(width / r_scat_to_detect);
+    TCanvas* c1 = new TCanvas("c1", "c1", 800, 600);
+    // TH3D* h1 = new TH3D("h1", "h1", 10, degree_x, 90, 10, 0, 180, 10, 0, 0.01);
+    // TF2* func = new TF2("f", "func1(x, y)", degree, M_PI/2 + degree, 0, M_PI);
+    // TF2* func = new TF2("f", "func1(x, y)", M_PI/2, M_PI/2 + degree, 0, M_PI);    
+    // TF2* func = new TF2("f", "func1(x, y)", 0, M_PI, 0, M_PI);
 
-    Double_t theta_min_rad = atan(r_S2_to_A2 / A2_length); // およそ64度のラジアン
-    Double_t phi_range_rad = 2 * atan((A2_width / 2) / r_S2_to_A2); //　およそ4.6度のラジアン
+    // TF2* func = new TF2("f", "func1(x, y)", degree_x, 90, 0, 180);
 
-    Double_t l_theta_d = (M_PI / 2 - theta_min_rad) / delta_theta;
-    Double_t l_phi_d = phi_range_rad / delta_phi;
+    // func->SetTitle("R with kappa_initial = 1.0;Theta[degree];Phi[degree];R[/day]");
+    // func->GetXaxis()->SetLabelSize(0.04);
+    // func->GetYaxis()->SetLabelSize(0.04);
+    // func->GetZaxis()->SetLabelSize(0.04);
+    // func->GetXaxis()->SetTitleSize(0.05);
+    // func->GetYaxis()->SetTitleSize(0.05);
+    // func->GetZaxis()->SetTitleSize(0.05);
+    // func->GetYaxis()->SetNdivisions(9);
+    // func->GetXaxis()->SetTitleOffset(1.2);
+    // func->Draw("surf2");
 
-    Int_t l_theta = static_cast<Int_t>(l_theta_d);
-    Int_t l_phi = static_cast<Int_t>(l_phi_d); // 角度の範囲内にある0.1度刻みの点の個数
-
-    Double_t x[l_theta], y[l_phi];
-
-    Double_t x_min = theta_min_rad * 180 / M_PI; // 度
-    Double_t x_max = 90; // 度
-    Double_t y_min; // 度
-    Double_t y_max; // 度
-
-    Double_t time = 60*60*24*14; // [s]
-
-    Double_t count_sum = 0.0;
-
-    // double time = 60 * 60 * 24 * 7 * 1;
-    // double counts= 0.0;
-
-    // cout << "time = " << time/60/60/24 << "days" << endl;
-
-    y_min = phi - ((phi_range_rad / 2) * 180 / M_PI);
-    y_max = phi + ((phi_range_rad / 2) * 180 / M_PI);
-
-    for(Int_t m = 0; m < l_theta; m++){
-
-        x[m] = x_min + m * delta_theta * 180 / M_PI;
-
-        for(Int_t n = 0; n < l_phi; n++){
-
-            y[n] = y_min + n * delta_phi * 180 / M_PI;
-            count_sum += GetRate(x[m], y[n], K) * time;
-        }
-    }
-
-    // cout << "l_theta = " << l_theta << endl;
-    // cout << "l_phi = " << l_phi << endl;
-
-    return count_sum;
-    
-}
-
-Double_t DrawCountIntegral(Double_t K1 = 0.5, Double_t K2 = 1.0){
-
-    TH2D* hh = new TH2D("h", "h", 10, 0, 180, 10, 150, 550); // 範囲変えて
+    auto legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+    auto hh = new TH2D("h", "", 10, 0, 180, 10, 40, 120);
     hh->SetStats(0);
     hh->SetTitleSize(0.05);
     hh->GetXaxis()->SetLabelSize(0.04);
     hh->GetYaxis()->SetLabelSize(0.04);
     hh->GetXaxis()->SetTitleSize(0.05);
     hh->GetYaxis()->SetTitleSize(0.05);
-    hh->SetTitle("#phi-dependence of Expected Counts(2 weeks);#phi[degree];Counts");
+    hh->SetTitle("#phi-dependence of R with #theta = 90[degree];#phi[degree];R[/day]");
     hh->GetXaxis()->SetTitleOffset(0.9);
     hh->GetYaxis()->SetTitleOffset(0.9);
     hh->Draw();
 
-    auto legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+    TF1* func_a = new TF1("f", "func1([0], x, [1])", 0, 180);
+    func_a->SetParameters(90, 1.0);
+    
+    func_a->SetLineColor(kRed);
+    legend->AddEntry(func_a, "#kappa = 1.0");
+    func_a->Draw("same");
 
-    TF1* func1 = new TF1("func1", "CountIntegral(x, [0])", 0, 180);
-    func1->SetParameters(K1);
-    func1->SetLineColor(kGreen);
-    legend->AddEntry(func1, "#kappa = 0.5");
-
-    TF1* func2 = new TF1("func2", "CountIntegral(x, [0])", 0, 180);
-    func2->SetParameters(K2);
-    func2->SetLineColor(kRed);
-    legend->AddEntry(func2, "#kappa = 1.0");
-
-    func1->Draw("same");
-    func2->Draw("same");
+    TF1* func_b = new TF1("f", "func1([0], x, [1])", 0, 180);
+    func_b->SetParameters(90, 0.5);
+    func_b->SetLineColor(kGreen);
+    legend->AddEntry(func_b, "#kappa = 0.5");
+    func_b->Draw("same");
     legend->Draw();
 
-    return 0;
+    // TF1* func = new TF1("f", "func1(x, [0])", degree, (M_PI/2 + degree));
+    // TF1* func = new TF1("f", "func1([0], x)", 0, M_PI);
+    // func->SetParameters(M_PI/4);
+    // func->SetTitle(";theta;Counts");
+    // func->SetTitle(";phi;Counts");    
+    // func->Draw();
+    
 }
 
 Double_t Integrand(Double_t fit_par0, Double_t fit_par1, Double_t phi_prime){
@@ -457,20 +429,18 @@ Double_t GetKappa(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
     gStyle->SetOptFit(0);
 
     TGraphErrors* graph = new TGraphErrors();
-    
 
     Int_t index_data = 0;
     Double_t counts, EFFICIENCY;
 
     while(ifs >> counts >> EFFICIENCY){
-        Double_t sigma_tatejiku = sqrt(pow(counts / (pow(EFFICIENCY, 2.0)), 2.0) * pow(sqrt(EFFICIENCY), 2.0) + pow(1 / EFFICIENCY, 2.0) * pow(sqrt(counts), 2.0));
-        graph->SetPoint(index_data, index_data * 45, counts/EFFICIENCY);
-        graph->SetPointError(index_data, 0, sigma_tatejiku);
+        graph->SetPoint(index_data, index_data * 45, counts);
+        graph->SetPointError(index_data, 0, sqrt(counts));
         index_data++;
     }
     ifs.close();
 
-    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 0.12); // 範囲変えて
+    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 300); // 範囲変えて
     hh->SetStats(0);
     hh->SetTitle("The number of valid events;#phi[degree];Counts");
     hh->Draw();
@@ -517,6 +487,8 @@ Double_t GetKappa(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
 
     cout << "kappa = " << kappa << endl;
     cout << "kappa_error = " << kappa_error << endl;
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
 
     // cout << "p0 = " << p0 << endl;
     // cout << "p0e = " << p0e << endl;
