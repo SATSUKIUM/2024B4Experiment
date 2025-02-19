@@ -6806,7 +6806,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
 
     // Int_t fit_flag = 1; // フィットするなら1,しないなら0 描画範囲を決める
     
-    // Long64_t nentries = fChain->GetEntriesFast();
+    //Long64_t nentries = fChain->GetEntriesFast();
     Long64_t nentries = 100000;
 
     if(fH1TriggerTimeDifference != NULL){
@@ -6817,12 +6817,13 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
     c1->Draw();
     gPad->SetGrid();
 
+
     Int_t histDiv, xmin, xmax;
 
     if(fit_flag == 0){
-        histDiv = 500;
-        xmin = -250;
-        xmax = 250;
+        histDiv = 100;
+        xmin = -50;
+        xmax = 50;
     }
 
     if(fit_flag == 1){
@@ -6848,7 +6849,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
         }
         
     }
-
+    fH1TriggerTimeDifference->SetStats(0);
     fH1TriggerTimeDifference->Draw();
 
 
@@ -6871,7 +6872,7 @@ void DRS4Ana::PlotdiscriTime_difference(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t
 
 
     c1->Update();
-    gStyle->SetOptFit(1);
+    gStyle->SetOptFit(0);
 }
 
 Double_t DRS4Ana::PlotDiscriCell_difference_NaIs(Int_t iBoard1 = 0, Int_t iCh1 = 0, Int_t iBoard2 = 0, Int_t iCh2 = 2, Int_t entry_flag = 0, Int_t figure_option = 0, Int_t xmin = -1050, Int_t xmax = 1050, Int_t ped_nega_lower = -130, Int_t ped_nega_upper = -30, Int_t ped_posi_lower = 30, Int_t ped_posi_upper = 130){
