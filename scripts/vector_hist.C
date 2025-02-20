@@ -3,7 +3,7 @@
 #include <TCanvas.h>
 #include <TROOT.h>
 #include <TFile.h>
-#include <TRadom.h>
+#include <TRandom.h>
 
 void vector_hist() {
     TCanvas* c1 = new TCanvas("c1", "Histograms", 800, 600);
