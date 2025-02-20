@@ -76,10 +76,10 @@ Double_t GetRate(Double_t theta, Double_t phi, Double_t K){
     Double_t time = 60*60*24*14; // [s]
 
 
-    // Double_t delta_theta = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
-    // Double_t delta_phi = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
-    Double_t delta_theta = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがθの微少量とする
-    Double_t delta_phi = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがφの微少量とする　積分精度を落として計算速度を早める
+    Double_t delta_theta = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
+    Double_t delta_phi = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがφの微少量とする
+    // Double_t delta_theta = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがθの微少量とする
+    // Double_t delta_phi = 1.0 * M_PI / 180; //　1.0度に当たるラジアンがφの微少量とする　積分精度を落として計算速度を早める
 
 
     std::ifstream ifs("./cfg/GSO_pe.txt"); // 以下、あるエネルギーでの光電吸収に対する減衰係数を取得
@@ -211,7 +211,7 @@ void PlotCountIntegral(Double_t days = 1.0, Double_t K = 0.78){
 
     auto legend = new TLegend(0.7, 0.7, 0.9, 0.9);
 
-    TGraphErrors* graph1 = new TGraphErrors(abs_points, y_center, count_sum, 0, count_error);
+    TGraphErrors* graph1 = new TGraphErrors(abs_points, y_center, count_sum, 0, 0);
     // graph1->SetTitle(Form("Expected Count of Absorbers (%.0f days, #kappa = %.3f);#phi [degree];Counts", days, K));
 
     TGraphErrors* graph2 = new TGraphErrors(abs_points, y_center, count_measured, 0, count_measured_error);
@@ -296,7 +296,7 @@ Double_t CountIntegral(Double_t phi, Double_t K) {
     
 }
 
-Double_t DrawCountIntegral(Double_t K1 = 0.5, Double_t K2 = 1.0){
+Double_t DrawCountIntegral(Double_t K1 = 0.707, Double_t K2 = 1.0){
 
     TH2D* hh = new TH2D("h", "h", 10, 0, 180, 10, 150, 550); // 範囲変えて
     hh->SetStats(0);
@@ -305,7 +305,7 @@ Double_t DrawCountIntegral(Double_t K1 = 0.5, Double_t K2 = 1.0){
     hh->GetYaxis()->SetLabelSize(0.04);
     hh->GetXaxis()->SetTitleSize(0.05);
     hh->GetYaxis()->SetTitleSize(0.05);
-    hh->SetTitle("#phi-dependence of Expected Counts(2 weeks);#phi[degree];Counts");
+    hh->SetTitle("#phi-dependence of Expected Counts(2 weeks);#phi(deg);Counts");
     hh->GetXaxis()->SetTitleOffset(0.9);
     hh->GetYaxis()->SetTitleOffset(0.9);
     hh->Draw();
@@ -314,8 +314,8 @@ Double_t DrawCountIntegral(Double_t K1 = 0.5, Double_t K2 = 1.0){
 
     TF1* func1 = new TF1("func1", "CountIntegral(x, [0])", 0, 180);
     func1->SetParameters(K1);
-    func1->SetLineColor(kGreen);
-    legend->AddEntry(func1, "#kappa = 0.5");
+    func1->SetLineColor(kBlue);
+    legend->AddEntry(func1, "#kappa = 0.707");
 
     TF1* func2 = new TF1("func2", "CountIntegral(x, [0])", 0, 180);
     func2->SetParameters(K2);
@@ -327,6 +327,10 @@ Double_t DrawCountIntegral(Double_t K1 = 0.5, Double_t K2 = 1.0){
     legend->Draw();
 
     return 0;
+}
+
+Double_t Not_Integral(Double_t fit_par0, Double_t fit_par1, Double_t phi){
+    return fit_par0 - fit_par1 * cos(2 * phi * M_PI / 180);
 }
 
 Double_t Integrand(Double_t fit_par0, Double_t fit_par1, Double_t phi_prime){
@@ -466,6 +470,168 @@ Double_t GetKappa(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
     ifs.close();
 
     TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 0.3); // 範囲変えて
+    hh->SetStats(0);
+    hh->SetTitle("The number of valid events;#phi[degree];Counts");
+    hh->Draw();
+
+
+    TF1* fitfunc = new TF1("fitfunc", "Integral_over_phi_range([0], [1], x)", 0, 180);
+    fitfunc->SetParameters(100.0, 10.0);
+    graph->Fit(fitfunc);
+    graph->SetMarkerSize(0.6);
+    graph->SetMarkerStyle(8);
+    graph->Draw("Psame");
+
+    Double_t sum_divisor = 0.0;
+    Double_t sum_dividend = 0.0;
+
+    Double_t A2_length = 12.0;
+    Double_t r_S2_to_A2 = 25.0;
+
+    // Double_t delta_theta_rad = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
+    Double_t delta_theta = 0.1;
+
+    // Double_t theta_min_rad = atan(r_S2_to_A2 / A2_length); // およそ64度のラジアン
+    Double_t theta_min = atan(r_S2_to_A2 / A2_length) * 180 / M_PI;
+
+    Double_t l_theta_d = (90 - theta_min) / delta_theta;
+
+    Int_t l_theta = static_cast<Int_t>(l_theta_d);
+
+    for(int i = 0; i < l_theta; i++){
+
+        Double_t theta_tilde = theta_min + i * delta_theta;
+        sum_dividend += Integrand_dividend(theta_tilde) * delta_theta;
+        sum_divisor += Integrand_divisor(theta_tilde) * delta_theta;
+
+    }
+
+    Double_t p0 = fitfunc->GetParameter(0);
+    Double_t p1 = fitfunc->GetParameter(1);
+    Double_t p0e = fitfunc->GetParError(0);
+    Double_t p1e = fitfunc->GetParError(1);
+
+    Double_t kappa = (p1 / p0) * (sum_dividend / sum_divisor);
+    Double_t kappa_error = (sum_dividend / (sum_divisor * p0)) * sqrt(pow(p1 * p0e / p0 , 2) + pow(p1e, 2));
+
+    cout << "kappa = " << kappa << endl;
+    cout << "kappa_error = " << kappa_error << endl;
+
+    // cout << "p0 = " << p0 << endl;
+    // cout << "p0e = " << p0e << endl;
+    // cout << "p1 = " << p1 << endl;
+    // cout << "p1e = " << p1e << endl;
+
+    // cout << "sum_dividend = " << sum_dividend << endl;
+    // cout << "sum_divisor = " << sum_divisor << endl;
+    // cout << "l_theta = " << l_theta << endl;
+    // cout << "l_theta_d = " << l_theta_d << endl;
+
+
+    return 0;
+}
+
+Double_t GetKappa_Not_Integral(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
+
+    gStyle->SetOptFit(1111);
+
+    TString input_Filepath = input_Folder;
+    std::ifstream ifs(input_Filepath);
+
+    TGraphErrors* graph = new TGraphErrors();
+
+    Int_t index_data = 0;
+    Double_t counts, EFFICIENCY;
+
+    while(ifs >> counts){
+        graph->SetPoint(index_data, index_data * 45, counts);
+        graph->SetPointError(index_data, 0, sqrt(counts));
+        index_data++;
+    }
+    ifs.close();
+
+    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 600); // 範囲変えて
+    hh->SetStats(0);
+    hh->SetTitle("The number of valid events;#phi[degree];Counts");
+    hh->Draw();
+
+
+    TF1* fitfunc = new TF1("fitfunc", "Not_Integral([0], [1], x)", 0, 180);
+    fitfunc->SetParameters(100.0, 10.0);
+    graph->Fit(fitfunc);
+    graph->SetMarkerSize(0.6);
+    graph->SetMarkerStyle(8);
+    graph->Draw("Psame");
+
+    Double_t sum_divisor = 0.0;
+    Double_t sum_dividend = 0.0;
+
+    Double_t A2_length = 12.0;
+    Double_t r_S2_to_A2 = 25.0;
+
+    // Double_t delta_theta_rad = 0.1 * M_PI / 180; //　0.1度に当たるラジアンがθの微少量とする
+    Double_t delta_theta = 0.1;
+
+    // Double_t theta_min_rad = atan(r_S2_to_A2 / A2_length); // およそ64度のラジアン
+    Double_t theta_min = atan(r_S2_to_A2 / A2_length) * 180 / M_PI;
+
+    Double_t l_theta_d = (90 - theta_min) / delta_theta;
+
+    Int_t l_theta = static_cast<Int_t>(l_theta_d);
+
+    for(int i = 0; i < l_theta; i++){
+
+        Double_t theta_tilde = theta_min + i * delta_theta;
+        sum_dividend += Integrand_dividend(theta_tilde) * delta_theta;
+        sum_divisor += Integrand_divisor(theta_tilde) * delta_theta;
+
+    }
+
+    Double_t p0 = fitfunc->GetParameter(0);
+    Double_t p1 = fitfunc->GetParameter(1);
+    Double_t p0e = fitfunc->GetParError(0);
+    Double_t p1e = fitfunc->GetParError(1);
+
+    Double_t kappa = (p1 / p0) * (sum_dividend / sum_divisor);
+    Double_t kappa_error = (sum_dividend / (sum_divisor * p0)) * sqrt(pow(p1 * p0e / p0 , 2) + pow(p1e, 2));
+
+    cout << "kappa = " << kappa << endl;
+    cout << "kappa_error = " << kappa_error << endl;
+
+    // cout << "p0 = " << p0 << endl;
+    // cout << "p0e = " << p0e << endl;
+    // cout << "p1 = " << p1 << endl;
+    // cout << "p1e = " << p1e << endl;
+
+    // cout << "sum_dividend = " << sum_dividend << endl;
+    // cout << "sum_divisor = " << sum_divisor << endl;
+    // cout << "l_theta = " << l_theta << endl;
+    // cout << "l_theta_d = " << l_theta_d << endl;
+
+
+    return 0;
+}
+
+Double_t GetKappa_Integral(TString input_Folder = "./cfg/sim16_kappa/001.txt"){
+
+    gStyle->SetOptFit(1111);
+
+    TString input_Filepath = input_Folder;
+    std::ifstream ifs(input_Filepath);
+
+    TGraphErrors* graph = new TGraphErrors();
+
+    Int_t index_data = 0;
+    Double_t counts, EFFICIENCY;
+
+    while(ifs >> counts){
+        graph->SetPoint(index_data, index_data * 45, counts);
+        graph->SetPointError(index_data, 0, sqrt(counts));
+        index_data++;
+    }
+    ifs.close();
+
+    TH2D* hh = new TH2D("h", "h", 10, -10, 190, 10, 0, 600); // 範囲変えて
     hh->SetStats(0);
     hh->SetTitle("The number of valid events;#phi[degree];Counts");
     hh->Draw();
